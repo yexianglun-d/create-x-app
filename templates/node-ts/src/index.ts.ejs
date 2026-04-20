@@ -1,0 +1,46 @@
+<% if (extras.includes('dotenv')) { %>import 'dotenv/config'
+<% } %><% if (extras.includes('express')) { %>import express from 'express'
+
+const DEFAULT_PORT = 3000
+
+/**
+ * 解析服务端口，确保运行时配置可预期。
+ *
+ * 说明：
+ * 1. 未提供 `PORT` 时使用默认端口，便于本地直接启动
+ * 2. 提供了 `PORT` 时必须校验为合法正整数，避免服务启动后绑定异常端口
+ */
+function resolvePort() {
+  const portValue = process.env.PORT
+
+  if (!portValue) {
+    return DEFAULT_PORT
+  }
+
+  const parsedPort = Number(portValue)
+
+  if (!Number.isInteger(parsedPort) || parsedPort <= 0) {
+    throw new Error('环境变量 PORT 必须为正整数')
+  }
+
+  return parsedPort
+}
+
+const app = express()
+const port = resolvePort()
+
+app.use(express.json())
+
+app.get('/', (_req, res) => {
+  res.json({
+    message: '你好，来自 <%= projectName %>',
+  })
+})
+
+app.listen(port, () => {
+  console.log(`服务已启动：http://localhost:${port}`)
+})
+<% } else { %>const appName = '<%= projectName %>'
+
+console.log(`你好，来自 ${appName}`)
+<% } %>

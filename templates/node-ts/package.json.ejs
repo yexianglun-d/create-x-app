@@ -1,0 +1,30 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"<% if (hasEslint) { %>,
+    "lint": "eslint src"<% } %>
+  },
+  "dependencies": {<% if (extras.includes('express')) { %>
+    "express": "^4.19.2"<% if (extras.includes('dotenv')) { %>,
+    "dotenv": "^16.4.5"<% } %><% } else if (extras.includes('dotenv')) { %>
+    "dotenv": "^16.4.5"<% } %>
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "tsx": "^4.15.0",
+    "@types/node": "^20.14.0"<% if (hasEslint) { %>,
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0"<% } %><% if (hasPrettier) { %>,
+    "prettier": "^3.3.0"<% } %><% if (hasHusky) { %>,
+    "husky": "^9.0.11",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2"<% } %><% if (extras.includes('express')) { %>,
+    "@types/express": "^4.17.21"<% } %>
+  }
+}

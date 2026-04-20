@@ -1,0 +1,72 @@
+<% if (extras.includes('react-router')) { %>import { BrowserRouter, Route, Routes } from 'react-router-dom'
+
+function HomePage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50">
+      <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-5xl items-center">
+        <div className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-10 shadow-2xl shadow-cyan-500/10 backdrop-blur">
+          <span className="inline-flex rounded-full bg-cyan-400/20 px-3 py-1 text-sm text-cyan-200">
+            create-x-app
+          </span>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white md:text-6xl">
+            欢迎使用 <%= projectName %>
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+            Tailwind 和 React Router 已就绪，你可以继续扩展页面、状态管理和业务模块。
+          </p>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+function AboutPage() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50">
+      <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-5xl items-center">
+        <div className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-10 shadow-2xl shadow-cyan-500/10 backdrop-blur">
+          <span className="inline-flex rounded-full bg-emerald-400/20 px-3 py-1 text-sm text-emerald-200">
+            About
+          </span>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white md:text-6xl">
+            路由页示例已生效
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+            现在可以继续拆分布局、鉴权和页面状态。
+          </p>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+<% } else { %>export default function App() {
+  return (
+    <main className="min-h-screen bg-slate-950 px-6 py-10 text-slate-50">
+      <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-5xl items-center">
+        <div className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-10 shadow-2xl shadow-cyan-500/10 backdrop-blur">
+          <span className="inline-flex rounded-full bg-cyan-400/20 px-3 py-1 text-sm text-cyan-200">
+            create-x-app
+          </span>
+          <h1 className="mt-5 text-4xl font-semibold tracking-tight text-white md:text-6xl">
+            欢迎使用 <%= projectName %>
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">
+            Tailwind 已经接入完成，接下来可以直接开始搭建业务界面。
+          </p>
+        </div>
+      </section>
+    </main>
+  )
+}
+<% } %>

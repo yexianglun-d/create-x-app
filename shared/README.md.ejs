@@ -1,0 +1,32 @@
+# <%= projectName %>
+
+由 [create-x-app-cli](https://npmjs.com/package/create-x-app-cli) 脚手架生成。
+
+## 技术栈
+
+<% if (template === 'react-vite-ts') { %>
+- React 18 + Vite 5 + TypeScript 5
+<% } else if (template === 'node-ts') { %>
+- Node.js + TypeScript 5 + tsx
+<% } else { %>
+- Java 21 + Spring Boot 3 / React + Vite + TypeScript
+<% } %>
+<% if (hasEslint || hasPrettier) { %>-<% if (hasEslint) { %> ESLint<% } %><% if (hasEslint && hasPrettier) { %> +<% } %><% if (hasPrettier) { %> Prettier<% } %>
+<% } %>
+<% if (hasHusky) { %>- Husky + commitlint<% } %>
+
+## 快速开始
+
+```bash
+<% if (template === 'java-fullstack') { %>cd frontend
+<%= packageManager %> install
+<%= packageManager %> run dev
+<% } else { %><%= packageManager %> install
+<%= packageManager %> run dev
+<% } %>
+```
+
+## 延伸阅读
+
+- [AGENTS.md](./AGENTS.md) — AI 助手协作约定
+- [coding-rules.md](./coding-rules.md) — 团队代码规范

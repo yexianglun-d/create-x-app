@@ -1,0 +1,13 @@
+node_modules/
+.idea/
+.DS_Store
+*.log
+*.tgz
+
+# 本地联调用生成项目
+my-test-project/
+my-test-project-full/
+my-test-project-full-v2/
+my-test-project-skip/
+my-test-project-skip-no-husky/
+verbose-check/

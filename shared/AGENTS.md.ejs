@@ -1,0 +1,33 @@
+# AGENTS.md
+
+## 项目：<%= projectName %>
+
+> 本文件描述了 AI 编程助手（Copilot、Claude、Cursor、Codex 等）
+> 在本仓库中应遵守的约定和上下文信息。
+
+## 技术栈
+
+- 模板：<%= template %>
+- 包管理器：<%= packageManager %>
+- 脚手架年份：<%= year %>
+
+## 代码规范
+
+- 所有新文件必须使用 TypeScript（开启 strict 模式）。
+- 优先使用函数式风格，除非框架强制使用类。
+- 只使用命名导出，React 组件和 Next.js 页面除外可用默认导出。
+- 文件名约定：普通文件用 kebab-case，组件文件用 PascalCase。
+
+## 提交信息格式
+
+遵循 Conventional Commits 规范：
+  feat: 新增用户登录功能
+  fix: 修正分页中的差一错误
+  chore: 更新依赖
+  docs: 补充 API 文档
+
+## 禁止事项
+
+- 禁止提交密钥或 .env 文件。
+- 禁止在无说明注释的情况下用 @ts-ignore 禁用 TypeScript 严格检查。
+- 禁止直接向 main 分支推送代码。

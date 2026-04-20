@@ -1,0 +1,48 @@
+<% if (extras.includes('react-router')) { %>import { BrowserRouter, Route, Routes } from 'react-router-dom'
+
+function HomePage() {
+  return (
+    <main className="app-shell">
+      <section className="app-panel">
+        <span className="app-badge">create-x-app</span>
+        <h1>欢迎使用 <%= projectName %></h1>
+        <p>编辑 <code>src/App.tsx</code> 开始开发。</p>
+      </section>
+    </main>
+  )
+}
+
+function AboutPage() {
+  return (
+    <main className="app-shell">
+      <section className="app-panel">
+        <span className="app-badge">About</span>
+        <h1>路由已就绪</h1>
+        <p>你已经可以继续拆分页面和业务模块。</p>
+      </section>
+    </main>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+      </Routes>
+    </BrowserRouter>
+  )
+}
+<% } else { %>export default function App() {
+  return (
+    <main className="app-shell">
+      <section className="app-panel">
+        <span className="app-badge">create-x-app</span>
+        <h1>欢迎使用 <%= projectName %></h1>
+        <p>编辑 <code>src/App.tsx</code> 开始开发。</p>
+      </section>
+    </main>
+  )
+}
+<% } %>
