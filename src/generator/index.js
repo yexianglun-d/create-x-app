@@ -3,6 +3,7 @@ import ejs from 'ejs'
 import fs from 'fs-extra'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { loadManifest } from '../manifest/loader.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SHARED_DIR = join(__dirname, '../../shared')
@@ -14,6 +15,11 @@ const FEATURE_ARTIFACTS = {
   husky: ['.husky', 'commitlint.config.js'],
   agents: ['AGENTS.md'],
   'coding-rules': ['coding-rules.md'],
+}
+const PACKAGE_MANAGER_VERSIONS = {
+  npm: '10.9.2',
+  pnpm: '9.12.3',
+  yarn: '4.5.1',
 }
 
 function ensurePromptNotCancelled(value) {
@@ -99,11 +105,13 @@ async function collectEjsFiles(targetDir) {
 
 function buildTemplateVariables(config) {
   return {
+    ...config,
     projectName: config.projectName,
     template: config.template,
     features: config.features,
     extras: config.extras,
     packageManager: config.packageManager,
+    packageManagerSpecifier: `${config.packageManager}@${PACKAGE_MANAGER_VERSIONS[config.packageManager] ?? 'latest'}`,
     hasEslint: config.features.includes('eslint'),
     hasPrettier: config.features.includes('prettier'),
     hasHusky: config.features.includes('husky'),
@@ -180,6 +188,20 @@ async function applyExtras(extras, targetDir) {
   }
 }
 
+/**
+ * 删除仅供脚手架运行期使用的模板元数据文件。
+ *
+ * 说明：
+ * 1. `manifest.json` 是模板注册元数据，不属于最终项目产物
+ * 2. 必须在渲染 `.ejs` 文件之前移除，避免与未来模板中真实的 `manifest.json.ejs` 输出冲突
+ *
+ * @param {string} targetDir 项目输出目录
+ * @returns {Promise<void>}
+ */
+async function removeTemplateMetadata(targetDir) {
+  await fs.remove(join(targetDir, 'manifest.json'))
+}
+
 async function pruneFeatureArtifacts(config, targetDir) {
   const enabledFeatures = new Set(config.features)
 
@@ -194,16 +216,74 @@ async function pruneFeatureArtifacts(config, targetDir) {
   }
 }
 
+/**
+ * 删除未启用模板扩展对应的文件产物。
+ *
+ * 说明：
+ * 1. inline extra 可能通过条件渲染输出空文件，若不清理会污染最终项目结构
+ * 2. 由 manifest 声明 artifact 清单，生成器统一裁剪，避免把额外规则散落到模板代码里
+ *
+ * @param {Record<string, unknown>} config 用户选择配置
+ * @param {string} targetDir 项目输出目录
+ * @returns {Promise<void>}
+ */
+async function pruneExtraArtifacts(config, targetDir, manifest) {
+  const enabledExtras = new Set(config.extras)
+
+  for (const extra of manifest.extras ?? []) {
+    if (enabledExtras.has(extra.key)) {
+      continue
+    }
+
+    for (const artifactPath of extra.artifacts ?? []) {
+      await fs.remove(join(targetDir, artifactPath))
+    }
+  }
+}
+
+/**
+ * 删除与当前子问答选择不匹配的模板文件。
+ *
+ * 说明：
+ * 1. Electron 等模板会根据子问答生成不同实现分支，例如 Vue 与 React 渲染层
+ * 2. 通过 manifest 声明各选项对应的文件归属，可以避免把“删哪些文件”的规则硬编码到生成器
+ *
+ * @param {Record<string, unknown>} config 用户选择配置
+ * @param {string} targetDir 项目输出目录
+ * @param {{subPromptArtifacts?: Array<{key: string, artifactsByValue?: Record<string, string[]>}>}} manifest 模板声明
+ * @returns {Promise<void>}
+ */
+async function pruneSubPromptArtifacts(config, targetDir, manifest) {
+  for (const rule of manifest.subPromptArtifacts ?? []) {
+    const selectedValue = config[rule.key]
+
+    for (const [optionValue, artifactPaths] of Object.entries(rule.artifactsByValue ?? {})) {
+      if (optionValue === selectedValue) {
+        continue
+      }
+
+      for (const artifactPath of artifactPaths) {
+        await fs.remove(join(targetDir, artifactPath))
+      }
+    }
+  }
+}
+
 export async function generateProject({ config, templatePath }) {
   try {
+    const manifest = loadManifest(config.template)
+
     await ensureTargetDirectoryReady(config.targetDir)
     await fs.ensureDir(config.targetDir)
 
     await copyDirectory(SHARED_DIR, config.targetDir, false)
     await copyDirectory(templatePath, config.targetDir, true)
-    await applyExtras(config.extras, config.targetDir)
+    await applyExtras(config.fileBasedExtras ?? config.extras, config.targetDir)
+    await removeTemplateMetadata(config.targetDir)
     await renderEjsFiles(config.targetDir, buildTemplateVariables(config))
     await renameDotfiles(config.targetDir)
+    await pruneSubPromptArtifacts(config, config.targetDir, manifest)
+    await pruneExtraArtifacts(config, config.targetDir, manifest)
     await pruneFeatureArtifacts(config, config.targetDir)
   } catch (error) {
     throw new Error(`生成项目失败：${error.message}`)

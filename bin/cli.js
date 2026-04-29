@@ -31,7 +31,7 @@ async function handleCliAction(projectNameArg, options) {
 }
 
 program
-  .name('create-x-app-cli')
+  .name('create-x-app')
   .description('几秒内生成生产级项目脚手架')
   .version(packageJson.version)
   .argument('[project-name]', '要创建的项目目录名称')

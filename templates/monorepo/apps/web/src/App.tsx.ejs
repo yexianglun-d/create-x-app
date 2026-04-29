@@ -1,0 +1,114 @@
+import { useEffect, useState } from 'react'
+import type { ApiResponse, User } from '@<%= projectName %>/shared'
+
+const moduleCards = [
+  {
+    key: 'web',
+    title: 'apps/web',
+    description: 'React + Vite 前端，默认代理 /api 到本地服务端。',
+  },
+  {
+    key: 'api',
+    title: 'apps/api',
+    description: 'Express API，示例接口已返回共享类型定义的用户对象。',
+  },
+  {
+    key: 'shared',
+    title: 'packages/shared',
+    description: '统一沉淀 User、ApiResponse 等跨端共享类型。',
+  },
+]
+
+export default function App() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const [message, setMessage] = useState('正在请求 apps/api 示例接口...')
+
+  useEffect(() => {
+    void fetch('/api/users/me')
+      .then(async (response) => response.json() as Promise<ApiResponse<User>>)
+      .then((payload) => {
+        setCurrentUser(payload.data)
+        setMessage(payload.message)
+      })
+      .catch(() => {
+        setMessage('apps/api 尚未启动，先运行 pnpm dev 即可体验联调。')
+      })
+  }, [])
+
+  return (
+    <main
+      style={{
+        minHeight: '100vh',
+        padding: 36,
+        boxSizing: 'border-box',
+        color: '#e2e8f0',
+        fontFamily: '"SF Pro Display", "PingFang SC", "Segoe UI", sans-serif',
+        background:
+          'radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 32%), linear-gradient(180deg, #0f172a 0%, #111827 100%)',
+      }}
+    >
+      <section style={{ maxWidth: 840, marginBottom: 28 }}>
+        <span
+          style={{
+            display: 'inline-flex',
+            padding: '6px 12px',
+            borderRadius: 999,
+            background: 'rgba(14, 165, 233, 0.14)',
+            color: '#7dd3fc',
+            fontSize: 12,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          create-x-app / monorepo
+        </span>
+        <h1 style={{ margin: '18px 0 10px', color: '#f8fafc', fontSize: 42 }}>
+          <%= projectName %> Workspace
+        </h1>
+        <p style={{ margin: 0, color: 'rgba(226, 232, 240, 0.78)', lineHeight: 1.8 }}>
+          这个 monorepo 已经接好 React 前端、Express API 和共享类型包，
+          你可以在同一个仓库里维护跨端协作的基础设施。
+        </p>
+      </section>
+
+      <section
+        style={{
+          display: 'grid',
+          gap: 18,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          marginBottom: 20,
+        }}
+      >
+        {moduleCards.map((moduleCard) => (
+          <article
+            key={moduleCard.key}
+            style={{
+              borderRadius: 22,
+              padding: 20,
+              border: '1px solid rgba(148, 163, 184, 0.14)',
+              background: 'rgba(15, 23, 42, 0.76)',
+            }}
+          >
+            <p style={{ margin: '0 0 8px', color: '#38bdf8', fontSize: 13 }}>{moduleCard.title}</p>
+            <p style={{ margin: 0, color: '#f8fafc', lineHeight: 1.7 }}>{moduleCard.description}</p>
+          </article>
+        ))}
+      </section>
+
+      <section
+        style={{
+          borderRadius: 24,
+          padding: 22,
+          border: '1px solid rgba(148, 163, 184, 0.14)',
+          background: 'rgba(15, 23, 42, 0.82)',
+        }}
+      >
+        <p style={{ margin: '0 0 8px', color: '#94a3b8', fontSize: 13 }}>联调结果</p>
+        <p style={{ margin: '0 0 12px', color: '#f8fafc', lineHeight: 1.7 }}>{message}</p>
+        <p style={{ margin: 0, color: 'rgba(226, 232, 240, 0.78)' }}>
+          当前用户：{currentUser ? `${currentUser.name}（${currentUser.email}）` : '等待接口响应'}
+        </p>
+      </section>
+    </main>
+  )
+}

@@ -3,13 +3,7 @@ import { execa } from 'execa'
 import ora from 'ora'
 import { join } from 'node:path'
 import { logger } from '../utils/logger.js'
-
-function getInstallCommand(packageManager) {
-  return {
-    command: packageManager,
-    args: ['install'],
-  }
-}
+import { createPmAdapter } from '../utils/pm-adapter.js'
 
 function resolveWorkspaceLayout(config) {
   if (config.template === 'java-fullstack') {
@@ -94,6 +88,7 @@ function printNextSteps(config, workspaceLayout) {
 }
 
 export async function runPostActions({ config, options }) {
+  const pm = createPmAdapter(config.packageManager)
   const workspaceLayout = resolveWorkspaceLayout(config)
   const shouldInstallDependencies = config.features.includes('husky') || !options.skipInstall
 
@@ -103,7 +98,7 @@ export async function runPostActions({ config, options }) {
 
     if (shouldInstallDependencies) {
       for (const installTarget of workspaceLayout.installTargets) {
-        const installCommand = getInstallCommand(config.packageManager)
+        const installCommand = pm.getInstallCommand()
 
         await runCommandWithSpinner({
           title: `正在安装依赖（${config.packageManager} install）...`,
@@ -118,10 +113,12 @@ export async function runPostActions({ config, options }) {
     }
 
     if (config.features.includes('husky')) {
+      const huskyInstallCommand = pm.getDlxCommand('husky', ['install'])
+
       await runCommandWithSpinner({
         title: '正在初始化 Husky...',
-        command: 'npx',
-        args: ['husky', 'install'],
+        command: huskyInstallCommand.command,
+        args: huskyInstallCommand.args,
         cwd: workspaceLayout.huskyWorkspace,
         continueOnError: true,
       })
@@ -157,7 +154,7 @@ export async function runPostActions({ config, options }) {
       await runCommandWithSpinner({
         title: '正在创建初始提交...',
         command: 'git',
-        args: ['commit', '-m', 'chore: 通过 create-x-app-cli 初始化项目'],
+        args: ['commit', '-m', 'chore: 通过 create-x-app 初始化项目'],
         cwd: workspaceLayout.gitWorkspace,
         continueOnError: true,
       })

@@ -1,0 +1,40 @@
+{
+  "key": "chrome-ext",
+  "name": "Chrome 浏览器插件",
+  "description": "Manifest V3 + React，含 popup / content / background 三入口",
+  "version": "1.0.0",
+  "framework": "react",
+  "requiredPm": null,
+  "forbiddenPm": [
+    "yarn"
+  ],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "eslint",
+    "prettier",
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "eslint",
+    "prettier",
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [],
+  "subPrompts": [],
+  "devScript": "dev",
+  "buildScript": "build",
+  "devPort": null,
+  "integrationTest": {
+    "skipBuild": false,
+    "skipDevServer": true,
+    "installWorkspaces": [
+      "."
+    ],
+    "buildWorkspace": "."
+  }
+}

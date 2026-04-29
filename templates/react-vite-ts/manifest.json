@@ -1,0 +1,53 @@
+{
+  "key": "react-vite-ts",
+  "name": "React + Vite + TypeScript",
+  "description": "适合中小型前端应用，React 工程开箱即用",
+  "version": "1.0.0",
+  "framework": "react",
+  "requiredPm": null,
+  "forbiddenPm": [],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [
+    {
+      "key": "react-router",
+      "label": "React Router v6",
+      "default": false,
+      "source": "inline"
+    },
+    {
+      "key": "tailwind",
+      "label": "Tailwind CSS v3",
+      "default": false,
+      "source": "file"
+    }
+  ],
+  "subPrompts": [],
+  "devScript": "dev",
+  "buildScript": "build",
+  "devPort": 5173,
+  "integrationTest": {
+    "skipBuild": false,
+    "skipDevServer": false,
+    "installWorkspaces": [
+      "."
+    ],
+    "buildWorkspace": "."
+  }
+}

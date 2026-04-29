@@ -1,0 +1,18 @@
+<% if (renderer === 'vue') { %>import { createApp } from 'vue'
+import App from './App.vue'
+
+createApp(App).mount('#app')
+<% } else { %>import { StrictMode, createElement } from 'react'
+import { createRoot } from 'react-dom/client'
+import App from './App'
+
+const rootElement = document.getElementById('app')
+
+if (!rootElement) {
+  throw new Error('未找到挂载节点 #app')
+}
+
+createRoot(rootElement).render(
+  createElement(StrictMode, null, createElement(App)),
+)
+<% } %>

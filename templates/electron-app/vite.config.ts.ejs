@@ -1,0 +1,11 @@
+import { defineConfig } from 'vite'
+<% if (renderer === 'vue') { %>import vue from '@vitejs/plugin-vue'
+<% } else { %>import react from '@vitejs/plugin-react'
+<% } %>
+
+export default defineConfig({
+  plugins: [<% if (renderer === 'vue') { %>vue()<% } else { %>react()<% } %>],
+  build: {
+    outDir: 'dist',
+  },
+})

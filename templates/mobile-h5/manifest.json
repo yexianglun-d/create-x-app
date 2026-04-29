@@ -1,0 +1,39 @@
+{
+  "key": "mobile-h5",
+  "name": "移动端 H5（Vue 3 + Vant）",
+  "description": "Vue 3 + Vant + rem 自适应，适合微信 H5 / 移动端活动页",
+  "version": "1.0.0",
+  "framework": "vue",
+  "requiredPm": null,
+  "forbiddenPm": [],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "eslint",
+    "prettier",
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [],
+  "subPrompts": [],
+  "devScript": "dev",
+  "buildScript": "build",
+  "devPort": 5173,
+  "integrationTest": {
+    "skipBuild": false,
+    "skipDevServer": false,
+    "installWorkspaces": [
+      "."
+    ],
+    "buildWorkspace": "."
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "key": "java-fullstack",
+  "name": "Java 全栈 + 前端配套说明",
+  "description": "前端工程与 Spring Boot 后端搭建说明一并生成",
+  "version": "1.0.0",
+  "framework": "react",
+  "requiredPm": null,
+  "forbiddenPm": [],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [],
+  "subPrompts": [],
+  "devScript": "dev",
+  "buildScript": "build",
+  "devPort": 5173,
+  "integrationTest": {
+    "skipBuild": false,
+    "skipDevServer": false,
+    "installWorkspaces": [
+      ".",
+      "frontend"
+    ],
+    "buildWorkspace": "frontend"
+  }
+}

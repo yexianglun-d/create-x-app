@@ -1,13 +1,13 @@
-# AGENTS.md — create-x-app-cli 项目脚手架 CLI
+# AGENTS.md — create-x-app 项目脚手架 CLI
 
 ## 项目概述
 
-构建一个名为 `create-x-app-cli` 的 Node.js CLI 工具，通过交互式终端界面为用户生成项目模板。用户只需运行一条命令，回答几个问题，即可得到一个配置完善、开箱即用的项目目录。
+构建一个名为 `create-x-app` 的 Node.js CLI 工具，通过交互式终端界面为用户生成项目模板。用户只需运行一条命令，回答几个问题，即可得到一个配置完善、开箱即用的项目目录。
 
 **发布到 npm 后，任何人都可以通过以下方式使用：**
 
 ```bash
-npx create-x-app-cli
+npx create-x-app
 ```
 
 ---
@@ -72,12 +72,12 @@ create-x-app/
 
 ```json
 {
-  "name": "create-x-app-cli",
+  "name": "create-x-app",
   "version": "0.1.1",
   "description": "一条命令生成生产级项目模板",
   "type": "module",
   "bin": {
-    "create-x-app-cli": "./bin/cli.js"
+    "create-x-app": "./bin/cli.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -126,7 +126,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'))
 
 program
-  .name('create-x-app-cli')
+  .name('create-x-app')
   .description('几秒内生成生产级项目脚手架')
   .version(pkg.version)
   .argument('[project-name]', '要创建的项目目录名称')
@@ -154,7 +154,7 @@ import chalk from 'chalk'
 
 export async function createCommand(projectNameArg, options) {
   console.log()
-  intro(chalk.bgCyan.black(' create-x-app-cli '))
+  intro(chalk.bgCyan.black(' create-x-app '))
 
   // 第一步 — 环境检测（可选工具只警告，不退出）
   await runEnvCheck()
@@ -362,7 +362,7 @@ _husky/         → .husky/
 3. 若 !options.skipGit：
    - 执行：git init
    - 执行：git add .
-   - 执行：git commit -m "chore: 通过 create-x-app-cli 初始化项目"
+   - 执行：git commit -m "chore: 通过 create-x-app 初始化项目"
 
 4. 打印"后续步骤"提示面板：
 ```
@@ -738,7 +738,7 @@ src/main/java/com/example/app/
 ```markdown
 # <%= projectName %>
 
-由 [create-x-app-cli](https://npmjs.com/package/create-x-app-cli) 脚手架生成。
+由 [create-x-app](https://npmjs.com/package/create-x-app) 脚手架生成。
 
 ## 技术栈
 
@@ -943,7 +943,7 @@ node bin/cli.js my-test-project
 - [ ] 更新 package.json 中的版本号（使用 `npm version patch`）
 - [ ] 确认 `files` 字段包含 `bin`、`src`、`templates`、`shared`
 - [ ] 本地运行 `node bin/cli.js` 验证完整流程正常
-- [ ] 在 npmjs.com 确认包名 `create-x-app-cli` 可用
+- [ ] 在 npmjs.com 确认包名 `create-x-app` 可用
 - [ ] 撰写含使用说明和 CLI 演示动图的 `README.md`
 - [ ] 运行 `npm pack --dry-run` 预览将要发布的文件列表
 
@@ -955,7 +955,7 @@ npm publish --access public
 发布后通过以下命令验证：
 
 ```bash
-npx create-x-app-cli my-first-project
+npx create-x-app my-first-project
 ```
 
 ---
@@ -964,7 +964,7 @@ npx create-x-app-cli my-first-project
 
 满足以下所有条件即视为项目完成：
 
-1. `npx create-x-app-cli` 全流程零手动操作可运行
+1. `npx create-x-app` 全流程零手动操作可运行
 2. 三套模板均能生成有效、可运行的项目（`npm run dev` 正常启动）
 3. 每个生成的项目均包含公共文件（AGENTS.md、coding-rules.md、husky）
 4. 环境检测对版本过低的工具能正确发出警告

@@ -1,0 +1,68 @@
+{
+  "key": "electron-app",
+  "name": "Electron 桌面应用",
+  "description": "Electron 31 + Vue 3 / React，含 IPC 通信示例和跨平台打包",
+  "version": "1.0.0",
+  "framework": "electron",
+  "requiredPm": null,
+  "forbiddenPm": [],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "eslint",
+    "prettier",
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "eslint",
+    "prettier",
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [],
+  "subPrompts": [
+    {
+      "key": "renderer",
+      "type": "select",
+      "label": "选择渲染进程框架",
+      "options": [
+        {
+          "value": "vue",
+          "label": "Vue 3 + TypeScript"
+        },
+        {
+          "value": "react",
+          "label": "React + TypeScript"
+        }
+      ],
+      "default": "vue"
+    }
+  ],
+  "subPromptArtifacts": [
+    {
+      "key": "renderer",
+      "artifactsByValue": {
+        "vue": [
+          "src/App.vue"
+        ],
+        "react": [
+          "src/App.tsx"
+        ]
+      }
+    }
+  ],
+  "devScript": "dev",
+  "buildScript": "build",
+  "devPort": null,
+  "integrationTest": {
+    "skipBuild": false,
+    "skipDevServer": true,
+    "installWorkspaces": [
+      "."
+    ],
+    "buildWorkspace": "."
+  }
+}

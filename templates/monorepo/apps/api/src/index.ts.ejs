@@ -1,0 +1,34 @@
+import express from 'express'
+import type { ApiResponse, User } from '@<%= projectName %>/shared'
+
+const app = express()
+const port = Number(process.env.PORT ?? 3000)
+
+const currentUser: User = {
+  id: 'u_admin',
+  name: '<%= projectName %> 管理员',
+  email: 'admin@example.com',
+}
+
+/**
+ * 示例 API 直接复用 shared 包里的类型定义，确保跨端协议只有一份源头。
+ */
+function buildResponse<T>(data: T, message: string): ApiResponse<T> {
+  return {
+    code: 0,
+    data,
+    message,
+  }
+}
+
+app.get('/api/health', (_request, response) => {
+  response.json(buildResponse({ status: 'ok' }, 'api ready'))
+})
+
+app.get('/api/users/me', (_request, response) => {
+  response.json(buildResponse(currentUser, '来自 apps/api 的共享类型响应'))
+})
+
+app.listen(port, () => {
+  console.log(`API ready at http://localhost:${port}`)
+})

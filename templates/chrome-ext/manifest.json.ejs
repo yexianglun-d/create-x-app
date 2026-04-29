@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "<%= projectName %>",
+  "version": "1.0.0",
+  "description": "由 create-x-app 生成的 Chrome 扩展模板",
+  "permissions": ["storage", "activeTab", "scripting"],
+  "action": {
+    "default_popup": "popup/index.html"
+  },
+  "background": {
+    "service_worker": "background/index.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/index.js"]
+    }
+  ]
+}

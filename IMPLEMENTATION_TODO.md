@@ -1,209 +1,352 @@
-# create-x-app 可执行开发清单
+# create-x-app 实施跟踪清单（对齐 PLAN-v2）
 
 ## 文档用途
 
-本文件用于固化 `create-x-app` 的实现计划，避免后续对话上下文过长导致执行偏移。
+本文件用于跟踪 `PLAN-v2.md` 的实际执行状态、依赖顺序、验收结果和阻塞项。
 
-后续开发默认遵循本文件：
+约定如下：
 
-- 按依赖顺序推进，不跳步。
-- 每完成一项就更新勾选状态。
-- 遇到 Bug 不做补丁式修复，直接定位根因并做完整解决。
-- 关键实现、业务核心或难理解代码块，补充结构化注释说明。
+- 设计与验收口径以 `PLAN-v2.md` 为准
+- 任务状态、执行顺序、完成记录以本文件为准
+- 本轮产品名、CLI 命令名、文档对外名称统一采用 `create-x-app`
+- 遇到 Bug 不做补丁式修复，直接定位根因并做完整解决
+- 业务核心、复杂流程或难理解代码块，补充结构化注释说明
 
-## 最小主链路
+## 当前基线
 
-第一阶段先打通以下主链路：
+### 历史能力基线（已完成）
 
-1. CLI 入口可执行
-2. 环境检测可运行
-3. 交互问答可返回配置
-4. 模板路径可解析
-5. 项目文件可生成
-6. 后置动作可执行
-7. 测试可运行
+- [x] 当前仓库已具备可运行的 CLI 主链路
+- [x] 已支持 `react-vite-ts`、`node-ts`、`java-fullstack` 三套模板
+- [x] 已具备环境检测、交互问答、模板渲染、点文件恢复、依赖安装、Git 初始化
+- [x] 已有基础单元测试：`version`、`resolver`、`generator`、`logger`
 
-## 执行阶段
+### 当前待收敛项
 
-### P0 基础骨架
+- [x] 历史命名 `create-x-app-cli` 已从包配置、CLI 文案和主文档中收敛为 `create-x-app`
+- [x] 现有模板的 resolver / prompts / validator 已切换到 manifest 驱动
+- [x] 包管理器命令已抽离到统一适配层，模板 package.json 已写入 `packageManager`
+- [x] 已建立集成测试框架、快照基线和 CI 工作流，现有三套模板可自动回归验证
 
-- [x] T01 创建根目录 `package.json`
-  输出：根目录包配置
-  完成标准：包含 `type: "module"`、`bin`、`files`、`scripts`、`engines.node >= 18`、依赖和开发依赖
-  验证方式：后续模块可正常读取配置；CLI 入口可加载
+## 状态标记说明
 
-- [x] T02 创建 `src/utils/logger.js`
-  输出：统一日志工具
-  完成标准：提供 `info`、`success`、`warn`、`error`、`step`
-  验证方式：被其他模块导入时无报错
+- `[ ]` 未开始
+- `[→]` 进行中
+- `[x]` 已完成
+- `[!]` 被阻塞
 
-- [x] T03 创建 `src/utils/version.js`
-  输出：版本检测工具
-  完成标准：实现 `detectVersion()`、`meetsMinimum()`
-  验证方式：`node --version` 可解析；未知命令返回 `null`
+## 本轮推荐执行顺序
 
-### P1 环境与解析
+1. `TASK-000`
+2. `TASK-003 Part A`
+3. `TASK-001`
+4. `TASK-002`
+5. `TASK-003 Part B`
+6. `TASK-101 -> TASK-105`
+7. `TASK-106`
+8. `TASK-201 -> TASK-204`
+9. `TASK-301 -> TASK-302`
+10. `TASK-G01 -> TASK-G03`
 
-- [x] T04 创建 `src/steps/env-check.js`
-  输出：环境检测步骤
-  完成标准：检测 Node、Git、pnpm、Java；使用 `ora`；正确区分必需项与可选项
-  验证方式：执行 CLI 时先输出环境检测汇总
+## Phase 0 — 工程基础
 
-- [x] T05 创建 `src/steps/resolver.js`
-  输出：模板路径解析器
-  完成标准：支持 `react-vite-ts`、`node-ts`、`java-fullstack` 三种模板；未知模板抛错
-  验证方式：已知 key 返回绝对路径，未知 key 抛出 `Error`
+### [x] TASK-000 命名基线收敛（create-x-app）
 
-### P2 交互主链路
+输出：
+统一 `package.json`、CLI 帮助文案、README、发布文档和共享模板中的历史命名。
 
-- [x] T06 创建 `src/steps/prompts.js`
-  输出：交互问答模块
-  完成标准：支持项目名、模板、功能模块、包管理器、确认；支持取消退出
-  验证方式：可产出完整 `config` 对象；取消时优雅退出
+验收：
+- `rg -n "create-x-app-cli" .`
+- 仅允许出现在明确的历史兼容说明中
+- `node --test`
 
-- [x] T07 创建 `src/commands/create.js`
-  输出：主编排器
-  完成标准：按 `env-check -> prompts -> resolver -> generator -> post-actions` 顺序调用
-  验证方式：主流程顺序正确，异常不被静默吞掉
+### [x] TASK-001 选择后强校验（Config Validator）
 
-- [x] T08 创建 `bin/cli.js`
-  输出：CLI 入口文件
-  完成标准：支持 `[project-name]`、`--skip-install`、`--skip-git`
-  验证方式：`node bin/cli.js demo --skip-install --skip-git` 能进入主流程
+依赖：
+- `TASK-003 Part A`
 
-### P3 生成器核心
+输出：
+- `src/validator/index.js`
+- `src/commands/create.js` 接入统一校验层
 
-- [x] T09 创建 `src/generator/index.js` 基础复制能力
-  输出：项目生成器基础版本
-  完成标准：可创建目标目录、复制 `shared/`、复制模板目录
-  验证方式：目标目录中出现复制后的文件树
+验收：
+- `node --test test/validator.test.js`
 
-- [x] T10 在生成器中实现 `.ejs` 递归渲染
-  输出：模板渲染能力
-  完成标准：所有 `.ejs` 文件可渲染为真实文件，并删除原 `.ejs`
-  验证方式：生成后的 `README.md`、`AGENTS.md` 变量被正确替换
+### [x] TASK-002 包管理器适配层（PM Adapter）
 
-- [x] T11 在生成器中实现点文件重命名
-  输出：点文件重命名能力
-  完成标准：支持 `_gitignore -> .gitignore` 及其他 `_xxx -> .xxx`
-  验证方式：输出目录中不存在 `_gitignore`，存在 `.gitignore`
+输出：
+- `src/utils/pm-adapter.js`
+- `src/steps/post-actions.js` 全量切换为 PM adapter
 
-- [x] T12 在生成器中实现 extras 注入逻辑
-  输出：模板扩展能力
-  完成标准：根据 `config.extras` 注入额外模板内容
-  验证方式：勾选扩展项后生成对应文件
+验收：
+- `node --test test/pm-adapter.test.js`
+- 生成 `npm` / `pnpm` / `yarn` 项目并验证依赖安装与 Husky 初始化
 
-### P4 后置动作
+### [x] TASK-003 Part A 模板 Manifest
 
-- [x] T13 创建 `src/steps/post-actions.js`
-  输出：安装依赖、初始化仓库、打印后续步骤
-  完成标准：支持 install、husky install、chmod、git init、git add、git commit
-  验证方式：`--skip-install`、`--skip-git` 两条分支行为正确
+输出：
+- 现有 3 套模板补齐 `manifest.json`
+- `resolver` / `prompts` / `validator` 改为 manifest 驱动
+- `requiredPm` 存在时跳过包管理器问答并直接锁定
 
-- [x] T14 补充全局错误处理
-  输出：统一异常退出逻辑
-  完成标准：未捕获 `rejection` 时打印友好错误并以 `code 1` 退出
-  验证方式：手动制造异常时输出明确错误
+验收：
+- `node --test test/manifest/loader.test.js`
+- `node bin/cli.js`
+- 新增一个 manifest 后，模板列表自动出现新项
 
-### P5 模板与共享文件
+### [x] TASK-003 Part B 集成测试框架
 
-- [x] T15 创建 `templates/react-vite-ts/`
-  输出：React + Vite + TypeScript 模板
-  完成标准：包含 `package.json.ejs`、Vite 配置、TS 配置、React 入口、规范文件
-  验证方式：生成项目后可执行 `install` 和 `run dev`
+输出：
+- `test/integration/runner.js`
+- `test/integration/snapshots/`
+- 根 `package.json` 新增 `test:integration` / `test:snapshot-update`
 
-- [x] T16 创建 `templates/node-ts/`
-  输出：Node + TypeScript 模板
-  完成标准：包含 `package.json.ejs`、`tsconfig.json`、`src/index.ts.ejs`、环境和规范文件
-  验证方式：生成项目后可执行 `run dev`、`run build`
+验收：
+- `npm run test:snapshot-update`
+- `npm run test:integration`
 
-- [x] T17 创建 `templates/java-fullstack/`
-  输出：Java 全栈说明模板
-  完成标准：生成 `frontend/`、`BACKEND.md`、`docker-compose.yml.ejs`
-  验证方式：目录结构正确，说明文档完整
+## Phase 1 — 模板扩展
 
-- [x] T18 创建 `shared/`
-  输出：公共注入文件
-  完成标准：包含 `AGENTS.md.ejs`、`README.md.ejs`、`coding-rules.md`、`commitlint.config.js`、`.husky/commit-msg`、`_gitignore`
-  验证方式：三套模板输出都带有公共文件
+统一规则：
 
-### P6 测试
+- 新增模板时只在 `templates/<key>/` 目录内实现模板文件和 `manifest.json`
+- Phase 1 模板任务不直接修改 `resolver.js` / `prompts.js` / `validator.js`
+- 新模板 extras 必须在模板目录内自洽实现，不复用历史 `templates/extras/*` 全局覆盖逻辑
+- 每完成一个模板任务，都要更新 snapshot 并执行集成测试
 
-- [x] T19 创建 `test/version.test.js`
-  输出：版本工具测试
-  完成标准：覆盖未知命令返回 `null`、Node 版本解析成功
-  验证方式：`node --test`
+### [x] TASK-101 React 后台管理系统（react-admin）
 
-- [x] T20 创建 `test/resolver.test.js`
-  输出：模板解析测试
-  完成标准：覆盖正确路径解析和未知模板异常
-  验证方式：`node --test`
+输出：
+- 新增 `templates/react-admin/`
+- 支持登录页、主布局、权限路由、Axios 拦截器、Zustand 鉴权状态
+- 模板 extras 支持通过 manifest `artifacts` 清理未启用的模板内产物
 
-- [x] T21 创建 `test/generator.test.js`
-  输出：生成器测试
-  完成标准：覆盖文件复制、点文件重命名、EJS 渲染
-  验证方式：`node --test`
+验收：
+- `node bin/cli.js test-admin`
+- `cd test-admin && npm install && npm run build`
+- `npm run test:snapshot-update`
+- `npm run test:integration`
 
-### P7 联调与验收
+完成记录（2026-04-22）：
+- 已新增 `react-admin` manifest、页面骨架、权限路由、鉴权 store、请求层与后台布局
+- 已修复懒加载路由类型与未使用导入导致的 `tsc` 构建失败
+- 已将未启用 inline extra 的文件产物统一收敛到生成器裁剪阶段
+- 已通过 `node --test`
+- 已通过 `npm run test:snapshot-update`
+- 已通过 `npm run test:integration`
 
-- [x] T22 安装依赖并跑通主流程
-  输出：可运行的 CLI
-  完成标准：`npm install` 成功，`node bin/cli.js my-test-project` 可完整执行
-  验证方式：手动检查生成目录和执行结果
+### [x] TASK-102 Electron 桌面应用（electron-app）
 
-- [x] T23 执行手动验收清单
-  输出：人工验收记录
-  完成标准：下列事项全部通过
-  验证方式：逐项打勾
+输出：
+- 新增 `templates/electron-app/`
+- 通过 `subPrompts.renderer` 选择 Vue 3 或 React 渲染进程
+- 完成 IPC 系统信息示例
 
-  - [x] 环境检测表格正常显示
-  - [x] 所有问答正常交互
-  - [x] 选择每套模板均能生成正确文件树
-  - [x] 输出目录中出现 `.gitignore`，而非 `_gitignore`
-  - [x] 输出目录中包含 `AGENTS.md`、`README.md`、`coding-rules.md`
-  - [x] `README.md` 和 `AGENTS.md` 中的 `projectName` 变量已正确渲染
-  - [x] `npm install` 无报错完成
-  - [x] `git init + 初始提交` 成功执行
+验收：
+- `node bin/cli.js test-electron`
+- `cd test-electron && npm install && npm run build`
+- `npm run test:integration`
 
-- [x] T24 执行发布前检查
-  输出：发布前确认结果
-  完成标准：发布前检查项全部通过
-  验证方式：逐项打勾
+完成记录（2026-04-22）：
+- 已新增 `electron-app` manifest、主进程、preload、IPC handler、Vue/React 双渲染层模板和打包配置
+- 已为生成器补齐 `subPromptArtifacts` 通用裁剪能力，用于根据子问答删除未选中的模板分支文件
+- 已修复子问答配置未透传到 EJS 渲染上下文的主链路问题
+- 已通过 `node --test`
+- 已通过 `npm run test:snapshot-update`
+- 已通过 `npm run test:integration`
 
-  - [x] 更新 `package.json` 版本号
-  - [x] 确认 `files` 字段包含 `bin`、`src`、`templates`、`shared`
-  - [x] 本地运行 `node bin/cli.js` 验证完整流程
-  - [x] 确认 npm 包名 `create-x-app-cli` 可用
-    已确认 `create-x-app` 被占用，当前已切换发布名为 `create-x-app-cli`；registry 查询结果为未发现现有同名包
-  - [x] 准备含使用说明和 CLI 演示的 `README.md`
-  - [x] 执行 `npm pack --dry-run`
-  - [x] 补齐真实发布元数据：`repository`、`homepage`、`bugs`、`author`、`license`
-    已写入：GitHub 仓库 `https://github.com/yexianglun-d/create-x-app.git`、许可证 `MIT`、作者 `赵铁柱`
+### [x] TASK-103 Chrome 浏览器插件（chrome-ext）
 
-## 推荐执行顺序
+输出：
+- 新增 `templates/chrome-ext/`
+- Manifest V3 + popup/content/background 三入口
 
-按以下顺序推进最稳：
+验收：
+- `node bin/cli.js test-ext`
+- `cd test-ext && npm install && npm run build`
+- `npm run test:integration`
 
-1. `T01 -> T03`
-2. `T04 -> T08`
-3. `T09 -> T14`
-4. `T15 -> T18`
-5. `T19 -> T21`
-6. `T22 -> T24`
+完成记录（2026-04-22）：
+- 已新增 `chrome-ext` manifest、Chrome 扩展 `manifest.json.ejs`、popup/content/background 三入口模板
+- 已通过 popup -> content script -> response 的消息通信链路示例实现页面标题高亮反馈
+- 已通过独立 post-build 脚本将生成后的扩展 `manifest.json` 注入 `dist/`
+- 已修复 `validator.test` 临时 manifest 与 `loadAllManifests()` 并发读写冲突的测试隔离问题
+- 已通过 `node --test`
+- 已通过 `npm run test:snapshot-update`
+- 已通过 `npm run test:integration`
 
-## 第一轮最小可运行目标
+### [x] TASK-104 全栈 Monorepo（monorepo）
 
-如果要先打通第一版主链路，优先做这 8 项：
+输出：
+- 新增 `templates/monorepo/`
+- `requiredPm = pnpm`
+- Turborepo + pnpm workspace + web/api/shared 三包
 
-- [x] T01
-- [x] T02
-- [x] T03
-- [x] T04
-- [x] T05
-- [x] T06
-- [x] T07
-- [x] T08
+验收：
+- `node bin/cli.js test-mono`
+- `cd test-mono && pnpm install && pnpm build`
+- `npm run test:integration`
+
+完成记录（2026-04-22）：
+- 已新增 `monorepo` manifest、pnpm workspace、Turbo 配置、web/api/shared 三包结构
+- 已为 PM adapter 增加 `pnpm/yarn -> corepack` 回退能力，解决当前环境无独立 `pnpm` 二进制时的执行问题
+- 已统一将生成项目的 `packageManager` 字段从 `@latest` 收敛为明确 semver，修复 corepack 严格校验失败
+- 已为 `monorepo` 增加 `build-workspace.mjs`，实现“Turbo 优先，corepack 兜底”的构建编排
+- 已通过 `node --test`
+- 已通过 `npm run test:snapshot-update`
+- 已通过 `npm run test:integration`
+
+### [x] TASK-105 移动端 H5（mobile-h5）
+
+输出：
+- 新增 `templates/mobile-h5/`
+- Vue 3 + Vant + rem 自适应
+
+验收：
+- `node bin/cli.js test-h5`
+- `cd test-h5 && npm install && npm run build`
+- `npm run test:integration`
+
+完成记录（2026-04-22）：
+- 已新增 `mobile-h5` manifest、Vue Router、Vant 页面骨架、rem 自适应工具和请求 composable
+- 已接入 `postcss-pxtorem` 与 `unplugin-vue-components + @vant/auto-import-resolver`
+- 已修复 `Home.vue` 中 `Ref<T | null>` 直接在模板空值合并导致的 `vue-tsc` 类型推断错误
+- 已通过 `node --test`
+- 已通过 `npm run test:snapshot-update`
+- 已通过 `npm run test:integration`
+
+### [x] TASK-106 全量回归验证
+
+输出：
+- 完成 Phase 0 + Phase 1 全量回归
+
+验收：
+- `node --test`
+- `npm run test:integration`
+- `node bin/cli.js`
+
+完成记录（2026-04-22）：
+- 已通过 `node --test`
+- 已通过 `npm run test:integration`
+- 已完成 CLI 交互核验：
+- 模板列表显示 8 项（3 个历史模板 + 5 个新增模板）
+- 选择 `electron-app` 后会出现 `renderer` 子问答，默认 `Vue 3 + TypeScript`
+- 选择 `monorepo` 后不会再询问包管理器，确认面板直接锁定 `pnpm`
+- 选择 `chrome-ext` 时包管理器问答仅保留 `npm / pnpm`，`yarn` 在交互层被屏蔽，validator 继续保留兜底校验
+
+## Phase 2 — 智能能力
+
+### [ ] TASK-201 远程模板拉取（--remote）
+
+输出：
+- `src/remote/template-fetcher.js`
+- `resolveTemplate` 支持 `--remote` 远端增强与失败回退本地
+
+验收：
+- `node bin/cli.js test-local`
+- `node bin/cli.js test-remote --remote`
+- `node bin/cli.js test-fallback --remote`
+
+### [ ] TASK-202 依赖版本刷新（--latest）
+
+输出：
+- `src/utils/pkg-version.js`
+- 生成器支持读取模板基线版本并在 `--latest` 时刷新
+
+验收：
+- `node bin/cli.js test-baseline`
+- `node bin/cli.js test-latest --latest`
+
+### [ ] TASK-203 项目升级命令（upgrade）
+
+输出：
+- `src/commands/upgrade.js`
+- `src/upgrade/detector.js`
+- `src/upgrade/differ.js`
+- `src/upgrade/applier.js`
+
+验收：
+- `node bin/cli.js test-upgrade`
+- 在生成项目内执行 `npx create-x-app upgrade`
+
+### [ ] TASK-204 插件系统（Plugin API）
+
+输出：
+- `src/plugins/loader.js`
+- `src/plugins/registry.js`
+- 内置模板与社区插件模板统一注册
+
+验收：
+- 本地 `npm link` 测试插件
+- 运行 `node /path/to/bin/cli.js test-plugin`
+
+## Phase 3 — 生态建设
+
+### [ ] TASK-301 匿名使用统计
+
+输出：
+- `src/analytics/consent.js`
+- `src/analytics/index.js`
+
+验收：
+- 删除 `~/.create-x-app/config.json`
+- `node bin/cli.js test-analytics`
+- `node bin/cli.js --no-telemetry`
+
+### [ ] TASK-302 社区模板市场
+
+输出：
+- `search` / `install` / `list` / `remove` 命令
+- `src/marketplace/client.js`
+
+验收：
+- `npx create-x-app search`
+- `npx create-x-app install cxa-plugin-test`
+- `npx create-x-app remove cxa-plugin-test`
+
+## 全局任务
+
+### [ ] TASK-G01 单元测试同步补充
+
+要求：
+- 每完成一个 TASK，立即补充对应测试
+- 运行命令：`node --test`
+
+### [ ] TASK-G02 文档同步更新
+
+要求：
+- 每个 Phase 结束后更新 `AGENTS.md`
+- 同步更新 `README.md`
+- 插件规范统一以 `manifest.json` 为准
+
+### [ ] TASK-G03 版本发布
+
+要求：
+- Phase 0 + Phase 1 完成后发布 `v0.2.0`
+- Phase 2 完成后发布 `v0.3.0`
+- Phase 3 完成后发布 `v1.0.0`
+
+发布前固定执行：
+- `node --test`
+- `npm run test:integration`
+- `npm pack --dry-run`
+
+## 本轮执行记录
+
+- [x] 已完成：`PLAN-v2.md` 与 `IMPLEMENTATION_TODO.md` 命名和任务结构对齐
+- [x] 已完成：`TASK-000` 命名基线收敛，`create-x-app-cli` 仅保留在历史说明中
+- [x] 已验证：`node --test`
+- [x] 已完成：`TASK-003 Part A`，现有三套模板已补齐 `manifest.json`
+- [x] 已完成：`TASK-001`，create 主流程已接入统一配置校验
+- [x] 已完成：`TASK-002`，post-actions 已切换到 PM adapter，模板已写入 `packageManager`
+- [x] 已验证：`node --test test/manifest/loader.test.js test/validator.test.js test/pm-adapter.test.js`
+- [x] 已验证：`node --test`
+- [x] 已完成：`TASK-003 Part B`，新增 `test:integration`、`test:snapshot-update`、快照文件与 CI 工作流
+- [x] 已验证：`npm run test:snapshot-update`
+- [x] 已验证：`npm run test:integration`
+- [ ] 下一步：进入 `TASK-101`，开始实现 `react-admin` 模板
 
 ## 当前约定
 
-后续对话中若未额外说明，默认以本文件为当前执行基线。
+- 若无额外说明，默认按本文件的任务顺序推进
+- 每完成一项任务，立即回填状态、验收命令和结论

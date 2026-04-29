@@ -1,4 +1,4 @@
-# create-x-app-cli
+# create-x-app
 
 一条命令生成生产级项目模板的 Node.js CLI。
 
@@ -18,7 +18,7 @@
 发布后可直接通过 `npx` 使用：
 
 ```bash
-npx create-x-app-cli my-app
+npx create-x-app my-app
 ```
 
 本地开发环境下可直接运行：
@@ -59,7 +59,7 @@ CLI 按以下顺序执行：
 ## 命令参数
 
 ```bash
-create-x-app-cli [project-name] [options]
+create-x-app [project-name] [options]
 ```
 
 可用参数：
@@ -88,7 +88,7 @@ node bin/cli.js demo-app --skip-install --skip-git
 ```bash
 $ node bin/cli.js demo-app --verbose
 
-┌   create-x-app-cli
+┌   create-x-app
 ✔ 环境检测完成
 
 状态    工具       检测版本      最低要求       影响范围

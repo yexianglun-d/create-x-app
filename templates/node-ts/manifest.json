@@ -1,0 +1,53 @@
+{
+  "key": "node-ts",
+  "name": "Node.js + TypeScript + ESLint",
+  "description": "适合服务端和脚本场景的 Node.js TypeScript 工程",
+  "version": "1.0.0",
+  "framework": "node",
+  "requiredPm": null,
+  "forbiddenPm": [],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [
+    {
+      "key": "express",
+      "label": "Express.js",
+      "default": false,
+      "source": "inline"
+    },
+    {
+      "key": "dotenv",
+      "label": "Dotenv + 环境变量校验",
+      "default": false,
+      "source": "inline"
+    }
+  ],
+  "subPrompts": [],
+  "devScript": "dev",
+  "buildScript": "build",
+  "devPort": 3000,
+  "integrationTest": {
+    "skipBuild": false,
+    "skipDevServer": false,
+    "installWorkspaces": [
+      "."
+    ],
+    "buildWorkspace": "."
+  }
+}

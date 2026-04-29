@@ -1,0 +1,60 @@
+{
+  "key": "react-admin",
+  "name": "React 后台管理系统",
+  "description": "React + Antd + Zustand，含权限路由、请求封装和后台布局",
+  "version": "1.0.0",
+  "framework": "react",
+  "requiredPm": null,
+  "forbiddenPm": [],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "eslint",
+    "prettier",
+    "husky",
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [
+    {
+      "key": "tailwind",
+      "label": "Tailwind CSS v3",
+      "default": false,
+      "source": "inline",
+      "artifacts": [
+        "postcss.config.cjs",
+        "tailwind.config.cjs"
+      ]
+    },
+    {
+      "key": "i18n",
+      "label": "国际化（i18next）",
+      "default": false,
+      "source": "inline",
+      "artifacts": [
+        "src/i18n.ts"
+      ]
+    }
+  ],
+  "subPrompts": [],
+  "devScript": "dev",
+  "buildScript": "build",
+  "devPort": 5173,
+  "integrationTest": {
+    "skipBuild": false,
+    "skipDevServer": false,
+    "installWorkspaces": [
+      "."
+    ],
+    "buildWorkspace": "."
+  }
+}

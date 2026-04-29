@@ -1,0 +1,43 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "<%= packageManagerSpecifier %>",
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "files": [
+    "dist",
+    "dist-electron",
+    "electron-builder.json"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"tsc -p tsconfig.electron.json --watch\" \"vite\" \"wait-on tcp:5173 dist-electron/main.js dist-electron/preload.js && electron dist-electron/main.js\"",
+    "build": "<% if (renderer === 'vue') { %>vue-tsc --noEmit && <% } else { %>tsc && <% } %>vite build && tsc -p tsconfig.electron.json",
+    "preview": "vite preview",
+    "pack": "<% if (renderer === 'vue') { %>vue-tsc --noEmit && <% } else { %>tsc && <% } %>vite build && tsc -p tsconfig.electron.json && electron-builder --config electron-builder.json"<% if (hasEslint) { %>,
+    "lint": "eslint src electron --ext .ts<% if (renderer === 'react') { %>,.tsx<% } %> --report-unused-disable-directives"<% } %>
+  },
+  "dependencies": {<% if (renderer === 'vue') { %>
+    "vue": "^3.4.31"<% } else { %>
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"<% } %>
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "concurrently": "^8.2.2",
+    "electron": "^31.0.2",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.0",
+    "wait-on": "^7.2.0"<% if (renderer === 'vue') { %>,
+    "@vitejs/plugin-vue": "^5.0.5",
+    "vue-tsc": "^2.0.21"<% } else { %>,
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0"<% } %><% if (hasEslint) { %>,
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0"<% } %><% if (hasPrettier) { %>,
+    "prettier": "^3.3.0"<% } %>
+  }
+}

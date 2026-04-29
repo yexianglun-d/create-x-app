@@ -1,0 +1,21 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "<%= packageManagerSpecifier %>",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "node scripts/build-workspace.mjs"<% if (hasEslint) { %>,
+    "lint": "eslint apps packages --ext .ts,.tsx --report-unused-disable-directives"<% } %>
+  },
+  "devDependencies": {
+    "turbo": "^1.13.3"<% if (hasEslint) { %>,
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0"<% } %><% if (hasPrettier) { %>,
+    "prettier": "^3.3.0"<% } %><% if (hasHusky) { %>,
+    "husky": "^9.0.11",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2"<% } %>
+  }
+}

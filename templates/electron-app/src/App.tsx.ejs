@@ -1,0 +1,127 @@
+import { useEffect, useState } from 'react'
+import { useElectron, type SystemInfo } from './composables/useElectron'
+
+const shellStyle: Record<string, string | number> = {
+  minHeight: '100vh',
+  padding: 48,
+  boxSizing: 'border-box',
+  color: '#e2e8f0',
+  fontFamily: '"SF Pro Display", "PingFang SC", "Segoe UI", sans-serif',
+  background: 'radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 32%), linear-gradient(180deg, #0f172a 0%, #111827 100%)',
+}
+
+const panelStyle: Record<string, string | number> = {
+  border: '1px solid rgba(148, 163, 184, 0.16)',
+  borderRadius: 28,
+  padding: 28,
+  background: 'rgba(15, 23, 42, 0.78)',
+  boxShadow: '0 22px 60px rgba(2, 6, 23, 0.26)',
+}
+
+const gridStyle: Record<string, string | number> = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+  gap: 16,
+}
+
+const cardStyle: Record<string, string | number> = {
+  borderRadius: 22,
+  padding: 18,
+  background: 'rgba(30, 41, 59, 0.72)',
+}
+
+export default function App() {
+  const { getSystemInfo } = useElectron()
+  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null)
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    void getSystemInfo()
+      .then((response) => {
+        setSystemInfo(response)
+      })
+      .catch((error) => {
+        setErrorMessage(error instanceof Error ? error.message : '读取系统信息失败')
+      })
+  }, [getSystemInfo])
+
+  return (
+    <main style={shellStyle}>
+      <section style={{ maxWidth: 760, marginBottom: 28 }}>
+        <span
+          style={{
+            display: 'inline-flex',
+            padding: '6px 12px',
+            borderRadius: 999,
+            background: 'rgba(59, 130, 246, 0.14)',
+            color: '#93c5fd',
+            fontSize: 12,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}
+        >
+          create-x-app / electron-app
+        </span>
+        <h1 style={{ margin: '18px 0 12px', color: '#f8fafc', fontSize: 44 }}><%= projectName %></h1>
+        <p style={{ margin: 0, color: 'rgba(226, 232, 240, 0.78)', lineHeight: 1.8 }}>
+          这是一个 Electron + React 桌面模板，已接好主进程、preload 和 IPC 示例，
+          你可以直接在此基础上扩展菜单、窗口、系统能力与业务模块。
+        </p>
+      </section>
+
+      <section style={panelStyle}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+            marginBottom: 22,
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 24 }}>系统信息</h2>
+          <span
+            style={{
+              padding: '6px 10px',
+              borderRadius: 999,
+              background: 'rgba(45, 212, 191, 0.12)',
+              color: '#5eead4',
+              fontSize: 12,
+            }}
+          >
+            IPC Ready
+          </span>
+        </div>
+
+        {errorMessage ? (
+          <p style={{ margin: 0, color: '#fda4af' }}>{errorMessage}</p>
+        ) : systemInfo ? (
+          <div style={gridStyle}>
+            {[
+              { label: '平台', value: systemInfo.platform },
+              { label: '架构', value: systemInfo.arch },
+              { label: '主机名', value: systemInfo.hostname },
+              { label: '系统版本', value: systemInfo.release },
+              { label: 'Node', value: systemInfo.nodeVersion },
+              { label: 'Electron', value: systemInfo.electronVersion },
+              { label: 'Chrome', value: systemInfo.chromeVersion },
+            ].map((item) => (
+              <article key={item.label} style={cardStyle}>
+                <p style={{ margin: '0 0 10px', color: 'rgba(148, 163, 184, 0.9)', fontSize: 13 }}>
+                  {item.label}
+                </p>
+                <p style={{ margin: 0, color: '#f8fafc', fontSize: 22, fontWeight: 600 }}>
+                  {item.value}
+                </p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p style={{ margin: 0, color: 'rgba(226, 232, 240, 0.78)' }}>
+            正在通过 preload 调用主进程获取系统信息...
+          </p>
+        )}
+      </section>
+    </main>
+  )
+}

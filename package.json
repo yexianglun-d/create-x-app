@@ -1,5 +1,5 @@
 {
-  "name": "create-x-app-cli",
+  "name": "create-x-app",
   "version": "0.1.1",
   "description": "交互式 Node.js CLI，用于生成 React、Node.js 和 Java 全栈项目模板",
   "keywords": [
@@ -26,7 +26,7 @@
   },
   "type": "module",
   "bin": {
-    "create-x-app-cli": "./bin/cli.js"
+    "create-x-app": "./bin/cli.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -39,8 +39,7 @@
   ],
   "scripts": {
     "dev": "node bin/cli.js",
-    "lint": "eslint src",
-    "test": "node --test"
+    "lint": "eslint src"
   },
   "publishConfig": {
     "access": "public"

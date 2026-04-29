@@ -1,0 +1,29 @@
+{
+  "name": "<%= projectName %>",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "<%= packageManagerSpecifier %>",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "tsc && vite build && node scripts/post-build.mjs",
+    "preview": "vite preview"<% if (hasEslint) { %>,
+    "lint": "eslint src popup --ext .ts,.tsx --report-unused-disable-directives"<% } %>
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.3.0"<% if (hasEslint) { %>,
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0"<% } %><% if (hasPrettier) { %>,
+    "prettier": "^3.3.0"<% } %>
+  }
+}

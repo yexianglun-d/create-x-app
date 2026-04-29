@@ -6,16 +6,18 @@ import { runEnvCheck } from '../steps/env-check.js'
 import { runPrompts } from '../steps/prompts.js'
 import { resolveTemplate } from '../steps/resolver.js'
 import { logger } from '../utils/logger.js'
+import { validateConfig } from '../validator/index.js'
 
 export async function createCommand(projectNameArg, options) {
   try {
     console.log()
-    intro(chalk.bgCyan.black(' create-x-app-cli '))
+    intro(chalk.bgCyan.black(' create-x-app '))
     logger.debug(`CLI 选项：${JSON.stringify(options)}`)
 
     await runEnvCheck()
 
     const config = await runPrompts(projectNameArg)
+    validateConfig(config)
     const templatePath = resolveTemplate(config.template)
 
     logger.detail(`目标目录：${config.targetDir}`)

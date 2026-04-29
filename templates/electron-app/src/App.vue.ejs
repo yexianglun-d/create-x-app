@@ -1,0 +1,176 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { useElectron, type SystemInfo } from './composables/useElectron'
+
+const { getSystemInfo } = useElectron()
+const systemInfo = ref<SystemInfo | null>(null)
+const errorMessage = ref('')
+
+const detailItems = computed(() => {
+  if (!systemInfo.value) {
+    return []
+  }
+
+  return [
+    { label: '平台', value: systemInfo.value.platform },
+    { label: '架构', value: systemInfo.value.arch },
+    { label: '主机名', value: systemInfo.value.hostname },
+    { label: '系统版本', value: systemInfo.value.release },
+    { label: 'Node', value: systemInfo.value.nodeVersion },
+    { label: 'Electron', value: systemInfo.value.electronVersion },
+    { label: 'Chrome', value: systemInfo.value.chromeVersion },
+  ]
+})
+
+onMounted(async () => {
+  try {
+    systemInfo.value = await getSystemInfo()
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '读取系统信息失败'
+  }
+})
+</script>
+
+<template>
+  <main class="shell">
+    <section class="hero">
+      <span class="kicker">create-x-app / electron-app</span>
+      <h1 class="title"><%= projectName %></h1>
+      <p class="desc">
+        这是一个 Electron + Vue 3 桌面模板，已接好主进程、preload 和 IPC 示例，
+        你可以直接在此基础上扩展菜单、窗口、系统能力与业务模块。
+      </p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>系统信息</h2>
+        <span class="badge">IPC Ready</span>
+      </div>
+
+      <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+
+      <div v-else-if="systemInfo" class="grid">
+        <article v-for="item in detailItems" :key="item.label" class="card">
+          <p class="card-label">{{ item.label }}</p>
+          <p class="card-value">{{ item.value }}</p>
+        </article>
+      </div>
+
+      <p v-else class="loading">正在通过 preload 调用主进程获取系统信息...</p>
+    </section>
+  </main>
+</template>
+
+<style scoped>
+:global(:root) {
+  color: #e2e8f0;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 32%),
+    linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  font-family: "SF Pro Display", "PingFang SC", "Segoe UI", sans-serif;
+}
+
+:global(body) {
+  margin: 0;
+}
+
+.shell {
+  min-height: 100vh;
+  padding: 48px;
+  box-sizing: border-box;
+}
+
+.hero {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.kicker {
+  display: inline-flex;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.14);
+  color: #93c5fd;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 18px 0 12px;
+  color: #f8fafc;
+  font-size: 44px;
+}
+
+.desc {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+  line-height: 1.8;
+}
+
+.panel {
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 28px;
+  padding: 28px;
+  background: rgba(15, 23, 42, 0.78);
+  box-shadow: 0 22px 60px rgba(2, 6, 23, 0.26);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.badge {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(45, 212, 191, 0.12);
+  color: #5eead4;
+  font-size: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  border-radius: 22px;
+  padding: 18px;
+  background: rgba(30, 41, 59, 0.72);
+}
+
+.card-label {
+  margin: 0 0 10px;
+  color: rgba(148, 163, 184, 0.9);
+  font-size: 13px;
+}
+
+.card-value {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 22px;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.loading,
+.error {
+  margin: 0;
+  color: rgba(226, 232, 240, 0.78);
+}
+
+.error {
+  color: #fda4af;
+}
+</style>

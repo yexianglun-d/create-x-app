@@ -1,0 +1,27 @@
+/// <reference types="vite/client" />
+
+interface ElectronSystemInfo {
+  platform: string
+  arch: string
+  hostname: string
+  release: string
+  nodeVersion: string
+  electronVersion: string
+  chromeVersion: string
+}
+
+interface ElectronAPI {
+  getSystemInfo: () => Promise<ElectronSystemInfo>
+}
+
+interface Window {
+  electronAPI?: ElectronAPI
+}
+
+<% if (renderer === 'vue') { %>declare module '*.vue' {
+  import type { DefineComponent } from 'vue'
+
+  const component: DefineComponent<Record<string, never>, Record<string, never>, unknown>
+  export default component
+}
+<% } %>
