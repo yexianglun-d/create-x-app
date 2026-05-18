@@ -2,7 +2,7 @@
 
 一条命令生成生产级项目模板的 Node.js CLI。
 
-当前脚手架支持交互式问答、环境检测、模板渲染、远程模板、最新依赖刷新、项目配置升级、插件模板、点文件恢复、依赖安装、Husky 初始化、Git 初始化，以及 `--verbose` / `--debug` 诊断输出。
+当前脚手架支持交互式问答、环境检测、模板渲染、远程模板、最新依赖刷新、项目配置升级、插件模板、匿名统计开关、点文件恢复、依赖安装、Husky 初始化、Git 初始化，以及 `--verbose` / `--debug` 诊断输出。
 
 ## 特性
 
@@ -12,7 +12,7 @@
 - 自动将 `_gitignore`、`_eslintrc.json` 等恢复为真实点文件
 - 自动执行 `npm install`、`husky install`、`git init`
 - 支持 `cxa-plugin-*` 插件模板，自动合并到模板列表
-- 提供 `--skip-install`、`--skip-git`、`--remote`、`--latest`、`--verbose`、`--debug`
+- 提供 `--skip-install`、`--skip-git`、`--remote`、`--latest`、`--no-telemetry`、`--verbose`、`--debug`
 
 ## 使用方式
 
@@ -65,6 +65,21 @@ cxa-plugin-example/
 ```
 
 插件包名必须以 `cxa-plugin-` 开头。插件显示时会带 `[插件]` 前缀，避免与内置模板混淆。
+
+社区模板市场命令：
+
+```bash
+npx create-x-app-cli search [keyword]
+npx create-x-app-cli install cxa-plugin-example
+npx create-x-app-cli list
+npx create-x-app-cli remove cxa-plugin-example
+```
+
+## 匿名统计
+
+首次创建项目时，CLI 会询问是否允许发送匿名使用统计，并将选择保存到 `~/.create-x-app/config.json`。
+
+统计数据只包含模板 key、CLI 版本、Node 版本和 OS 类型，不包含项目名、路径或个人信息。单次运行可通过 `--no-telemetry` 跳过；实际上报端点由 `CREATE_X_APP_TELEMETRY_ENDPOINT` 配置，未配置时不会发送网络请求。
 
 ## 模板说明
 
@@ -209,6 +224,8 @@ node bin/cli.js my-app --verbose
 - Phase 1 模板曾完成集成回归；当前测试文件与测试脚本已按维护要求清除
 - `react-vite-ts` 模板可完成安装、Husky 初始化、Git 初始化和构建
 - Phase 2 已完成 `--remote`、`--latest`、`upgrade` 和 `cxa-plugin-*` 插件模板链路
+- Phase 3 已完成匿名统计同意配置、单次跳过和 endpoint 上报链路
+- Phase 3 已完成社区模板市场 `search`、`install`、`list`、`remove` 命令链路
 - `--verbose`、`--debug` 输出链路可用
 
 ## 发布前建议

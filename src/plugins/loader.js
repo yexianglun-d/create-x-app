@@ -78,28 +78,22 @@ function listPackageDirs(nodeModulesDir) {
   return packageDirs
 }
 
-function isPluginPackage(packageDir) {
-  const packageJsonPath = join(packageDir, 'package.json')
-
-  if (!existsSync(packageJsonPath)) {
-    return false
-  }
-
-  let packageJson
-
+function readPackageJson(packageDir) {
   try {
-    packageJson = readJsonFile(packageJsonPath)
+    return readJsonFile(join(packageDir, 'package.json'))
   } catch {
-    return false
+    return null
   }
+}
 
+function isPluginPackage(packageJson) {
   const packageName = packageJson.name ?? ''
   const unscopedPackageName = packageName.split('/').at(-1)
 
   return packageJson['cxa-plugin'] === true && unscopedPackageName.startsWith(PLUGIN_PACKAGE_PREFIX)
 }
 
-function normalizePluginManifest(packageDir) {
+function normalizePluginManifest(packageDir, packageJson) {
   const manifestPath = join(packageDir, 'manifest.json')
   const templatePath = join(packageDir, 'template')
 
@@ -136,6 +130,9 @@ function normalizePluginManifest(packageDir) {
     ...manifest,
     name: `[插件] ${manifest.name}`,
     source: 'plugin',
+    packageName: packageJson.name,
+    packageVersion: packageJson.version ?? '-',
+    packageDescription: packageJson.description ?? '',
     packagePath: packageDir,
     templatePath,
   }
@@ -146,11 +143,13 @@ export function loadPluginTemplates() {
 
   for (const nodeModulesDir of getCandidateNodeModulesDirs()) {
     for (const packageDir of listPackageDirs(nodeModulesDir)) {
-      if (!isPluginPackage(packageDir)) {
+      const packageJson = readPackageJson(packageDir)
+
+      if (!packageJson || !isPluginPackage(packageJson)) {
         continue
       }
 
-      const plugin = normalizePluginManifest(packageDir)
+      const plugin = normalizePluginManifest(packageDir, packageJson)
 
       if (plugin) {
         plugins.push(plugin)

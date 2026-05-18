@@ -1,6 +1,6 @@
 {
   "name": "create-x-app-cli",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "交互式 Node.js CLI，用于生成多场景项目模板",
   "keywords": [
     "cli",

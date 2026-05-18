@@ -76,7 +76,7 @@ create-x-app/
 ```json
 {
   "name": "create-x-app-cli",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "description": "一条命令生成生产级项目模板",
   "type": "module",
   "bin": {

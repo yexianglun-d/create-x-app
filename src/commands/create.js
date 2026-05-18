@@ -1,5 +1,7 @@
 import { intro, outro } from '@clack/prompts'
 import chalk from 'chalk'
+import { ensureTelemetryConsent } from '../analytics/consent.js'
+import { reportCreateEvent } from '../analytics/index.js'
 import { generateProject } from '../generator/index.js'
 import { runPostActions } from '../steps/post-actions.js'
 import { runEnvCheck } from '../steps/env-check.js'
@@ -18,6 +20,9 @@ export async function createCommand(projectNameArg, options) {
 
     const config = await runPrompts(projectNameArg)
     validateConfig(config)
+    const telemetryEnabled = await ensureTelemetryConsent({
+      noTelemetry: options.telemetry === false,
+    })
     const templatePath = await resolveTemplate(config.template, {
       remote: options.remote,
       noCache: options.cache === false,
@@ -40,6 +45,12 @@ export async function createCommand(projectNameArg, options) {
     })
 
     outro(chalk.green(`项目 ${config.projectName} 已就绪！`))
+
+    await reportCreateEvent({
+      config,
+      cliVersion: options.cliVersion,
+      enabled: telemetryEnabled,
+    })
   } catch (error) {
     logger.reportError('创建项目失败', error)
     process.exit(1)

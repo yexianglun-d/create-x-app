@@ -322,7 +322,7 @@
 
 ## Phase 3 — 生态建设
 
-### [ ] TASK-301 匿名使用统计
+### [x] TASK-301 匿名使用统计
 
 输出：
 - `src/analytics/consent.js`
@@ -333,7 +333,17 @@
 - `node bin/cli.js test-analytics`
 - `node bin/cli.js --no-telemetry`
 
-### [ ] TASK-302 社区模板市场
+完成记录：
+- 已新增 `src/analytics/consent.js`，负责一次性同意提示、`~/.create-x-app/config.json` 持久化和 `--no-telemetry` 单次跳过
+- 已新增 `src/analytics/index.js`，负责 2 秒超时的匿名上报；payload 仅包含模板 key、CLI 版本、Node 版本和 OS 类型
+- 默认不硬编码未知采集端，实际上报端点通过 `CREATE_X_APP_TELEMETRY_ENDPOINT` 配置
+- 已验证：`npm run lint`
+- 已验证：`node bin/cli.js --help`
+- 已验证：临时 HOME 下 `--no-telemetry` 不写入配置
+- 已验证：已有同意配置可被读取
+- 已验证：本地 HTTP endpoint 可收到匿名 payload
+
+### [x] TASK-302 社区模板市场
 
 输出：
 - `search` / `install` / `list` / `remove` 命令
@@ -343,6 +353,22 @@
 - `npx create-x-app-cli search`
 - `npx create-x-app-cli install cxa-plugin-test`
 - `npx create-x-app-cli remove cxa-plugin-test`
+
+完成记录：
+- 已新增 `search` / `install` / `list` / `remove` 命令并接入 CLI help
+- 已新增 `src/marketplace/client.js`，通过 npm registry 搜索 `cxa-plugin-*` 插件并展示名称、描述、周下载量
+- 已新增 `src/marketplace/npm.js`，统一执行全局 npm 插件安装和移除
+- 已扩展插件 loader，`list` 复用当前目录和全局 `node_modules` 扫描结果
+- 已验证：`npm run lint`
+- 已验证：`node bin/cli.js --help`
+- 已验证：`node bin/cli.js search --help`
+- 已验证：`node bin/cli.js install --help`
+- 已验证：`node bin/cli.js list --help`
+- 已验证：`node bin/cli.js remove --help`
+- 已验证：`node bin/cli.js search --limit 5`
+- 已验证：本地 mock registry 可返回并过滤 `cxa-plugin-*`
+- 已验证：临时 `npm link` 插件可被 `node bin/cli.js list` 识别，随后已卸载清理
+- 已验证：`node bin/cli.js install react` 会拒绝非插件包名
 
 ## 全局任务
 
@@ -401,6 +427,21 @@
 - [x] 已验证：`npm run lint`
 - [x] 已验证：`node bin/cli.js --help`
 - [x] 已验证：`node bin/cli.js upgrade --help`
+- [x] 已验证：`npm pack --dry-run`
+- [x] 已完成：`create-x-app-cli@0.3.0` 已发布
+- [x] 已验证：`npm view create-x-app-cli version` 返回 `0.3.0`
+- [x] 已完成：`TASK-301`，匿名使用统计已完成
+- [x] 已完成：`TASK-302`，社区模板市场已完成
+- [x] 已完成：Phase 3 生态建设全部任务
+- [x] 已完成：`v1.0.0` 版本号与发布文档收口
+- [x] 已验证：`npm install --package-lock-only`
+- [x] 已验证：`npm run lint`
+- [x] 已验证：`node bin/cli.js --help`
+- [x] 已验证：`node bin/cli.js upgrade --help`
+- [x] 已验证：`node bin/cli.js search --help`
+- [x] 已验证：`node bin/cli.js install --help`
+- [x] 已验证：`node bin/cli.js list --help`
+- [x] 已验证：`node bin/cli.js remove --help`
 - [x] 已验证：`npm pack --dry-run`
 - [→] 当前：等待执行 `npm publish --access public --otp=<一次性验证码>`
 - [ ] 下一步：发布后执行 `npm view create-x-app-cli version` 与 `npx create-x-app-cli my-first-project` 验证
