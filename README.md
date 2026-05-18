@@ -22,6 +22,7 @@ npx create-x-app-cli my-app
 - [为什么使用](#为什么使用)
 - [功能特性](#功能特性)
 - [快速开始](#快速开始)
+- [视频演示](#视频演示)
 - [内置模板](#内置模板)
 - [命令参考](#命令参考)
 - [插件生态](#插件生态)
@@ -97,6 +98,12 @@ npx create-x-app-cli my-app --latest
 npm install
 node bin/cli.js my-app --verbose
 ```
+
+## 视频演示
+
+[观看 15 秒教学视频](https://github.com/yexianglun-d/create-x-app/blob/main/docs/media/create-x-app-tutorial-15s.mp4)
+
+![create-x-app 15 秒教学视频预览](https://raw.githubusercontent.com/yexianglun-d/create-x-app/main/docs/media/create-x-app-tutorial-15s-preview.png)
 
 ## 交互流程
 

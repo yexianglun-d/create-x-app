@@ -1,0 +1,56 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1280
+PlayResY: 720
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Brand,Hiragino Sans GB,34,&H00E8E1CF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,86,86,54,1
+Style: Eyebrow,Hiragino Sans GB,28,&H0050D6BC,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,2,0,1,0,0,7,90,90,90,1
+Style: Title,Hiragino Sans GB,62,&H00F4F0E4,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,90,90,90,1
+Style: Subtitle,Hiragino Sans GB,34,&H00C8D7CE,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,90,90,90,1
+Style: Terminal,Hiragino Sans GB,32,&H00EDE7D8,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,130,130,90,1
+Style: Code,Hiragino Sans GB,30,&H004BE0C1,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,130,130,90,1
+Style: Body,Hiragino Sans GB,31,&H00E4E0D4,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,94,94,90,1
+Style: Muted,Hiragino Sans GB,26,&H008EA49D,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,94,94,90,1
+Style: CTA,Hiragino Sans GB,40,&H000F1714,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,5,0,0,0,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:15.00,Brand,,0,0,0,,{\pos(84,58)}create-x-app
+Dialogue: 0,0:00:00.00,0:00:15.00,Muted,,0,0,0,,{\pos(1045,62)}15s quick tutorial
+
+Dialogue: 1,0:00:00.00,0:00:03.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 01
+Dialogue: 1,0:00:00.05,0:00:03.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}一条命令启动项目
+Dialogue: 1,0:00:00.35,0:00:03.00,Subtitle,,0,0,0,,{\fad(180,180)\pos(92,282)}交互式 Node.js CLI，用于生成多场景生产级模板
+Dialogue: 1,0:00:00.80,0:00:03.00,Code,,0,0,0,,{\fad(180,180)\pos(138,418)}$ npx create-x-app-cli my-app
+Dialogue: 1,0:00:01.35,0:00:03.00,Terminal,,0,0,0,,{\fad(180,180)\pos(138,470)}✔ 检测 Node.js / Git / pnpm / Java
+
+Dialogue: 1,0:00:03.00,0:00:06.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 02
+Dialogue: 1,0:00:03.05,0:00:06.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}选择合适的模板
+Dialogue: 1,0:00:03.35,0:00:06.00,Body,,0,0,0,,{\fad(180,180)\pos(100,295)}React / Node.js / Java Fullstack / Admin
+Dialogue: 1,0:00:03.70,0:00:06.00,Body,,0,0,0,,{\fad(180,180)\pos(100,350)}Electron / Chrome Extension / Monorepo / Mobile H5
+Dialogue: 1,0:00:04.15,0:00:06.00,Muted,,0,0,0,,{\fad(180,180)\pos(100,440)}Manifest 驱动模板能力，按模板动态展示功能项
+
+Dialogue: 1,0:00:06.00,0:00:09.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 03
+Dialogue: 1,0:00:06.05,0:00:09.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}勾选工程规范
+Dialogue: 1,0:00:06.35,0:00:09.00,Body,,0,0,0,,{\fad(180,180)\pos(100,300)}✔ ESLint + Prettier
+Dialogue: 1,0:00:06.70,0:00:09.00,Body,,0,0,0,,{\fad(180,180)\pos(100,350)}✔ Husky + commitlint
+Dialogue: 1,0:00:07.05,0:00:09.00,Body,,0,0,0,,{\fad(180,180)\pos(100,400)}✔ AGENTS.md + coding-rules.md
+Dialogue: 1,0:00:07.55,0:00:09.00,Muted,,0,0,0,,{\fad(180,180)\pos(100,480)}自动渲染 EJS、恢复点文件、裁剪未启用产物
+
+Dialogue: 1,0:00:09.00,0:00:12.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 04
+Dialogue: 1,0:00:09.05,0:00:12.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}进阶能力开箱可用
+Dialogue: 1,0:00:09.35,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,306)}--remote     拉取远端模板
+Dialogue: 1,0:00:09.75,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,356)}--latest     刷新依赖版本
+Dialogue: 1,0:00:10.15,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,406)}upgrade      升级已有项目配置
+Dialogue: 1,0:00:10.55,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,456)}search / install / list / remove 插件模板
+
+Dialogue: 1,0:00:12.00,0:00:15.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}DONE
+Dialogue: 1,0:00:12.05,0:00:15.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}项目已就绪
+Dialogue: 1,0:00:12.38,0:00:15.00,Code,,0,0,0,,{\fad(180,180)\pos(138,356)}$ cd my-app
+Dialogue: 1,0:00:12.78,0:00:15.00,Code,,0,0,0,,{\fad(180,180)\pos(138,406)}$ npm run dev
+Dialogue: 1,0:00:13.35,0:00:15.00,Subtitle,,0,0,0,,{\fad(180,180)\pos(92,505)}从空目录到可运行工程，只保留必要选择。
+Dialogue: 1,0:00:13.85,0:00:15.00,CTA,,0,0,0,,{\fad(180,180)\pos(640,610)}Star create-x-app on GitHub
