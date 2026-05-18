@@ -300,7 +300,7 @@
 - 已通过临时项目差异检测、配置应用和无差异 upgrade 命令验证
 - 已通过真实交互验证：查看 diff 后选择覆盖，配置文件正确恢复
 
-### [ ] TASK-204 插件系统（Plugin API）
+### [x] TASK-204 插件系统（Plugin API）
 
 输出：
 - `src/plugins/loader.js`
@@ -310,6 +310,15 @@
 验收：
 - 本地 `npm link` 测试插件
 - 运行 `node /path/to/bin/cli.js test-plugin`
+
+完成记录（2026-05-18）：
+- 已新增 `src/plugins/loader.js`，扫描当前目录和全局 `node_modules` 中的 `cxa-plugin-*` 插件
+- 已新增 `src/plugins/registry.js`，合并内置模板与插件模板
+- 已将 `src/manifest/loader.js` 切换到统一 registry
+- 已将 `resolver` 改为使用 manifest 中的 `templatePath`，插件模板不走远端拉取
+- 已通过 `npm run lint`
+- 已通过本地 `npm link` 插件验收：插件显示为 `[插件] 测试模板`，能正确生成项目
+- 已通过插件卸载后消失验证，内置模板保持正常
 
 ## Phase 3 — 生态建设
 
@@ -385,8 +394,10 @@
 - [x] 已完成：`TASK-201`，远程模板拉取、缓存和失败回退链路已完成
 - [x] 已完成：`TASK-202`，依赖版本 latest 刷新和失败回退链路已完成
 - [x] 已完成：`TASK-203`，项目配置升级命令已完成
-- [→] 当前：进入 `TASK-204`，实现插件系统（Plugin API）
-- [ ] 下一步：设计并实现 `src/plugins/loader.js` 与 `src/plugins/registry.js`
+- [x] 已完成：`TASK-204`，插件系统（Plugin API）已完成
+- [x] 已完成：Phase 2 智能能力全部任务
+- [→] 当前：进入 `v0.3.0` 发布前收口
+- [ ] 下一步：更新版本号并执行发布前检查
 
 ## 当前约定
 

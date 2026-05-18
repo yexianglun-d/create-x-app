@@ -47,6 +47,9 @@ create-x-app/
 │   │   └── post-actions.js     ← npm install、git init、打印后续步骤
 │   ├── generator/
 │   │   └── index.js            ← 复制模板文件树 + 渲染 ejs 文件
+│   ├── plugins/
+│   │   ├── loader.js           ← 扫描 cxa-plugin-* 插件模板
+│   │   └── registry.js         ← 合并内置模板和插件模板
 │   └── utils/
 │       ├── logger.js           ← 基于 chalk 封装的日志工具（info/warn/error/success）
 │       └── version.js          ← 运行命令、解析版本字符串、semver 比较

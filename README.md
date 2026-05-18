@@ -11,7 +11,8 @@
 - 支持模板扩展项：React Router、Tailwind、Express、Dotenv
 - 自动将 `_gitignore`、`_eslintrc.json` 等恢复为真实点文件
 - 自动执行 `npm install`、`husky install`、`git init`
-- 提供 `--skip-install`、`--skip-git`、`--verbose`、`--debug`
+- 支持 `cxa-plugin-*` 插件模板，自动合并到模板列表
+- 提供 `--skip-install`、`--skip-git`、`--remote`、`--latest`、`--verbose`、`--debug`
 
 ## 使用方式
 
@@ -49,6 +50,21 @@ npx create-x-app-cli upgrade
 ```
 
 该命令只对比并升级脚手架管理的配置文件，例如 `tsconfig.json`、`.eslintrc.json`、`vite.config.ts`、`.prettierrc` 和 `commitlint.config.js`，不会修改业务源码。
+
+## 插件模板
+
+CLI 会自动扫描当前目录和全局 `node_modules` 中符合规范的插件包，并将插件模板追加到模板列表末尾。
+
+插件包约定：
+
+```text
+cxa-plugin-example/
+├── package.json      # 包含 "cxa-plugin": true
+├── manifest.json     # 与内置模板 manifest 结构一致
+└── template/         # 模板文件目录
+```
+
+插件包名必须以 `cxa-plugin-` 开头。插件显示时会带 `[插件]` 前缀，避免与内置模板混淆。
 
 ## 模板说明
 

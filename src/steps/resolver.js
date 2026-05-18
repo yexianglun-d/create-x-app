@@ -1,5 +1,4 @@
-import { join } from 'node:path'
-import { TEMPLATES_DIR, loadManifest } from '../manifest/loader.js'
+import { loadManifest } from '../manifest/loader.js'
 import { fetchRemoteTemplate } from '../remote/template-fetcher.js'
 import { logger } from '../utils/logger.js'
 
@@ -12,15 +11,10 @@ import { logger } from '../utils/logger.js'
  * @throws {Error} 当模板标识不存在时抛出异常
  */
 export async function resolveTemplate(templateKey, options = {}) {
-  try {
-    loadManifest(templateKey)
-  } catch {
-    throw new Error(`未知模板：${templateKey}`)
-  }
+  const manifest = loadManifest(templateKey)
+  const localTemplatePath = manifest.templatePath
 
-  const localTemplatePath = join(TEMPLATES_DIR, templateKey)
-
-  if (!options.remote) {
+  if (!options.remote || manifest.source === 'plugin') {
     return localTemplatePath
   }
 
