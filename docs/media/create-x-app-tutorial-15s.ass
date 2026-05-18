@@ -22,34 +22,34 @@ Style: CTA,Hiragino Sans GB,44,&H00F5F1E8,&H000000FF,&H00000000,&H00000000,-1,0,
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 1,0:00:00.00,0:00:15.00,Brand,,0,0,0,,{\pos(112,78)}create-x-app
 
-Dialogue: 2,0:00:00.00,0:00:03.20,Kicker,,0,0,0,,{\fad(220,260)\move(112,268,112,252)}OPEN SOURCE CLI
-Dialogue: 2,0:00:00.10,0:00:03.20,Hero,,0,0,0,,{\fad(260,260)\move(112,356,112,332)}Stop starting\Nfrom zero.
-Dialogue: 2,0:00:00.95,0:00:03.20,Body,,0,0,0,,{\fad(260,260)\move(116,540,116,520)}One command. Templates, standards, plugins.
+Dialogue: 2,0:00:00.00,0:00:03.20,Kicker,,0,0,0,,{\fad(220,260)\move(112,268,112,252)}开源脚手架 CLI
+Dialogue: 2,0:00:00.10,0:00:03.20,Hero,,0,0,0,,{\fad(260,260)\move(112,356,112,332)}别再从零\N开始。
+Dialogue: 2,0:00:00.95,0:00:03.20,Body,,0,0,0,,{\fad(260,260)\move(116,540,116,520)}一条命令，带来模板、规范与插件生态。
 Dialogue: 3,0:00:01.45,0:00:03.20,Mono,,0,0,0,,{\fad(180,260)\move(184,704,184,684)}$ npx create-x-app-cli my-app
-Dialogue: 3,0:00:02.05,0:00:03.20,Accent,,0,0,0,,{\fad(180,220)\move(184,752,184,734)}ready in seconds
+Dialogue: 3,0:00:02.05,0:00:03.20,Accent,,0,0,0,,{\fad(180,220)\move(184,752,184,734)}秒级就绪
 
-Dialogue: 2,0:00:03.20,0:00:07.00,Kicker,,0,0,0,,{\fad(220,260)\move(112,230,112,214)}CORE CAPABILITY
-Dialogue: 2,0:00:03.28,0:00:07.00,Title,,0,0,0,,{\fad(260,260)\move(112,308,112,288)}Templates as infrastructure.
-Dialogue: 2,0:00:03.75,0:00:07.00,Body,,0,0,0,,{\fad(260,260)\move(116,398,116,378)}Built-in starters for real project scenarios.
+Dialogue: 2,0:00:03.20,0:00:07.00,Kicker,,0,0,0,,{\fad(220,260)\move(112,230,112,214)}核心能力
+Dialogue: 2,0:00:03.28,0:00:07.00,Title,,0,0,0,,{\fad(260,260)\move(112,308,112,288)}把模板变成\N基础设施。
+Dialogue: 2,0:00:03.75,0:00:07.00,Body,,0,0,0,,{\fad(260,260)\move(116,448,116,428)}为真实项目场景准备的启动器。
 Dialogue: 4,0:00:04.05,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1058,318,1028,306)}React
 Dialogue: 4,0:00:04.25,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1320,388,1290,374)}Node.js
 Dialogue: 4,0:00:04.45,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1008,522,978,508)}Electron
 Dialogue: 4,0:00:04.65,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1290,584,1260,568)}Chrome Ext
 Dialogue: 4,0:00:04.85,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1104,720,1074,702)}Monorepo
 Dialogue: 4,0:00:05.05,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1400,742,1370,724)}Mobile H5
-Dialogue: 3,0:00:05.28,0:00:07.00,Muted,,0,0,0,,{\fad(200,240)\move(116,492,116,474)}Manifest-driven prompts. Environment checks. Dotfile recovery.
+Dialogue: 3,0:00:05.28,0:00:07.00,Muted,,0,0,0,,{\fad(200,240)\move(116,540,116,522)}Manifest 驱动问答。环境检测。点文件恢复。
 
-Dialogue: 2,0:00:07.00,0:00:11.10,Kicker,,0,0,0,,{\fad(220,260)\move(112,226,112,210)}PLUGIN WORKFLOW
-Dialogue: 2,0:00:07.08,0:00:11.10,Title,,0,0,0,,{\fad(260,260)\move(112,304,112,286)}Community templates,\None CLI away.
+Dialogue: 2,0:00:07.00,0:00:11.10,Kicker,,0,0,0,,{\fad(220,260)\move(112,226,112,210)}插件工作流
+Dialogue: 2,0:00:07.08,0:00:11.10,Title,,0,0,0,,{\fad(260,260)\move(112,304,112,286)}社区模板，\N一条命令接入。
 Dialogue: 3,0:00:07.70,0:00:11.10,Mono,,0,0,0,,{\fad(220,260)\move(1010,374,982,356)}$ create-x-app search admin
 Dialogue: 3,0:00:08.18,0:00:11.10,Accent,,0,0,0,,{\fad(180,260)\move(1010,430,982,412)}cxa-plugin-admin-shell
 Dialogue: 3,0:00:08.70,0:00:11.10,Mono,,0,0,0,,{\fad(180,260)\move(1010,506,982,488)}$ create-x-app install cxa-plugin-admin-shell
-Dialogue: 3,0:00:09.35,0:00:11.10,Accent,,0,0,0,,{\fad(180,260)\move(1010,562,982,544)}template added to your picker
-Dialogue: 3,0:00:09.82,0:00:11.10,Small,,0,0,0,,{\fad(180,220)\move(118,738,118,720)}Search. Install. Create. Remove.
+Dialogue: 3,0:00:09.35,0:00:11.10,Accent,,0,0,0,,{\fad(180,260)\move(1010,562,982,544)}模板已加入选择列表
+Dialogue: 3,0:00:09.82,0:00:11.10,Small,,0,0,0,,{\fad(180,220)\move(118,738,118,720)}搜索。安装。创建。移除。
 
-Dialogue: 2,0:00:11.10,0:00:15.00,Kicker,,0,0,0,,{\fad(220,260)\move(112,254,112,238)}COMMUNITY MAINTAINED
-Dialogue: 2,0:00:11.18,0:00:15.00,Hero,,0,0,0,,{\fad(260,260)\move(112,356,112,336)}Ship standards.\NEvolve together.
-Dialogue: 2,0:00:12.15,0:00:15.00,Body,,0,0,0,,{\fad(220,260)\move(116,560,116,540)}Templates can live in the ecosystem, not only in core.
+Dialogue: 2,0:00:11.10,0:00:15.00,Kicker,,0,0,0,,{\fad(220,260)\move(112,254,112,238)}社区维护
+Dialogue: 2,0:00:11.18,0:00:15.00,Hero,,0,0,0,,{\fad(260,260)\move(112,356,112,336)}发布规范。\N共同进化。
+Dialogue: 2,0:00:12.15,0:00:15.00,Body,,0,0,0,,{\fad(220,260)\move(116,560,116,540)}模板不只存在于核心仓库，也可以生长在社区。
 Dialogue: 3,0:00:12.88,0:00:15.00,Mono,,0,0,0,,{\fad(200,220)\move(184,728,184,708)}$ create-x-app list
-Dialogue: 3,0:00:13.36,0:00:15.00,Accent,,0,0,0,,{\fad(180,220)\move(184,776,184,756)}[plugin] Team Admin Shell
-Dialogue: 4,0:00:13.86,0:00:15.00,CTA,,0,0,0,,{\fad(180,260)\pos(1400,800)}Star on GitHub
+Dialogue: 3,0:00:13.36,0:00:15.00,Accent,,0,0,0,,{\fad(180,220)\move(184,776,184,756)}[插件] Team Admin Shell
+Dialogue: 4,0:00:13.86,0:00:15.00,CTA,,0,0,0,,{\fad(180,260)\pos(1400,800)}在 GitHub 点亮 Star
