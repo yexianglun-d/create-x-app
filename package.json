@@ -1,7 +1,7 @@
 {
   "name": "create-x-app",
-  "version": "0.1.1",
-  "description": "交互式 Node.js CLI，用于生成 React、Node.js 和 Java 全栈项目模板",
+  "version": "0.2.0",
+  "description": "交互式 Node.js CLI，用于生成多场景项目模板",
   "keywords": [
     "cli",
     "scaffold",
@@ -55,6 +55,7 @@
     "semver": "^7.6.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "eslint": "^9.0.0"
   }
 }

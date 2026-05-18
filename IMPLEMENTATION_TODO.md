@@ -19,14 +19,14 @@
 - [x] 当前仓库已具备可运行的 CLI 主链路
 - [x] 已支持 `react-vite-ts`、`node-ts`、`java-fullstack` 三套模板
 - [x] 已具备环境检测、交互问答、模板渲染、点文件恢复、依赖安装、Git 初始化
-- [x] 已有基础单元测试：`version`、`resolver`、`generator`、`logger`
+- [x] 曾建立基础单元测试：`version`、`resolver`、`generator`、`logger`
 
 ### 当前待收敛项
 
 - [x] 历史命名 `create-x-app-cli` 已从包配置、CLI 文案和主文档中收敛为 `create-x-app`
 - [x] 现有模板的 resolver / prompts / validator 已切换到 manifest 驱动
 - [x] 包管理器命令已抽离到统一适配层，模板 package.json 已写入 `packageManager`
-- [x] 已建立集成测试框架、快照基线和 CI 工作流，现有三套模板可自动回归验证
+- [x] 曾建立集成测试框架、快照基线和 CI 工作流；测试文件与测试脚本已按维护要求清除
 
 ## 状态标记说明
 
@@ -306,20 +306,21 @@
 
 ## 全局任务
 
-### [ ] TASK-G01 单元测试同步补充
+### [x] TASK-G01 测试链路处理
 
 要求：
-- 每完成一个 TASK，立即补充对应测试
-- 运行命令：`node --test`
+- Phase 1 执行期间曾同步补充单元测试、集成测试和快照
+- 2026-05-18 已按维护要求清除测试文件和测试脚本
+- 后续若恢复自动化测试，需要重新建立 `node:test` 与集成测试入口
 
-### [ ] TASK-G02 文档同步更新
+### [x] TASK-G02 文档同步更新
 
 要求：
 - 每个 Phase 结束后更新 `AGENTS.md`
 - 同步更新 `README.md`
 - 插件规范统一以 `manifest.json` 为准
 
-### [ ] TASK-G03 版本发布
+### [→] TASK-G03 版本发布
 
 要求：
 - Phase 0 + Phase 1 完成后发布 `v0.2.0`
@@ -327,8 +328,8 @@
 - Phase 3 完成后发布 `v1.0.0`
 
 发布前固定执行：
-- `node --test`
-- `npm run test:integration`
+- `npm run lint`
+- `node bin/cli.js --help`
 - `npm pack --dry-run`
 
 ## 本轮执行记录
@@ -344,7 +345,13 @@
 - [x] 已完成：`TASK-003 Part B`，新增 `test:integration`、`test:snapshot-update`、快照文件与 CI 工作流
 - [x] 已验证：`npm run test:snapshot-update`
 - [x] 已验证：`npm run test:integration`
-- [ ] 下一步：进入 `TASK-101`，开始实现 `react-admin` 模板
+- [x] 已完成：`TASK-101` 到 `TASK-106`，Phase 1 五套新增模板与全量回归已完成
+- [x] 已完成：按维护要求清除测试文件和测试脚本
+- [x] 已验证：`npm run lint`
+- [x] 已验证：`node bin/cli.js --help`
+- [x] 已验证：`npm pack --dry-run`
+- [→] 当前：提交并推送 `main`
+- [ ] 下一步：完成 npm 登录后执行 `npm publish --access public`
 
 ## 当前约定
 

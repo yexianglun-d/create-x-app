@@ -1482,8 +1482,8 @@ PHASE 3 完成           → npm version major → v1.0.0 → npm publish
 
 发布前每次执行：
 ```bash
-node --test
-npm run test:integration
+npm run lint
+node bin/cli.js --help
 npm pack --dry-run
 ```
 

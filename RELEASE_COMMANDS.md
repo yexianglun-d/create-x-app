@@ -6,16 +6,16 @@
 npm install
 ```
 
-## 2. 运行测试
+## 2. 运行代码质量检查
 
 ```bash
-node --test
+npm run lint
 ```
 
-## 3. 验证 CLI 基础流程
+## 3. 验证 CLI 基础信息
 
 ```bash
-node bin/cli.js release-check --skip-install --skip-git --verbose
+node bin/cli.js --help
 ```
 
 ## 4. 预览 npm 打包内容
@@ -37,7 +37,7 @@ npm pack --dry-run --cache /tmp/create-x-app-npm-cache
 当前包信息：
 
 - 包名：`create-x-app`
-- 版本：`0.1.1`
+- 版本：`0.2.0`
 - 许可证：`MIT`
 - 作者：`赵铁柱`
 

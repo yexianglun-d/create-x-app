@@ -6,7 +6,7 @@
 
 ## 特性
 
-- 交互式创建三套模板：`react-vite-ts`、`node-ts`、`java-fullstack`
+- 交互式创建 8 套模板：`react-vite-ts`、`node-ts`、`java-fullstack`、`react-admin`、`electron-app`、`chrome-ext`、`monorepo`、`mobile-h5`
 - 自动注入公共协作文件：`AGENTS.md`、`coding-rules.md`、`README.md`
 - 支持模板扩展项：React Router、Tailwind、Express、Dotenv
 - 自动将 `_gitignore`、`_eslintrc.json` 等恢复为真实点文件
@@ -55,6 +55,31 @@ CLI 按以下顺序执行：
 - 生成前端工程和后端说明文档
 - 前端工程位于 `frontend/`
 - 后端搭建说明位于 `BACKEND.md`
+
+### `react-admin`
+
+- React + Vite + TypeScript 后台管理系统
+- 内置登录页、权限路由、Axios 拦截器和 Zustand 鉴权状态
+
+### `electron-app`
+
+- Electron 桌面应用
+- 支持 Vue 3 或 React 渲染进程
+
+### `chrome-ext`
+
+- Chrome Manifest V3 浏览器插件
+- 内置 popup、content script、background 三入口
+
+### `monorepo`
+
+- pnpm workspace + Turborepo 全栈 Monorepo
+- 内置 web、api、shared 三包结构
+
+### `mobile-h5`
+
+- Vue 3 + Vant 移动端 H5
+- 内置 rem 自适应与基础请求封装
 
 ## 命令参数
 
@@ -130,10 +155,10 @@ $ node bin/cli.js demo-app --verbose
 npm install
 ```
 
-运行测试：
+运行代码质量检查：
 
 ```bash
-node --test
+npm run lint
 ```
 
 本地调试 CLI：
@@ -144,9 +169,9 @@ node bin/cli.js my-app --verbose
 
 ## 已验证事项
 
-- 根仓库 `node --test` 通过
+- 8 套模板已接入 manifest 驱动的模板发现、问答和校验链路
+- Phase 1 模板曾完成集成回归；当前测试文件与测试脚本已按维护要求清除
 - `react-vite-ts` 模板可完成安装、Husky 初始化、Git 初始化和构建
-- `node-ts`、`java-fullstack` 模板已完成文件结构校验
 - `--verbose`、`--debug` 输出链路可用
 
 ## 发布前建议
@@ -154,8 +179,8 @@ node bin/cli.js my-app --verbose
 发布前建议至少执行以下命令：
 
 ```bash
-node --test
-node bin/cli.js release-check --skip-install --skip-git
+npm run lint
+node bin/cli.js --help
 npm pack --dry-run
 ```
 

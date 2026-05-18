@@ -73,7 +73,7 @@ create-x-app/
 ```json
 {
   "name": "create-x-app",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "一条命令生成生产级项目模板",
   "type": "module",
   "bin": {
@@ -90,8 +90,7 @@ create-x-app/
   ],
   "scripts": {
     "dev": "node bin/cli.js",
-    "lint": "eslint src",
-    "test": "node --test"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@clack/prompts": "^0.9.0",
@@ -884,17 +883,17 @@ process.on('unhandledRejection', (err) => {
 
 ## 测试
 
-在 `test/` 目录下使用 Node.js 内置的 `node:test` 编写测试。
+当前仓库测试文件与测试脚本已按维护要求清除。
 
-### 需要实现的测试
+发布前固定执行：
 
-| 文件 | 测试内容 |
-|---|---|
-| `test/version.test.js` | `detectVersion` 对未知命令返回 null；对 `node` 命令返回 semver 字符串 |
-| `test/resolver.test.js` | 已知 key 返回正确路径；未知 key 抛出错误 |
-| `test/generator.test.js` | 将文件复制到临时目录；`_gitignore` 正确重命名为 `.gitignore`；ejs 变量正确渲染 |
+```bash
+npm run lint
+node bin/cli.js --help
+npm pack --dry-run
+```
 
-运行命令：`node --test`
+后续若恢复自动化测试，应使用 Node.js 内置的 `node:test`，并同步恢复 `package.json` 中的测试脚本。
 
 ---
 
@@ -965,8 +964,8 @@ npx create-x-app my-first-project
 满足以下所有条件即视为项目完成：
 
 1. `npx create-x-app` 全流程零手动操作可运行
-2. 三套模板均能生成有效、可运行的项目（`npm run dev` 正常启动）
+2. 8 套模板均能生成有效、可运行的项目（`npm run dev` 正常启动）
 3. 每个生成的项目均包含公共文件（AGENTS.md、coding-rules.md、husky）
 4. 环境检测对版本过低的工具能正确发出警告
-5. 所有测试通过：`node --test`
+5. 发布前质量检查通过：`npm run lint`、`node bin/cli.js --help`、`npm pack --dry-run`
 6. 包已发布并可从 npm 安装

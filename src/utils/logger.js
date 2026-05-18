@@ -1,6 +1,8 @@
 import chalk from 'chalk'
 import { relative } from 'node:path'
 
+// 该正则专用于剥离终端 ANSI 控制序列，保留控制字符匹配是预期行为。
+// eslint-disable-next-line no-control-regex
 const ANSI_PATTERN = /\u001B\[[0-9;]*m/g
 
 const loggerState = {
