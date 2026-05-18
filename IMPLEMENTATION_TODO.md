@@ -455,7 +455,7 @@
 - [x] 已验证：`cxa-plugin-example` 通过 `npm link` 后可被 `node bin/cli.js list` 识别
 - [x] 已验证：`cxa-plugin-example` 可通过生成器生成项目并运行 `node src/index.js`
 - [x] 已清理：已执行 `npm uninstall -g cxa-plugin-example`
-- [→] 当前：`v1.0.1` patch 发布前收口
+- [x] 已完成：`v1.0.1` patch 发布前收口
 - [x] 已完成：`v1.0.1` 版本号与发布文档收口
 - [x] 已验证：`npm install --package-lock-only`
 - [x] 已验证：`npm run lint`
@@ -463,8 +463,14 @@
 - [x] 已验证：`node bin/cli.js --version` 返回 `1.0.1`
 - [x] 已验证：根包 `npm pack --dry-run` 产物为 `create-x-app-cli@1.0.1`
 - [x] 已验证：示例插件 `npm pack --dry-run` 产物为 `cxa-plugin-example@0.1.0`
-- [→] 当前：等待提交、推送并发布 `create-x-app-cli@1.0.1`
-- [ ] 下一步：发布后执行 `npm view create-x-app-cli version` 与完整生成项目验证
+- [x] 已完成：本地提交并推送 `fix: prepare v1.0.1 smoke fixes`
+- [x] 已完成：`create-x-app-cli@1.0.1` 已发布
+- [x] 已验证：`npm view create-x-app-cli version` 返回 `1.0.1`
+- [x] 已验证：`npx -y create-x-app-cli --version` 返回 `1.0.1`
+- [x] 已验证：`npx -y create-x-app-cli cxa-v101-smoke --skip-install --skip-git --no-telemetry` 可生成项目
+- [x] 已验证：发布后生成的 `chrome-ext` 项目执行 `npm install`、`npm run build`、`npm run lint` 均通过
+- [ ] 后续优化：模板依赖仍有 ESLint 8 deprecated 与 `npm audit` moderate 警告，后续统一升级 ESLint 9 配置体系
+- [ ] 后续确认：`cxa-plugin-example` 当前 npm registry 仍返回 404，如需社区市场真实搜索结果，需要单独发布该示例插件包
 
 ## 当前约定
 
