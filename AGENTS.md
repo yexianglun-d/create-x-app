@@ -118,6 +118,7 @@ create-x-app/
 
 import { program } from 'commander'
 import { createCommand } from '../src/commands/create.js'
+import { upgradeCommand } from '../src/commands/upgrade.js'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -138,6 +139,11 @@ program
   .option('--verbose', '显示详细执行日志')
   .option('--debug', '显示调试日志和错误堆栈')
   .action(createCommand)
+
+program
+  .command('upgrade')
+  .description('升级当前项目的脚手架配置文件')
+  .action(upgradeCommand)
 
 program.parse()
 ```

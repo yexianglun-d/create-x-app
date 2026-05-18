@@ -275,7 +275,7 @@
 - 已通过 `npm run lint`
 - 已通过默认基线、latest 刷新和模拟断网回退验证
 
-### [ ] TASK-203 项目升级命令（upgrade）
+### [x] TASK-203 项目升级命令（upgrade）
 
 输出：
 - `src/commands/upgrade.js`
@@ -284,8 +284,21 @@
 - `src/upgrade/applier.js`
 
 验收：
-- `node bin/cli.js test-upgrade`
-- 在生成项目内执行 `npx create-x-app-cli upgrade`
+- 生成项目写入 `cxa-template` / `cxa-version`
+- detector 能识别 `react-vite-ts`
+- differ 能识别 `tsconfig.json` 配置差异
+- 应用模板内容后配置文件恢复正确
+- 无差异生成项目执行 `node bin/cli.js upgrade` 正常退出
+
+完成记录（2026-05-18）：
+- 已新增 `src/commands/upgrade.js`
+- 已新增 `src/upgrade/detector.js`，支持 package 标记与依赖启发式识别模板
+- 已新增 `src/upgrade/differ.js`，仅比较脚手架配置白名单文件
+- 已新增 `src/upgrade/applier.js`，支持覆盖、跳过、查看 diff 后再决定
+- 已在生成器中写入 `cxa-template` 与 `cxa-version`
+- 已通过 `npm run lint`
+- 已通过临时项目差异检测、配置应用和无差异 upgrade 命令验证
+- 已通过真实交互验证：查看 diff 后选择覆盖，配置文件正确恢复
 
 ### [ ] TASK-204 插件系统（Plugin API）
 
@@ -371,8 +384,9 @@
 - [x] 已完成：`create-x-app-cli@0.2.0` 已发布并完成发布后验证
 - [x] 已完成：`TASK-201`，远程模板拉取、缓存和失败回退链路已完成
 - [x] 已完成：`TASK-202`，依赖版本 latest 刷新和失败回退链路已完成
-- [→] 当前：进入 `TASK-203`，实现项目升级命令 `upgrade`
-- [ ] 下一步：设计并实现 `src/commands/upgrade.js` 与 `src/upgrade/*`
+- [x] 已完成：`TASK-203`，项目配置升级命令已完成
+- [→] 当前：进入 `TASK-204`，实现插件系统（Plugin API）
+- [ ] 下一步：设计并实现 `src/plugins/loader.js` 与 `src/plugins/registry.js`
 
 ## 当前约定
 

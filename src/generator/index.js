@@ -152,6 +152,21 @@ async function renderEjsFiles(targetDir, templateVariables) {
   }
 }
 
+async function writeProjectMetadata(targetDir, config, manifest) {
+  const packageJsonPath = join(targetDir, 'package.json')
+  const packageJsonExists = await fs.pathExists(packageJsonPath)
+
+  if (!packageJsonExists) {
+    return
+  }
+
+  const packageJson = await fs.readJson(packageJsonPath)
+  packageJson['cxa-template'] = config.template
+  packageJson['cxa-version'] = manifest.version
+
+  await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
+}
+
 async function collectPackageJsonFiles(targetDir) {
   const entries = await fs.readdir(targetDir, { withFileTypes: true })
   const packageJsonFiles = []
@@ -408,6 +423,7 @@ export async function generateProject({ config, options = {}, templatePath }) {
     await applyExtras(config.fileBasedExtras ?? config.extras, config.targetDir)
     await removeTemplateMetadata(config.targetDir)
     await renderEjsFiles(config.targetDir, buildTemplateVariables(config))
+    await writeProjectMetadata(config.targetDir, config, manifest)
     await renameDotfiles(config.targetDir)
     await pruneSubPromptArtifacts(config, config.targetDir, manifest)
     await pruneExtraArtifacts(config, config.targetDir, manifest)

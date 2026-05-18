@@ -40,6 +40,16 @@ CLI 按以下顺序执行：
 5. 确认后生成目标项目
 6. 视配置执行依赖安装、Husky 初始化、Git 初始化
 
+## 升级配置
+
+已生成项目可在项目根目录执行：
+
+```bash
+npx create-x-app-cli upgrade
+```
+
+该命令只对比并升级脚手架管理的配置文件，例如 `tsconfig.json`、`.eslintrc.json`、`vite.config.ts`、`.prettierrc` 和 `commitlint.config.js`，不会修改业务源码。
+
 ## 模板说明
 
 ### `react-vite-ts`

@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { program } from 'commander'
 import { createCommand } from '../src/commands/create.js'
+import { upgradeCommand } from '../src/commands/upgrade.js'
 import { logger, setLoggerOptions } from '../src/utils/logger.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -30,6 +31,17 @@ async function handleCliAction(projectNameArg, options) {
   await createCommand(projectNameArg, options)
 }
 
+async function handleUpgradeAction() {
+  const options = program.opts()
+
+  setLoggerOptions({
+    verbose: options.verbose,
+    debug: options.debug,
+  })
+
+  await upgradeCommand()
+}
+
 program
   .name('create-x-app')
   .description('几秒内生成生产级项目脚手架')
@@ -43,5 +55,10 @@ program
   .option('--verbose', '显示详细执行日志')
   .option('--debug', '显示调试日志和错误堆栈')
   .action(handleCliAction)
+
+program
+  .command('upgrade')
+  .description('升级当前项目的脚手架配置文件')
+  .action(handleUpgradeAction)
 
 program.parse()
