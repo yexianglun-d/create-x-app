@@ -443,8 +443,28 @@
 - [x] 已验证：`node bin/cli.js list --help`
 - [x] 已验证：`node bin/cli.js remove --help`
 - [x] 已验证：`npm pack --dry-run`
-- [→] 当前：等待执行 `npm publish --access public --otp=<一次性验证码>`
-- [ ] 下一步：发布后执行 `npm view create-x-app-cli version` 与 `npx create-x-app-cli my-first-project` 验证
+- [x] 已完成：`create-x-app-cli@1.0.0` 已发布
+- [x] 已验证：`npm view create-x-app-cli version` 返回 `1.0.0`
+- [x] 已验证：`npx -y create-x-app-cli --version` 返回 `1.0.0`
+- [x] 已验证：`npx -y create-x-app-cli cxa-smoke --skip-install --skip-git --no-telemetry` 可生成项目
+- [x] 已发现并修复：`chrome-ext` 模板 lint 脚本误指向不存在的 `popup` 目录，已改为 `eslint src --ext .ts,.tsx --report-unused-disable-directives`
+- [x] 已验证：本地修复版生成 `chrome-ext` 后，`npm install`、`npm run build`、`npm run lint` 均通过
+- [x] 已完成：新增 `examples/cxa-plugin-example` 示例插件
+- [x] 已验证：`cxa-plugin-example` 包名当前 npm registry 返回 404，可用于发布
+- [x] 已验证：`examples/cxa-plugin-example` 执行 `npm pack --dry-run` 通过
+- [x] 已验证：`cxa-plugin-example` 通过 `npm link` 后可被 `node bin/cli.js list` 识别
+- [x] 已验证：`cxa-plugin-example` 可通过生成器生成项目并运行 `node src/index.js`
+- [x] 已清理：已执行 `npm uninstall -g cxa-plugin-example`
+- [→] 当前：`v1.0.1` patch 发布前收口
+- [x] 已完成：`v1.0.1` 版本号与发布文档收口
+- [x] 已验证：`npm install --package-lock-only`
+- [x] 已验证：`npm run lint`
+- [x] 已验证：`node bin/cli.js --help`
+- [x] 已验证：`node bin/cli.js --version` 返回 `1.0.1`
+- [x] 已验证：根包 `npm pack --dry-run` 产物为 `create-x-app-cli@1.0.1`
+- [x] 已验证：示例插件 `npm pack --dry-run` 产物为 `cxa-plugin-example@0.1.0`
+- [→] 当前：等待提交、推送并发布 `create-x-app-cli@1.0.1`
+- [ ] 下一步：发布后执行 `npm view create-x-app-cli version` 与完整生成项目验证
 
 ## 当前约定
 

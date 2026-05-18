@@ -75,6 +75,8 @@ npx create-x-app-cli list
 npx create-x-app-cli remove cxa-plugin-example
 ```
 
+仓库内提供了一个可本地联调和单独发布的示例插件：`examples/cxa-plugin-example`。
+
 ## 匿名统计
 
 首次创建项目时，CLI 会询问是否允许发送匿名使用统计，并将选择保存到 `~/.create-x-app/config.json`。

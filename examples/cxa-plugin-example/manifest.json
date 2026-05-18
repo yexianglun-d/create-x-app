@@ -1,0 +1,26 @@
+{
+  "key": "example-basic",
+  "name": "Example Basic",
+  "description": "社区插件示例模板，演示最小插件目录结构",
+  "version": "0.1.0",
+  "framework": "plugin",
+  "requiredPm": null,
+  "forbiddenPm": [],
+  "requiredEnv": {
+    "node": ">=18.0.0"
+  },
+  "optionalEnv": {},
+  "supportedFeatures": [
+    "agents",
+    "coding-rules"
+  ],
+  "defaultFeatures": [
+    "agents",
+    "coding-rules"
+  ],
+  "extras": [],
+  "subPrompts": [],
+  "devScript": "dev",
+  "buildScript": null,
+  "devPort": null
+}

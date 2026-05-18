@@ -1,0 +1,35 @@
+{
+  "name": "cxa-plugin-example",
+  "version": "0.1.0",
+  "description": "create-x-app community template plugin example",
+  "type": "module",
+  "license": "MIT",
+  "author": "赵铁柱",
+  "keywords": [
+    "create-x-app",
+    "cxa-plugin",
+    "template",
+    "scaffold"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yexianglun-d/create-x-app.git",
+    "directory": "examples/cxa-plugin-example"
+  },
+  "homepage": "https://github.com/yexianglun-d/create-x-app/tree/main/examples/cxa-plugin-example#readme",
+  "bugs": {
+    "url": "https://github.com/yexianglun-d/create-x-app/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "manifest.json",
+    "template",
+    "README.md"
+  ],
+  "scripts": {
+    "pack:check": "npm pack --dry-run"
+  },
+  "cxa-plugin": true
+}

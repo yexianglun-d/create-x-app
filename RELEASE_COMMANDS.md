@@ -37,7 +37,7 @@ npm pack --dry-run --cache /tmp/create-x-app-npm-cache
 当前包信息：
 
 - 包名：`create-x-app-cli`
-- 版本：`1.0.0`
+- 版本：`1.0.1`
 - 许可证：`MIT`
 - 作者：`赵铁柱`
 
