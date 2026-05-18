@@ -352,7 +352,7 @@
 - [x] 已验证：`node bin/cli.js --help`
 - [x] 已验证：`npm pack --dry-run`
 - [→] 当前：提交并推送 `main`
-- [ ] 下一步：完成 npm 登录后执行 `npm publish --access public`
+- [ ] 下一步：完成 npm 2FA 校验后执行 `npm publish --access public --otp=<一次性验证码>`
 
 ## 当前约定
 

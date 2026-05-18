@@ -77,8 +77,8 @@ create-x-app/
   "description": "一条命令生成生产级项目模板",
   "type": "module",
   "bin": {
-    "create-x-app": "./bin/cli.js",
-    "create-x-app-cli": "./bin/cli.js"
+    "create-x-app": "bin/cli.js",
+    "create-x-app-cli": "bin/cli.js"
   },
   "engines": {
     "node": ">=18.0.0"

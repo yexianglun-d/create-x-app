@@ -59,6 +59,12 @@ npm whoami
 npm publish --access public
 ```
 
+如果 npm 账号启用了 2FA：
+
+```bash
+npm publish --access public --otp=<一次性验证码>
+```
+
 ## 9. 发布后验证
 
 ```bash
