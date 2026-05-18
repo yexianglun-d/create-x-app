@@ -1,55 +1,55 @@
 [Script Info]
 ScriptType: v4.00+
-PlayResX: 1280
-PlayResY: 720
+PlayResX: 1920
+PlayResY: 1080
 WrapStyle: 0
 ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Brand,Hiragino Sans GB,34,&H00E8E1CF,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,86,86,54,1
-Style: Eyebrow,Hiragino Sans GB,28,&H0050D6BC,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,2,0,1,0,0,7,90,90,90,1
-Style: Title,Hiragino Sans GB,62,&H00F4F0E4,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,90,90,90,1
-Style: Subtitle,Hiragino Sans GB,34,&H00C8D7CE,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,90,90,90,1
-Style: Terminal,Hiragino Sans GB,32,&H00EDE7D8,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,130,130,90,1
-Style: Code,Hiragino Sans GB,30,&H004BE0C1,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,130,130,90,1
-Style: Body,Hiragino Sans GB,31,&H00E4E0D4,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,94,94,90,1
-Style: Muted,Hiragino Sans GB,26,&H008EA49D,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,94,94,90,1
-Style: CTA,Hiragino Sans GB,40,&H000F1714,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,5,0,0,0,1
+Style: Brand,Hiragino Sans GB,34,&H00EDE8DA,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,110,110,72,1
+Style: Kicker,Hiragino Sans GB,28,&H0077DCC5,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,3,0,1,0,0,7,110,110,72,1
+Style: Hero,Hiragino Sans GB,78,&H00F5F1E8,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,-1,0,1,0,0,7,110,110,72,1
+Style: Title,Hiragino Sans GB,58,&H00F1EEE3,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,-1,0,1,0,0,7,110,110,72,1
+Style: Body,Hiragino Sans GB,34,&H00C9D6CF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,110,110,72,1
+Style: Muted,Hiragino Sans GB,26,&H0089A39A,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,110,110,72,1
+Style: Mono,Hiragino Sans GB,31,&H00F1ECDD,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,110,110,72,1
+Style: Accent,Hiragino Sans GB,31,&H0057E2C7,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,0,0,7,110,110,72,1
+Style: Small,Hiragino Sans GB,24,&H008FA9A0,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,1,0,1,0,0,7,110,110,72,1
+Style: CTA,Hiragino Sans GB,44,&H00F5F1E8,&H000000FF,&H00000000,&H00000000,-1,0,0,0,100,100,-1,0,1,0,0,5,0,0,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:00.00,0:00:15.00,Brand,,0,0,0,,{\pos(84,58)}create-x-app
+Dialogue: 1,0:00:00.00,0:00:15.00,Brand,,0,0,0,,{\pos(112,78)}create-x-app
 
-Dialogue: 1,0:00:00.00,0:00:03.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 01
-Dialogue: 1,0:00:00.05,0:00:03.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}一条命令启动项目
-Dialogue: 1,0:00:00.35,0:00:03.00,Subtitle,,0,0,0,,{\fad(180,180)\pos(92,282)}交互式 Node.js CLI，用于生成多场景生产级模板
-Dialogue: 1,0:00:00.80,0:00:03.00,Code,,0,0,0,,{\fad(180,180)\pos(138,418)}$ npx create-x-app-cli my-app
-Dialogue: 1,0:00:01.35,0:00:03.00,Terminal,,0,0,0,,{\fad(180,180)\pos(138,470)}✔ 检测 Node.js / Git / pnpm / Java
+Dialogue: 2,0:00:00.00,0:00:03.20,Kicker,,0,0,0,,{\fad(220,260)\move(112,268,112,252)}OPEN SOURCE CLI
+Dialogue: 2,0:00:00.10,0:00:03.20,Hero,,0,0,0,,{\fad(260,260)\move(112,356,112,332)}Stop starting\Nfrom zero.
+Dialogue: 2,0:00:00.95,0:00:03.20,Body,,0,0,0,,{\fad(260,260)\move(116,540,116,520)}One command. Templates, standards, plugins.
+Dialogue: 3,0:00:01.45,0:00:03.20,Mono,,0,0,0,,{\fad(180,260)\move(184,704,184,684)}$ npx create-x-app-cli my-app
+Dialogue: 3,0:00:02.05,0:00:03.20,Accent,,0,0,0,,{\fad(180,220)\move(184,752,184,734)}ready in seconds
 
-Dialogue: 1,0:00:03.00,0:00:06.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 02
-Dialogue: 1,0:00:03.05,0:00:06.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}选择合适的模板
-Dialogue: 1,0:00:03.35,0:00:06.00,Body,,0,0,0,,{\fad(180,180)\pos(100,295)}React / Node.js / Java Fullstack / Admin
-Dialogue: 1,0:00:03.70,0:00:06.00,Body,,0,0,0,,{\fad(180,180)\pos(100,350)}Electron / Chrome Extension / Monorepo / Mobile H5
-Dialogue: 1,0:00:04.15,0:00:06.00,Muted,,0,0,0,,{\fad(180,180)\pos(100,440)}Manifest 驱动模板能力，按模板动态展示功能项
+Dialogue: 2,0:00:03.20,0:00:07.00,Kicker,,0,0,0,,{\fad(220,260)\move(112,230,112,214)}CORE CAPABILITY
+Dialogue: 2,0:00:03.28,0:00:07.00,Title,,0,0,0,,{\fad(260,260)\move(112,308,112,288)}Templates as infrastructure.
+Dialogue: 2,0:00:03.75,0:00:07.00,Body,,0,0,0,,{\fad(260,260)\move(116,398,116,378)}Built-in starters for real project scenarios.
+Dialogue: 4,0:00:04.05,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1058,318,1028,306)}React
+Dialogue: 4,0:00:04.25,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1320,388,1290,374)}Node.js
+Dialogue: 4,0:00:04.45,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1008,522,978,508)}Electron
+Dialogue: 4,0:00:04.65,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1290,584,1260,568)}Chrome Ext
+Dialogue: 4,0:00:04.85,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1104,720,1074,702)}Monorepo
+Dialogue: 4,0:00:05.05,0:00:07.00,Accent,,0,0,0,,{\fad(200,240)\move(1400,742,1370,724)}Mobile H5
+Dialogue: 3,0:00:05.28,0:00:07.00,Muted,,0,0,0,,{\fad(200,240)\move(116,492,116,474)}Manifest-driven prompts. Environment checks. Dotfile recovery.
 
-Dialogue: 1,0:00:06.00,0:00:09.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 03
-Dialogue: 1,0:00:06.05,0:00:09.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}勾选工程规范
-Dialogue: 1,0:00:06.35,0:00:09.00,Body,,0,0,0,,{\fad(180,180)\pos(100,300)}✔ ESLint + Prettier
-Dialogue: 1,0:00:06.70,0:00:09.00,Body,,0,0,0,,{\fad(180,180)\pos(100,350)}✔ Husky + commitlint
-Dialogue: 1,0:00:07.05,0:00:09.00,Body,,0,0,0,,{\fad(180,180)\pos(100,400)}✔ AGENTS.md + coding-rules.md
-Dialogue: 1,0:00:07.55,0:00:09.00,Muted,,0,0,0,,{\fad(180,180)\pos(100,480)}自动渲染 EJS、恢复点文件、裁剪未启用产物
+Dialogue: 2,0:00:07.00,0:00:11.10,Kicker,,0,0,0,,{\fad(220,260)\move(112,226,112,210)}PLUGIN WORKFLOW
+Dialogue: 2,0:00:07.08,0:00:11.10,Title,,0,0,0,,{\fad(260,260)\move(112,304,112,286)}Community templates,\None CLI away.
+Dialogue: 3,0:00:07.70,0:00:11.10,Mono,,0,0,0,,{\fad(220,260)\move(1010,374,982,356)}$ create-x-app search admin
+Dialogue: 3,0:00:08.18,0:00:11.10,Accent,,0,0,0,,{\fad(180,260)\move(1010,430,982,412)}cxa-plugin-admin-shell
+Dialogue: 3,0:00:08.70,0:00:11.10,Mono,,0,0,0,,{\fad(180,260)\move(1010,506,982,488)}$ create-x-app install cxa-plugin-admin-shell
+Dialogue: 3,0:00:09.35,0:00:11.10,Accent,,0,0,0,,{\fad(180,260)\move(1010,562,982,544)}template added to your picker
+Dialogue: 3,0:00:09.82,0:00:11.10,Small,,0,0,0,,{\fad(180,220)\move(118,738,118,720)}Search. Install. Create. Remove.
 
-Dialogue: 1,0:00:09.00,0:00:12.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 04
-Dialogue: 1,0:00:09.05,0:00:12.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}进阶能力开箱可用
-Dialogue: 1,0:00:09.35,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,306)}--remote     拉取远端模板
-Dialogue: 1,0:00:09.75,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,356)}--latest     刷新依赖版本
-Dialogue: 1,0:00:10.15,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,406)}upgrade      升级已有项目配置
-Dialogue: 1,0:00:10.55,0:00:12.00,Code,,0,0,0,,{\fad(180,180)\pos(100,456)}search / install / list / remove 插件模板
-
-Dialogue: 1,0:00:12.00,0:00:15.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}DONE
-Dialogue: 1,0:00:12.05,0:00:15.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}项目已就绪
-Dialogue: 1,0:00:12.38,0:00:15.00,Code,,0,0,0,,{\fad(180,180)\pos(138,356)}$ cd my-app
-Dialogue: 1,0:00:12.78,0:00:15.00,Code,,0,0,0,,{\fad(180,180)\pos(138,406)}$ npm run dev
-Dialogue: 1,0:00:13.35,0:00:15.00,Subtitle,,0,0,0,,{\fad(180,180)\pos(92,505)}从空目录到可运行工程，只保留必要选择。
-Dialogue: 1,0:00:13.85,0:00:15.00,CTA,,0,0,0,,{\fad(180,180)\pos(640,610)}Star create-x-app on GitHub
+Dialogue: 2,0:00:11.10,0:00:15.00,Kicker,,0,0,0,,{\fad(220,260)\move(112,254,112,238)}COMMUNITY MAINTAINED
+Dialogue: 2,0:00:11.18,0:00:15.00,Hero,,0,0,0,,{\fad(260,260)\move(112,356,112,336)}Ship standards.\NEvolve together.
+Dialogue: 2,0:00:12.15,0:00:15.00,Body,,0,0,0,,{\fad(220,260)\move(116,560,116,540)}Templates can live in the ecosystem, not only in core.
+Dialogue: 3,0:00:12.88,0:00:15.00,Mono,,0,0,0,,{\fad(200,220)\move(184,728,184,708)}$ create-x-app list
+Dialogue: 3,0:00:13.36,0:00:15.00,Accent,,0,0,0,,{\fad(180,220)\move(184,776,184,756)}[plugin] Team Admin Shell
+Dialogue: 4,0:00:13.86,0:00:15.00,CTA,,0,0,0,,{\fad(180,260)\pos(1400,800)}Star on GitHub
