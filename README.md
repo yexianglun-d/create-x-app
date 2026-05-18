@@ -2,7 +2,7 @@
 
 一条命令生成生产级项目模板的 Node.js CLI。
 
-当前脚手架支持交互式问答、环境检测、模板渲染、点文件恢复、依赖安装、Husky 初始化、Git 初始化，以及 `--verbose` / `--debug` 诊断输出。
+当前脚手架支持交互式问答、环境检测、模板渲染、远程模板、最新依赖刷新、项目配置升级、插件模板、点文件恢复、依赖安装、Husky 初始化、Git 初始化，以及 `--verbose` / `--debug` 诊断输出。
 
 ## 特性
 
@@ -208,6 +208,7 @@ node bin/cli.js my-app --verbose
 - 8 套模板已接入 manifest 驱动的模板发现、问答和校验链路
 - Phase 1 模板曾完成集成回归；当前测试文件与测试脚本已按维护要求清除
 - `react-vite-ts` 模板可完成安装、Husky 初始化、Git 初始化和构建
+- Phase 2 已完成 `--remote`、`--latest`、`upgrade` 和 `cxa-plugin-*` 插件模板链路
 - `--verbose`、`--debug` 输出链路可用
 
 ## 发布前建议

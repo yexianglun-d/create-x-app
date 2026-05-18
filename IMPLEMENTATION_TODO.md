@@ -396,8 +396,14 @@
 - [x] 已完成：`TASK-203`，项目配置升级命令已完成
 - [x] 已完成：`TASK-204`，插件系统（Plugin API）已完成
 - [x] 已完成：Phase 2 智能能力全部任务
-- [→] 当前：进入 `v0.3.0` 发布前收口
-- [ ] 下一步：更新版本号并执行发布前检查
+- [x] 已完成：`v0.3.0` 版本号与发布文档收口
+- [x] 已验证：`npm install --package-lock-only`
+- [x] 已验证：`npm run lint`
+- [x] 已验证：`node bin/cli.js --help`
+- [x] 已验证：`node bin/cli.js upgrade --help`
+- [x] 已验证：`npm pack --dry-run`
+- [→] 当前：等待执行 `npm publish --access public --otp=<一次性验证码>`
+- [ ] 下一步：发布后执行 `npm view create-x-app-cli version` 与 `npx create-x-app-cli my-first-project` 验证
 
 ## 当前约定
 
