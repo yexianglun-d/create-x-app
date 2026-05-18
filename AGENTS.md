@@ -7,7 +7,7 @@
 **发布到 npm 后，任何人都可以通过以下方式使用：**
 
 ```bash
-npx create-x-app
+npx create-x-app-cli
 ```
 
 ---
@@ -72,12 +72,13 @@ create-x-app/
 
 ```json
 {
-  "name": "create-x-app",
+  "name": "create-x-app-cli",
   "version": "0.2.0",
   "description": "一条命令生成生产级项目模板",
   "type": "module",
   "bin": {
-    "create-x-app": "./bin/cli.js"
+    "create-x-app": "./bin/cli.js",
+    "create-x-app-cli": "./bin/cli.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -737,7 +738,7 @@ src/main/java/com/example/app/
 ```markdown
 # <%= projectName %>
 
-由 [create-x-app](https://npmjs.com/package/create-x-app) 脚手架生成。
+由 [create-x-app](https://npmjs.com/package/create-x-app-cli) 脚手架生成。
 
 ## 技术栈
 
@@ -942,7 +943,7 @@ node bin/cli.js my-test-project
 - [ ] 更新 package.json 中的版本号（使用 `npm version patch`）
 - [ ] 确认 `files` 字段包含 `bin`、`src`、`templates`、`shared`
 - [ ] 本地运行 `node bin/cli.js` 验证完整流程正常
-- [ ] 在 npmjs.com 确认包名 `create-x-app` 可用
+- [ ] 在 npmjs.com 确认包名 `create-x-app-cli` 权限可用
 - [ ] 撰写含使用说明和 CLI 演示动图的 `README.md`
 - [ ] 运行 `npm pack --dry-run` 预览将要发布的文件列表
 
@@ -954,7 +955,7 @@ npm publish --access public
 发布后通过以下命令验证：
 
 ```bash
-npx create-x-app my-first-project
+npx create-x-app-cli my-first-project
 ```
 
 ---
@@ -963,7 +964,7 @@ npx create-x-app my-first-project
 
 满足以下所有条件即视为项目完成：
 
-1. `npx create-x-app` 全流程零手动操作可运行
+1. `npx create-x-app-cli` 全流程零手动操作可运行
 2. 8 套模板均能生成有效、可运行的项目（`npm run dev` 正常启动）
 3. 每个生成的项目均包含公共文件（AGENTS.md、coding-rules.md、husky）
 4. 环境检测对版本过低的工具能正确发出警告

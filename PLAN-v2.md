@@ -30,8 +30,8 @@
 
 ## 当前统一基线
 
-- 产品名、CLI 命令名、文档对外名称统一采用 `create-x-app`
-- `create-x-app-cli` 仅视为仓库中的历史命名残留，需要在本轮迭代内完成收敛
+- 产品名、CLI 展示名、文档对外名称统一采用 `create-x-app`
+- npm 发布包名沿用已发布且有权限的 `create-x-app-cli`
 - `PLAN-v2.md` 负责设计和验收口径，`IMPLEMENTATION_TODO.md` 负责状态跟踪和执行顺序回填
 
 ---
@@ -46,20 +46,20 @@
 ### TASK-000：命名基线收敛（create-x-app）
 
 **目标**
-将历史残留名称 `create-x-app-cli` 统一收敛到 `create-x-app`，
-确保后续所有任务、命令、文档、发布说明基于同一命名体系执行。
+将产品展示名称统一收敛到 `create-x-app`。
+npm 包名保留 `create-x-app-cli`，避免与已被占用的 `create-x-app` npm 包名冲突。
 
 **需要修改的范围**
 
-- `package.json`：包名、`bin` 字段、描述文案
+- `package.json`：包名保留 `create-x-app-cli`，`bin` 保留 `create-x-app` 命令别名
 - `bin/cli.js`：CLI 名称、帮助文案
 - `README.md`、`RELEASE_COMMANDS.md`、`PLAN-v2.md`、`IMPLEMENTATION_TODO.md`
-- 其他仍然出现 `create-x-app-cli` 的模板、共享文档、测试说明
+- 其他仍然出现 `create-x-app-cli` 的位置必须是 npm 包名、npx 使用方式或发布说明
 
 **验收标准**
 ```bash
-rg -n "create-x-app-cli" .
-# ✔ 仅允许出现在明确的历史兼容说明中；不再作为主命令名和主文档名称
+node -e "const p=require('./package.json'); console.log(p.name, p.bin)"
+# ✔ 包名为 create-x-app-cli，bin 同时包含 create-x-app 和 create-x-app-cli
 ```
 
 ---
@@ -1239,7 +1239,7 @@ node bin/cli.js test-latest-offline --latest  # 断网
 **目标**
 为已有项目提供配置文件升级能力，对比新版模板与当前配置，生成 diff，用户确认后选择性应用。
 
-**新增命令**：`npx create-x-app upgrade`（在项目根目录运行）
+**新增命令**：`npx create-x-app-cli upgrade`（在项目根目录运行）
 
 **需要创建的文件**
 
@@ -1288,7 +1288,7 @@ node bin/cli.js test-upgrade
 cd test-upgrade
 # 手动修改 tsconfig.json 某字段，模拟版本偏差
 
-npx create-x-app upgrade
+npx create-x-app-cli upgrade
 # ✔ 检测到模板类型
 # ✔ 列出有差异的文件
 # ✔ 查看 diff 功能正常
@@ -1387,10 +1387,10 @@ node bin/cli.js --no-telemetry
 **新增命令**
 
 ```bash
-npx create-x-app search [keyword]
-npx create-x-app install cxa-plugin-nuxt
-npx create-x-app list
-npx create-x-app remove cxa-plugin-nuxt
+npx create-x-app-cli search [keyword]
+npx create-x-app-cli install cxa-plugin-nuxt
+npx create-x-app-cli list
+npx create-x-app-cli remove cxa-plugin-nuxt
 ```
 
 **需要创建的文件**
@@ -1403,13 +1403,13 @@ npx create-x-app remove cxa-plugin-nuxt
 
 **验收标准**
 ```bash
-npx create-x-app search
+npx create-x-app-cli search
 # ✔ 列出社区插件（名称、描述、周下载量）
 
-npx create-x-app install cxa-plugin-test
+npx create-x-app-cli install cxa-plugin-test
 # ✔ 安装成功，下次运行出现在模板列表
 
-npx create-x-app remove cxa-plugin-test
+npx create-x-app-cli remove cxa-plugin-test
 # ✔ 卸载成功
 ```
 

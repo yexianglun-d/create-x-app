@@ -18,8 +18,10 @@
 发布后可直接通过 `npx` 使用：
 
 ```bash
-npx create-x-app my-app
+npx create-x-app-cli my-app
 ```
+
+说明：npm 包名沿用已发布的 `create-x-app-cli`，CLI 展示名和安装后的命令别名仍保留 `create-x-app`。
 
 本地开发环境下可直接运行：
 
@@ -204,6 +206,7 @@ npm pack --dry-run
 
 当前使用的发布信息：
 
+- `name`: `create-x-app-cli`
 - `author`: `赵铁柱`
 - `license`: `MIT`
 - `repository`: `https://github.com/yexianglun-d/create-x-app.git`

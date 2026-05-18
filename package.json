@@ -1,5 +1,5 @@
 {
-  "name": "create-x-app",
+  "name": "create-x-app-cli",
   "version": "0.2.0",
   "description": "交互式 Node.js CLI，用于生成多场景项目模板",
   "keywords": [
@@ -26,7 +26,8 @@
   },
   "type": "module",
   "bin": {
-    "create-x-app": "./bin/cli.js"
+    "create-x-app": "./bin/cli.js",
+    "create-x-app-cli": "./bin/cli.js"
   },
   "engines": {
     "node": ">=18.0.0"

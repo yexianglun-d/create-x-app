@@ -36,7 +36,7 @@ npm pack --dry-run --cache /tmp/create-x-app-npm-cache
 
 当前包信息：
 
-- 包名：`create-x-app`
+- 包名：`create-x-app-cli`
 - 版本：`0.2.0`
 - 许可证：`MIT`
 - 作者：`赵铁柱`
@@ -62,7 +62,7 @@ npm publish --access public
 ## 9. 发布后验证
 
 ```bash
-npx create-x-app my-first-project
+npx create-x-app-cli my-first-project
 ```
 
 ## 10. Git 提交与推送

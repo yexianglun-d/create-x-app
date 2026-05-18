@@ -8,7 +8,8 @@
 
 - 设计与验收口径以 `PLAN-v2.md` 为准
 - 任务状态、执行顺序、完成记录以本文件为准
-- 本轮产品名、CLI 命令名、文档对外名称统一采用 `create-x-app`
+- 本轮产品名、CLI 展示名、文档对外名称统一采用 `create-x-app`
+- npm 发布包名沿用已发布且有权限的 `create-x-app-cli`
 - 遇到 Bug 不做补丁式修复，直接定位根因并做完整解决
 - 业务核心、复杂流程或难理解代码块，补充结构化注释说明
 
@@ -23,7 +24,7 @@
 
 ### 当前待收敛项
 
-- [x] 历史命名 `create-x-app-cli` 已从包配置、CLI 文案和主文档中收敛为 `create-x-app`
+- [x] npm 包名已按发布权限保留为 `create-x-app-cli`，CLI 展示名保留 `create-x-app`
 - [x] 现有模板的 resolver / prompts / validator 已切换到 manifest 驱动
 - [x] 包管理器命令已抽离到统一适配层，模板 package.json 已写入 `packageManager`
 - [x] 曾建立集成测试框架、快照基线和 CI 工作流；测试文件与测试脚本已按维护要求清除
@@ -53,11 +54,11 @@
 ### [x] TASK-000 命名基线收敛（create-x-app）
 
 输出：
-统一 `package.json`、CLI 帮助文案、README、发布文档和共享模板中的历史命名。
+统一 CLI 帮助文案、README、发布文档和共享模板中的产品命名；npm 包名保留 `create-x-app-cli` 用于发布。
 
 验收：
-- `rg -n "create-x-app-cli" .`
-- 仅允许出现在明确的历史兼容说明中
+- `package.json` 包名为 `create-x-app-cli`
+- CLI 展示名和 `bin.create-x-app` 保持 `create-x-app`
 - `node --test`
 
 ### [x] TASK-001 选择后强校验（Config Validator）
@@ -267,7 +268,7 @@
 
 验收：
 - `node bin/cli.js test-upgrade`
-- 在生成项目内执行 `npx create-x-app upgrade`
+- 在生成项目内执行 `npx create-x-app-cli upgrade`
 
 ### [ ] TASK-204 插件系统（Plugin API）
 
@@ -300,9 +301,9 @@
 - `src/marketplace/client.js`
 
 验收：
-- `npx create-x-app search`
-- `npx create-x-app install cxa-plugin-test`
-- `npx create-x-app remove cxa-plugin-test`
+- `npx create-x-app-cli search`
+- `npx create-x-app-cli install cxa-plugin-test`
+- `npx create-x-app-cli remove cxa-plugin-test`
 
 ## 全局任务
 
@@ -335,7 +336,7 @@
 ## 本轮执行记录
 
 - [x] 已完成：`PLAN-v2.md` 与 `IMPLEMENTATION_TODO.md` 命名和任务结构对齐
-- [x] 已完成：`TASK-000` 命名基线收敛，`create-x-app-cli` 仅保留在历史说明中
+- [x] 已完成：`TASK-000` 命名基线收敛，npm 包名按发布权限保留为 `create-x-app-cli`
 - [x] 已验证：`node --test`
 - [x] 已完成：`TASK-003 Part A`，现有三套模板已补齐 `manifest.json`
 - [x] 已完成：`TASK-001`，create 主流程已接入统一配置校验
