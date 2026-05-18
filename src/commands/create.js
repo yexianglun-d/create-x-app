@@ -18,13 +18,19 @@ export async function createCommand(projectNameArg, options) {
 
     const config = await runPrompts(projectNameArg)
     validateConfig(config)
-    const templatePath = resolveTemplate(config.template)
+    const templatePath = await resolveTemplate(config.template, {
+      remote: options.remote,
+      noCache: options.cache === false,
+    })
 
     logger.detail(`目标目录：${config.targetDir}`)
     logger.detail(`模板目录：${templatePath}`)
 
     await generateProject({
       config,
+      options: {
+        latest: options.latest,
+      },
       templatePath,
     })
 

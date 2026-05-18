@@ -132,6 +132,11 @@ program
   .argument('[project-name]', '要创建的项目目录名称')
   .option('--skip-install', '跳过脚手架完成后的 npm install')
   .option('--skip-git', '跳过 git init')
+  .option('--remote', '使用远端最新模板（默认使用本地模板）')
+  .option('--no-cache', '配合 --remote 使用，忽略缓存强制重新拉取')
+  .option('--latest', '生成时从 npm 拉取最新依赖版本')
+  .option('--verbose', '显示详细执行日志')
+  .option('--debug', '显示调试日志和错误堆栈')
   .action(createCommand)
 
 program.parse()

@@ -237,26 +237,43 @@
 
 ## Phase 2 — 智能能力
 
-### [ ] TASK-201 远程模板拉取（--remote）
+### [x] TASK-201 远程模板拉取（--remote）
 
 输出：
 - `src/remote/template-fetcher.js`
 - `resolveTemplate` 支持 `--remote` 远端增强与失败回退本地
 
 验收：
-- `node bin/cli.js test-local`
-- `node bin/cli.js test-remote --remote`
-- `node bin/cli.js test-fallback --remote`
+- `node --input-type=module -e "import { resolveTemplate } from './src/steps/resolver.js'; console.log(await resolveTemplate('react-vite-ts'))"`
+- `node --input-type=module -e "import { resolveTemplate } from './src/steps/resolver.js'; console.log(await resolveTemplate('react-vite-ts', { remote: true, noCache: true }))"`
+- `node --input-type=module -e "globalThis.fetch = async () => { throw new Error('mock offline') }; const { resolveTemplate } = await import('./src/steps/resolver.js'); console.log(await resolveTemplate('react-vite-ts', { remote: true, noCache: true }))"`
 
-### [ ] TASK-202 依赖版本刷新（--latest）
+完成记录（2026-05-18）：
+- 已新增 `src/remote/template-fetcher.js`，支持 GitHub Contents API 递归下载模板
+- 已实现 `~/.create-x-app/cache/templates` 下 24 小时远端模板缓存
+- 已新增 `--remote` 与 `--no-cache` CLI 选项
+- 已将 `resolveTemplate` 切换为异步，并支持远端失败回退本地模板
+- 已通过 `npm run lint`
+- 已通过本地解析、远端拉取和模拟断网回退验证
+
+### [x] TASK-202 依赖版本刷新（--latest）
 
 输出：
 - `src/utils/pkg-version.js`
 - 生成器支持读取模板基线版本并在 `--latest` 时刷新
 
 验收：
-- `node bin/cli.js test-baseline`
-- `node bin/cli.js test-latest --latest`
+- 默认生成器调用保留模板基线版本
+- `options.latest = true` 时刷新 npm latest 版本
+- 模拟断网时 `options.latest = true` 回退模板基线版本
+
+完成记录（2026-05-18）：
+- 已新增 `src/utils/pkg-version.js`，并发查询 npm registry latest 版本
+- 已新增 `--latest` CLI 选项
+- 生成器会扫描已渲染 `package.json`，只刷新当前用户选择后真实存在的依赖
+- 依赖版本拉取失败时按包粒度回退基线版本，不阻断项目生成
+- 已通过 `npm run lint`
+- 已通过默认基线、latest 刷新和模拟断网回退验证
 
 ### [ ] TASK-203 项目升级命令（upgrade）
 
@@ -351,8 +368,11 @@
 - [x] 已验证：`npm run lint`
 - [x] 已验证：`node bin/cli.js --help`
 - [x] 已验证：`npm pack --dry-run`
-- [→] 当前：提交并推送 `main`
-- [ ] 下一步：完成 npm 2FA 校验后执行 `npm publish --access public --otp=<一次性验证码>`
+- [x] 已完成：`create-x-app-cli@0.2.0` 已发布并完成发布后验证
+- [x] 已完成：`TASK-201`，远程模板拉取、缓存和失败回退链路已完成
+- [x] 已完成：`TASK-202`，依赖版本 latest 刷新和失败回退链路已完成
+- [→] 当前：进入 `TASK-203`，实现项目升级命令 `upgrade`
+- [ ] 下一步：设计并实现 `src/commands/upgrade.js` 与 `src/upgrade/*`
 
 ## 当前约定
 

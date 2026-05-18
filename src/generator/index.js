@@ -4,6 +4,8 @@ import fs from 'fs-extra'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadManifest } from '../manifest/loader.js'
+import { logger } from '../utils/logger.js'
+import { getLatestVersions } from '../utils/pkg-version.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SHARED_DIR = join(__dirname, '../../shared')
@@ -21,6 +23,12 @@ const PACKAGE_MANAGER_VERSIONS = {
   pnpm: '9.12.3',
   yarn: '4.5.1',
 }
+const DEPENDENCY_FIELDS = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+]
 
 function ensurePromptNotCancelled(value) {
   if (isCancel(value)) {
@@ -112,6 +120,7 @@ function buildTemplateVariables(config) {
     extras: config.extras,
     packageManager: config.packageManager,
     packageManagerSpecifier: `${config.packageManager}@${PACKAGE_MANAGER_VERSIONS[config.packageManager] ?? 'latest'}`,
+    versions: {},
     hasEslint: config.features.includes('eslint'),
     hasPrettier: config.features.includes('prettier'),
     hasHusky: config.features.includes('husky'),
@@ -140,6 +149,124 @@ async function renderEjsFiles(targetDir, templateVariables) {
 
     await fs.writeFile(outputFilePath, renderedContent, 'utf8')
     await fs.remove(ejsFilePath)
+  }
+}
+
+async function collectPackageJsonFiles(targetDir) {
+  const entries = await fs.readdir(targetDir, { withFileTypes: true })
+  const packageJsonFiles = []
+
+  for (const entry of entries) {
+    const currentPath = join(targetDir, entry.name)
+
+    if (entry.isDirectory()) {
+      if (entry.name === 'node_modules') {
+        continue
+      }
+
+      packageJsonFiles.push(...await collectPackageJsonFiles(currentPath))
+      continue
+    }
+
+    if (entry.name === 'package.json') {
+      packageJsonFiles.push(currentPath)
+    }
+  }
+
+  return packageJsonFiles
+}
+
+function collectDependencyNames(packageJson) {
+  const dependencyNames = []
+
+  for (const field of DEPENDENCY_FIELDS) {
+    for (const [dependencyName, versionSpecifier] of Object.entries(packageJson[field] ?? {})) {
+      if (!shouldRefreshVersion(versionSpecifier)) {
+        continue
+      }
+
+      dependencyNames.push(dependencyName)
+    }
+  }
+
+  return dependencyNames
+}
+
+function shouldRefreshVersion(versionSpecifier) {
+  return typeof versionSpecifier === 'string' && /^[~^]?\d+\.\d+\.\d+/.test(versionSpecifier)
+}
+
+function applyLatestVersions(packageJson, latestVersions) {
+  for (const field of DEPENDENCY_FIELDS) {
+    const dependencies = packageJson[field]
+
+    if (!dependencies) {
+      continue
+    }
+
+    for (const [dependencyName, currentVersion] of Object.entries(dependencies)) {
+      if (!shouldRefreshVersion(currentVersion)) {
+        continue
+      }
+
+      const latestVersion = latestVersions[dependencyName]
+
+      if (!latestVersion) {
+        continue
+      }
+
+      const rangePrefix = currentVersion.match(/^[~^]/)?.[0] ?? ''
+      dependencies[dependencyName] = `${rangePrefix}${latestVersion}`
+    }
+  }
+}
+
+/**
+ * 将已渲染 package.json 中的依赖刷新到 npm 最新版本。
+ *
+ * 说明：
+ * 1. 先渲染再扫描，确保只处理用户真实选择后存在的依赖
+ * 2. 单个包拉取失败只回退该包的基线版本，不影响项目生成主流程
+ *
+ * @param {string} targetDir 项目输出目录
+ * @returns {Promise<void>}
+ */
+async function refreshPackageVersions(targetDir) {
+  const packageJsonFiles = await collectPackageJsonFiles(targetDir)
+  const packageJsonByPath = new Map()
+  const dependencyNames = new Set()
+
+  for (const packageJsonFile of packageJsonFiles) {
+    const packageJson = await fs.readJson(packageJsonFile)
+    packageJsonByPath.set(packageJsonFile, packageJson)
+
+    for (const dependencyName of collectDependencyNames(packageJson)) {
+      dependencyNames.add(dependencyName)
+    }
+  }
+
+  if (dependencyNames.size === 0) {
+    return
+  }
+
+  logger.step('正在检测最新依赖版本...')
+
+  const latestVersions = await getLatestVersions([...dependencyNames])
+  const failedPackages = Object.entries(latestVersions)
+    .filter(([, latestVersion]) => !latestVersion)
+    .map(([packageName]) => packageName)
+
+  if (failedPackages.length > 0) {
+    if (failedPackages.length === dependencyNames.size) {
+      logger.warn('依赖版本拉取失败，使用基线版本')
+    } else {
+      logger.warn(`部分依赖版本拉取失败，使用基线版本：${failedPackages.join(', ')}`)
+    }
+  }
+
+  for (const [packageJsonFile, packageJson] of packageJsonByPath.entries()) {
+    applyLatestVersions(packageJson, latestVersions)
+    await fs.writeFile(packageJsonFile, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
   }
 }
 
@@ -269,7 +396,7 @@ async function pruneSubPromptArtifacts(config, targetDir, manifest) {
   }
 }
 
-export async function generateProject({ config, templatePath }) {
+export async function generateProject({ config, options = {}, templatePath }) {
   try {
     const manifest = loadManifest(config.template)
 
@@ -285,6 +412,10 @@ export async function generateProject({ config, templatePath }) {
     await pruneSubPromptArtifacts(config, config.targetDir, manifest)
     await pruneExtraArtifacts(config, config.targetDir, manifest)
     await pruneFeatureArtifacts(config, config.targetDir)
+
+    if (options.latest) {
+      await refreshPackageVersions(config.targetDir)
+    }
   } catch (error) {
     throw new Error(`生成项目失败：${error.message}`)
   }

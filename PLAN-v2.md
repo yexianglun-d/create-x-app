@@ -1163,11 +1163,11 @@ node bin/cli.js test-fallback --remote  # 断网或 token 不存在
 
 ```
 默认行为（无 --latest）：
-  templateVars.versions = 模板内硬编码的基线版本
+  package.json 使用模板内硬编码的基线版本
   → 可重复、可离线、行为稳定
 
 增强行为（传 --latest）：
-  拉取各包最新版 → 替换 templateVars.versions → 渲染 package.json.ejs
+  渲染 package.json → 收集真实依赖 → 拉取各包最新版 → 回写 package.json
   → 失败时回退基线版本并警告
 ```
 
@@ -1194,19 +1194,9 @@ templateVars.versions = options.latest
   : baselineVersions
 ```
 
-**模板基线版本约定（在每个模板 package.json.ejs 顶部注释声明）**
+**模板基线版本约定**
 
-```json
-<%#
-BASELINE_VERSIONS:
-react=18.3.1
-react-dom=18.3.1
-vite=5.3.0
-typescript=5.4.5
-%>
-```
-
-生成器解析此注释，提取 `baselineVersions` 对象。`--latest` 时以此对象的 key 集合去 npm 查询。
+模板 `package.json.ejs` 中直接声明稳定基线版本。生成器在 EJS 渲染完成后扫描生成项目内真实存在的 `package.json`，只对当前用户选择后实际存在的依赖执行 latest 查询和回写。
 
 **bin/cli.js 新增选项**
 

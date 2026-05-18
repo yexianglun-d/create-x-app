@@ -95,6 +95,12 @@ create-x-app [project-name] [options]
   跳过脚手架完成后的依赖安装
 - `--skip-git`
   跳过 `git init`
+- `--remote`
+  使用 GitHub 远端最新模板；默认始终使用 npm 包内置本地模板
+- `--no-cache`
+  配合 `--remote` 使用，忽略 24 小时缓存并强制重新拉取
+- `--latest`
+  生成时从 npm 拉取最新依赖版本；默认使用模板内置基线版本
 - `--verbose`
   输出详细执行日志，例如实际执行的命令、目标目录、被跳过的步骤
 - `--debug`
@@ -106,6 +112,8 @@ create-x-app [project-name] [options]
 node bin/cli.js demo-app --verbose
 node bin/cli.js demo-app --debug
 node bin/cli.js demo-app --skip-install --skip-git
+node bin/cli.js demo-app --remote --no-cache
+node bin/cli.js demo-app --latest
 ```
 
 ## CLI 演示
