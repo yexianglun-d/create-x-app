@@ -20,7 +20,6 @@ Style: CTA,Hiragino Sans GB,40,&H000F1714,&H000000FF,&H00000000,&H00000000,-1,0,
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:00.00,0:00:15.00,Brand,,0,0,0,,{\pos(84,58)}create-x-app
-Dialogue: 0,0:00:00.00,0:00:15.00,Muted,,0,0,0,,{\pos(1045,62)}15s quick tutorial
 
 Dialogue: 1,0:00:00.00,0:00:03.00,Eyebrow,,0,0,0,,{\fad(160,180)\pos(90,150)}STEP 01
 Dialogue: 1,0:00:00.05,0:00:03.00,Title,,0,0,0,,{\fad(180,180)\pos(90,198)}一条命令启动项目
