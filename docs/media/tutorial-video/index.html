@@ -3,8 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>create-x-app-cli 宣传视频</title>
+    <title>create-x-app-cli 宣传视频 v2</title>
     <style>
+      @font-face {
+        font-family: "PingFang SC";
+        src: local("PingFang SC");
+      }
+
+      @font-face {
+        font-family: "Hiragino Sans GB";
+        src: local("Hiragino Sans GB");
+      }
+
+      @font-face {
+        font-family: "Microsoft YaHei";
+        src: local("Microsoft YaHei");
+      }
+
       * {
         box-sizing: border-box;
       }
@@ -15,9 +30,9 @@
         height: 100%;
         margin: 0;
         overflow: hidden;
-        background: #07090d;
-        color: #f4f7f8;
-        font-family: "PingFang SC", "Hiragino Sans GB", "MiSans", "Microsoft YaHei", sans-serif;
+        background: #05070a;
+        color: #f3f6f4;
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       }
 
       #create-x-app-tutorial {
@@ -26,99 +41,87 @@
         height: 1080px;
         overflow: hidden;
         background:
-          radial-gradient(circle at 24% 20%, rgba(143, 185, 168, 0.18), rgba(143, 185, 168, 0) 28%),
-          radial-gradient(circle at 82% 78%, rgba(214, 199, 161, 0.14), rgba(214, 199, 161, 0) 30%),
-          linear-gradient(135deg, #07090d 0%, #0b1016 46%, #10151a 100%);
+          radial-gradient(circle at 24% 16%, rgba(141, 183, 164, 0.18), rgba(141, 183, 164, 0) 30%),
+          radial-gradient(circle at 76% 74%, rgba(216, 199, 157, 0.13), rgba(216, 199, 157, 0) 32%),
+          radial-gradient(circle at 52% 44%, rgba(84, 105, 112, 0.2), rgba(84, 105, 112, 0) 42%),
+          #05070a;
       }
 
-      .grain {
+      .ambient {
         position: absolute;
         inset: 0;
         z-index: 1;
-        opacity: 0.08;
-        background-image:
-          linear-gradient(rgba(244, 247, 248, 0.12) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(244, 247, 248, 0.1) 1px, transparent 1px);
-        background-size: 72px 72px;
-        mask-image: radial-gradient(circle at 50% 50%, #000 0%, rgba(0, 0, 0, 0.7) 42%, transparent 78%);
-      }
-
-      .orb {
-        position: absolute;
-        z-index: 0;
-        border-radius: 999px;
-        filter: blur(34px);
-        opacity: 0.3;
-      }
-
-      .orb-a {
-        width: 680px;
-        height: 380px;
-        left: -170px;
-        top: 120px;
-        background: rgba(143, 185, 168, 0.24);
-      }
-
-      .orb-b {
-        width: 620px;
-        height: 420px;
-        right: -120px;
-        bottom: 30px;
-        background: rgba(214, 199, 161, 0.18);
-      }
-
-      .particle-field {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
         pointer-events: none;
       }
 
-      .particle {
+      .grid-dust {
+        position: absolute;
+        inset: -80px;
+        opacity: 0.12;
+        background-image:
+          linear-gradient(rgba(243, 246, 244, 0.09) 1px, rgba(5, 7, 10, 0) 1px),
+          linear-gradient(90deg, rgba(243, 246, 244, 0.08) 1px, rgba(5, 7, 10, 0) 1px);
+        background-size: 96px 96px;
+        mask-image: radial-gradient(circle at 50% 48%, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.18) 58%, rgba(0, 0, 0, 0) 83%);
+      }
+
+      .soft-field {
+        position: absolute;
+        width: 1120px;
+        height: 780px;
+        left: 430px;
+        top: 124px;
+        border-radius: 50%;
+        opacity: 0.34;
+        filter: blur(64px);
+        background:
+          radial-gradient(circle at 38% 35%, rgba(141, 183, 164, 0.32), rgba(141, 183, 164, 0) 38%),
+          radial-gradient(circle at 66% 70%, rgba(216, 199, 157, 0.22), rgba(216, 199, 157, 0) 42%);
+      }
+
+      .spark {
         position: absolute;
         width: 3px;
         height: 3px;
         border-radius: 50%;
-        background: rgba(244, 247, 248, 0.42);
-        box-shadow: 0 0 18px rgba(214, 199, 161, 0.12);
+        background: rgba(243, 246, 244, 0.46);
       }
 
-      .p1 { left: 142px; top: 174px; opacity: 0.26; }
-      .p2 { left: 318px; top: 716px; opacity: 0.2; }
-      .p3 { left: 442px; top: 286px; opacity: 0.3; }
-      .p4 { left: 612px; top: 842px; opacity: 0.2; }
-      .p5 { left: 762px; top: 138px; opacity: 0.28; }
-      .p6 { left: 916px; top: 628px; opacity: 0.22; }
-      .p7 { left: 1098px; top: 218px; opacity: 0.28; }
-      .p8 { left: 1274px; top: 888px; opacity: 0.2; }
-      .p9 { left: 1448px; top: 304px; opacity: 0.3; }
-      .p10 { left: 1608px; top: 694px; opacity: 0.24; }
-      .p11 { left: 1772px; top: 186px; opacity: 0.22; }
-      .p12 { left: 1824px; top: 922px; opacity: 0.18; }
-      .p13 { left: 214px; top: 462px; opacity: 0.22; }
-      .p14 { left: 1028px; top: 982px; opacity: 0.18; }
-      .p15 { left: 1516px; top: 516px; opacity: 0.26; }
-      .p16 { left: 688px; top: 412px; opacity: 0.18; }
+      .s1 { left: 178px; top: 206px; opacity: 0.24; }
+      .s2 { left: 362px; top: 822px; opacity: 0.18; }
+      .s3 { left: 554px; top: 344px; opacity: 0.22; }
+      .s4 { left: 826px; top: 152px; opacity: 0.24; }
+      .s5 { left: 1124px; top: 902px; opacity: 0.18; }
+      .s6 { left: 1320px; top: 228px; opacity: 0.24; }
+      .s7 { left: 1512px; top: 686px; opacity: 0.2; }
+      .s8 { left: 1744px; top: 284px; opacity: 0.18; }
+      .s9 { left: 1842px; top: 936px; opacity: 0.14; }
+      .s10 { left: 1028px; top: 520px; opacity: 0.18; }
 
       .scene {
         position: absolute;
         inset: 0;
-        z-index: 10;
+        z-index: 5;
         width: 100%;
         height: 100%;
         overflow: hidden;
+        background-color: rgba(5, 7, 10, 0.01);
+      }
+
+      .scene:not(#scene-hook) {
+        opacity: 0;
       }
 
       .scene-content {
         position: relative;
-        z-index: 3;
+        z-index: 2;
         width: 100%;
         height: 100%;
-        padding: 120px 150px;
+        padding: 128px 150px;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 36px;
+        gap: 34px;
       }
 
       h1,
@@ -127,43 +130,44 @@
         margin: 0;
       }
 
-      .eyebrow {
-        color: #d6c7a1;
-        font-size: 22px;
-        font-weight: 500;
-      }
-
-      .headline {
-        max-width: 860px;
-        color: #f4f7f8;
-        font-size: 88px;
-        line-height: 1.08;
-        font-weight: 760;
-      }
-
-      .subhead {
-        max-width: 780px;
-        color: #bdc7ca;
-        font-size: 31px;
-        line-height: 1.52;
-        font-weight: 350;
-      }
-
       .mono {
-        font-family: "SFMono-Regular", "JetBrains Mono", "Cascadia Mono", "Menlo", monospace;
+        font-family: "JetBrains Mono", monospace;
         font-variant-ligatures: none;
       }
 
+      .eyebrow {
+        color: #d8c79d;
+        font-size: 22px;
+        font-weight: 520;
+        letter-spacing: 0.01em;
+      }
+
+      .display {
+        max-width: 850px;
+        color: #f3f6f4;
+        font-size: 94px;
+        line-height: 1.05;
+        font-weight: 790;
+      }
+
+      .copy {
+        max-width: 740px;
+        color: #aab6b7;
+        font-size: 29px;
+        line-height: 1.5;
+        font-weight: 360;
+      }
+
       .terminal {
-        width: 760px;
-        border: 1px solid rgba(244, 247, 248, 0.12);
+        border: 1px solid rgba(243, 246, 244, 0.12);
         border-radius: 24px;
         overflow: hidden;
-        background: linear-gradient(145deg, rgba(16, 24, 31, 0.92), rgba(8, 11, 15, 0.94));
+        background: linear-gradient(145deg, rgba(18, 25, 31, 0.95), rgba(8, 11, 15, 0.94));
         box-shadow:
-          0 34px 90px rgba(0, 0, 0, 0.4),
+          0 42px 110px rgba(0, 0, 0, 0.42),
           inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(20px);
+        transform-style: preserve-3d;
+        will-change: transform, opacity, filter;
       }
 
       .terminal-bar {
@@ -172,381 +176,394 @@
         align-items: center;
         gap: 12px;
         padding: 0 22px;
-        background: rgba(255, 255, 255, 0.045);
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.045);
       }
 
       .dot {
-        width: 12px;
-        height: 12px;
+        width: 11px;
+        height: 11px;
         border-radius: 50%;
       }
 
-      .dot-red { background: #d08d82; }
-      .dot-yellow { background: #d6c7a1; }
-      .dot-green { background: #8fb9a8; }
+      .dot-a { background: #c98378; }
+      .dot-b { background: #d8c79d; }
+      .dot-c { background: #8db7a4; }
 
       .terminal-body {
-        min-height: 236px;
-        padding: 34px 38px 40px;
-        color: #f4f7f8;
-        font-size: 27px;
-        line-height: 1.78;
+        padding: 34px 38px 38px;
+        color: #f3f6f4;
+        font-size: 25px;
+        line-height: 1.72;
       }
 
       .prompt {
-        color: #8fb9a8;
+        color: #8db7a4;
       }
 
-      .muted-line {
-        color: #aeb8bc;
+      .muted {
+        color: #aab6b7;
       }
 
-      .success-line {
-        color: #8fb9a8;
+      .ok {
+        color: #8db7a4;
       }
 
-      .scene-one .scene-content {
-        justify-content: center;
-        gap: 44px;
-      }
-
-      .scene-one-layout {
+      .hook-layout {
         display: grid;
-        grid-template-columns: minmax(620px, 780px) 1fr;
+        grid-template-columns: 720px 1fr;
+        gap: 94px;
         align-items: center;
-        gap: 82px;
-        width: 100%;
       }
 
-      .scene-one-copy {
+      .hero-terminal {
+        width: 720px;
+        transform: perspective(1400px) rotateY(-9deg) rotateX(4deg);
+      }
+
+      .hero-terminal .terminal-body {
+        min-height: 290px;
+        font-size: 29px;
+      }
+
+      .core-mark {
+        position: absolute;
+        left: 612px;
+        top: 466px;
+        width: 112px;
+        height: 112px;
+        border-radius: 34px;
+        border: 1px solid rgba(216, 199, 157, 0.28);
+        background:
+          radial-gradient(circle at 30% 20%, rgba(243, 246, 244, 0.18), rgba(243, 246, 244, 0) 42%),
+          linear-gradient(145deg, rgba(23, 32, 38, 0.96), rgba(9, 13, 17, 0.96));
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.34);
         display: flex;
-        flex-direction: column;
-        gap: 28px;
-      }
-
-      .scene-two .scene-content {
+        align-items: center;
         justify-content: center;
-        gap: 52px;
+        color: #d8c79d;
+        font-size: 44px;
+        font-weight: 780;
       }
 
-      .scene-two-layout {
+      .ring {
+        position: absolute;
+        left: 514px;
+        top: 368px;
+        width: 308px;
+        height: 308px;
+        border-radius: 50%;
+        border: 1px solid rgba(141, 183, 164, 0.22);
+        box-shadow: inset 0 0 38px rgba(141, 183, 164, 0.08);
+      }
+
+      .ring.ring-b {
+        left: 466px;
+        top: 320px;
+        width: 404px;
+        height: 404px;
+        border-color: rgba(216, 199, 157, 0.12);
+      }
+
+      .infra-layout {
         display: grid;
         grid-template-columns: 650px 1fr;
+        gap: 58px;
         align-items: center;
-        gap: 76px;
       }
 
-      .terminal-compact {
-        width: 650px;
-        transform: perspective(1200px) rotateY(8deg) rotateX(2deg);
-      }
-
-      .terminal-compact .terminal-body {
-        min-height: 310px;
-        font-size: 23px;
-      }
-
-      .ability-wrap {
+      .infra-copy {
         display: flex;
         flex-direction: column;
-        gap: 30px;
+        gap: 22px;
       }
 
-      .title-block {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
+      .section-title {
+        max-width: 850px;
+        color: #f3f6f4;
+        font-size: 58px;
+        line-height: 1.13;
+        font-weight: 780;
       }
 
-      .scene-title {
-        max-width: 770px;
-        color: #f4f7f8;
-        font-size: 60px;
-        line-height: 1.15;
-        font-weight: 740;
-      }
-
-      .scene-copy {
-        max-width: 720px;
-        color: #b6c0c3;
-        font-size: 26px;
-        line-height: 1.52;
-        font-weight: 350;
-      }
-
-      .ability-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(240px, 1fr));
-        gap: 18px;
+      .section-copy {
         max-width: 660px;
+        color: #aab6b7;
+        font-size: 26px;
+        line-height: 1.48;
+        font-weight: 360;
       }
 
-      .ability-card {
-        min-height: 122px;
-        padding: 26px 28px;
-        border: 1px solid rgba(244, 247, 248, 0.1);
+      .pipeline {
+        position: relative;
+        height: 560px;
+        transform-style: preserve-3d;
+      }
+
+      .rail {
+        position: absolute;
+        left: 48px;
+        right: 38px;
+        top: 278px;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(141, 183, 164, 0), rgba(141, 183, 164, 0.56), rgba(216, 199, 157, 0.34), rgba(141, 183, 164, 0));
+        transform: perspective(900px) rotateX(58deg);
+        transform-origin: center;
+      }
+
+      .step {
+        position: absolute;
+        width: 220px;
+        min-height: 112px;
+        padding: 22px 24px;
+        border: 1px solid rgba(243, 246, 244, 0.12);
         border-radius: 22px;
-        background: linear-gradient(150deg, rgba(22, 31, 38, 0.88), rgba(10, 13, 18, 0.82));
-        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.24);
-        display: flex;
-        align-items: center;
-        color: #f4f7f8;
+        background: linear-gradient(145deg, rgba(19, 28, 34, 0.9), rgba(8, 12, 16, 0.84));
+        box-shadow: 0 30px 84px rgba(0, 0, 0, 0.26);
+        color: #f3f6f4;
         font-size: 24px;
+        font-weight: 580;
+      }
+
+      .step small {
+        display: block;
+        margin-bottom: 10px;
+        color: #8db7a4;
+        font-size: 17px;
         font-weight: 520;
       }
 
-      .ability-card span {
-        color: #8fb9a8;
-        margin-right: 16px;
-        font-size: 22px;
+      .step-a { left: 38px; top: 88px; }
+      .step-b { left: 318px; top: 154px; }
+      .step-c { left: 596px; top: 80px; }
+      .step-d { left: 196px; top: 360px; }
+      .step-e { left: 486px; top: 396px; }
+      .step-f { left: 770px; top: 316px; width: 246px; }
+
+      .stack-terminal {
+        width: 545px;
+        transform: perspective(1200px) rotateY(10deg) rotateX(4deg);
       }
 
-      .scene-three .scene-content {
-        justify-content: center;
-        gap: 34px;
+      .stack-terminal .terminal-body {
+        min-height: 360px;
+        font-size: 22px;
       }
 
       .ecosystem-layout {
         display: grid;
-        grid-template-columns: 760px 1fr;
+        grid-template-columns: 680px 1fr;
+        gap: 86px;
         align-items: center;
-        gap: 70px;
-        width: 100%;
       }
 
-      .cli-question {
-        width: 760px;
+      .plugin-terminal {
+        width: 680px;
+        transform: perspective(1200px) rotateY(-7deg) rotateX(2deg);
       }
 
-      .cli-question .terminal-body {
+      .plugin-terminal .terminal-body {
         min-height: 430px;
-        font-size: 22px;
-        line-height: 1.72;
+        font-size: 21px;
       }
 
-      .choice {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        color: #bdc7ca;
-      }
-
-      .choice strong {
-        color: #f4f7f8;
-        font-weight: 560;
-      }
-
-      .check {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        background: rgba(143, 185, 168, 0.18);
-        border: 1px solid rgba(143, 185, 168, 0.5);
-      }
-
-      .ecosystem {
+      .network {
         position: relative;
-        height: 660px;
-        border-radius: 36px;
+        height: 650px;
+      }
+
+      .network-title {
+        position: absolute;
+        left: 4px;
+        top: 0;
+        max-width: 850px;
+      }
+
+      .network-title .section-title {
+        max-width: 850px;
+        font-size: 56px;
       }
 
       .network-line {
         position: absolute;
         height: 1px;
-        background: linear-gradient(90deg, rgba(143, 185, 168, 0), rgba(143, 185, 168, 0.42), rgba(214, 199, 161, 0));
         transform-origin: left center;
+        background: linear-gradient(90deg, rgba(141, 183, 164, 0), rgba(141, 183, 164, 0.46), rgba(216, 199, 157, 0));
       }
 
-      .line-a { width: 300px; left: 230px; top: 246px; transform: rotate(-16deg); }
-      .line-b { width: 350px; left: 220px; top: 330px; transform: rotate(18deg); }
-      .line-c { width: 250px; left: 340px; top: 420px; transform: rotate(-12deg); }
-      .line-d { width: 230px; left: 210px; top: 470px; transform: rotate(24deg); }
+      .nl-a { width: 350px; left: 250px; top: 294px; transform: rotate(-18deg); }
+      .nl-b { width: 330px; left: 250px; top: 340px; transform: rotate(8deg); }
+      .nl-c { width: 290px; left: 250px; top: 386px; transform: rotate(28deg); }
+      .nl-d { width: 220px; left: 164px; top: 430px; transform: rotate(112deg); }
 
       .node {
         position: absolute;
-        min-width: 178px;
-        padding: 18px 22px;
-        border: 1px solid rgba(244, 247, 248, 0.12);
+        min-width: 170px;
+        padding: 18px 20px;
         border-radius: 22px;
-        background: rgba(17, 24, 32, 0.86);
-        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.27);
-        color: #f4f7f8;
-        font-size: 22px;
-        font-weight: 500;
+        border: 1px solid rgba(243, 246, 244, 0.12);
+        background: rgba(15, 22, 28, 0.88);
+        color: #f3f6f4;
+        box-shadow: 0 28px 76px rgba(0, 0, 0, 0.26);
+        font-size: 21px;
+        font-weight: 560;
       }
 
       .node small {
         display: block;
-        margin-top: 8px;
-        color: #aeb8bc;
-        font-size: 16px;
-        font-weight: 350;
+        margin-top: 7px;
+        color: #aab6b7;
+        font-size: 15px;
+        font-weight: 360;
       }
 
       .node-core {
-        left: 130px;
-        top: 274px;
-        min-width: 238px;
+        left: 70px;
+        top: 284px;
+        min-width: 260px;
         padding: 28px 30px;
-        border-color: rgba(214, 199, 161, 0.24);
-        background: linear-gradient(145deg, rgba(31, 37, 42, 0.92), rgba(13, 17, 22, 0.9));
-        font-size: 28px;
+        border-color: rgba(216, 199, 157, 0.28);
+        font-size: 27px;
       }
 
-      .node-a { left: 500px; top: 112px; }
-      .node-b { left: 560px; top: 292px; }
-      .node-c { left: 476px; top: 488px; }
-      .node-d { left: 268px; top: 548px; }
+      .node-a { left: 540px; top: 148px; }
+      .node-b { left: 602px; top: 316px; }
+      .node-c { left: 492px; top: 500px; }
+      .node-d { left: 96px; top: 548px; }
 
-      .ecosystem-copy {
+      .ecosystem-caption {
         position: absolute;
-        left: 0;
-        top: 18px;
-        max-width: 760px;
+        left: 4px;
+        bottom: 8px;
+        color: #d8c79d;
+        font-size: 27px;
+        font-weight: 430;
       }
 
-      .ecosystem-copy .scene-title {
-        max-width: 760px;
-        font-size: 56px;
-      }
-
-      .bottom-line {
-        position: absolute;
-        left: 0;
-        bottom: 4px;
-        color: #d6c7a1;
-        font-size: 26px;
-        font-weight: 420;
-      }
-
-      .scene-four .scene-content {
-        justify-content: center;
+      .final-layout {
         align-items: center;
-        padding: 114px 170px 96px;
-        gap: 40px;
         text-align: center;
+        padding: 118px 180px 96px;
       }
 
       .final-mark {
-        width: 150px;
-        height: 150px;
-        border-radius: 38px;
-        border: 1px solid rgba(244, 247, 248, 0.14);
+        width: 156px;
+        height: 156px;
+        border-radius: 42px;
+        border: 1px solid rgba(216, 199, 157, 0.26);
         background:
-          linear-gradient(145deg, rgba(244, 247, 248, 0.1), rgba(244, 247, 248, 0.02)),
-          #111820;
-        box-shadow:
-          0 34px 90px rgba(0, 0, 0, 0.35),
-          inset 0 1px 0 rgba(255, 255, 255, 0.11);
+          radial-gradient(circle at 30% 20%, rgba(243, 246, 244, 0.16), rgba(243, 246, 244, 0) 42%),
+          linear-gradient(145deg, rgba(22, 31, 38, 0.94), rgba(8, 12, 16, 0.96));
+        box-shadow: 0 34px 110px rgba(0, 0, 0, 0.36);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #d6c7a1;
-        font-size: 48px;
-        font-weight: 760;
+        color: #d8c79d;
+        font-size: 52px;
+        font-weight: 790;
       }
 
       .final-title {
-        max-width: 860px;
-        color: #f4f7f8;
-        font-size: 74px;
+        max-width: 940px;
+        color: #f3f6f4;
+        font-size: 76px;
         line-height: 1.12;
-        font-weight: 760;
+        font-weight: 790;
       }
 
       .final-copy {
-        max-width: 830px;
-        color: #bdc7ca;
+        max-width: 840px;
+        color: #aab6b7;
         font-size: 29px;
-        line-height: 1.52;
-        font-weight: 350;
+        line-height: 1.5;
+        font-weight: 360;
       }
 
-      .github-card {
-        width: 920px;
+      .repo-card {
+        width: 980px;
         padding: 30px 34px;
-        border: 1px solid rgba(244, 247, 248, 0.12);
         border-radius: 28px;
-        background: linear-gradient(150deg, rgba(21, 30, 38, 0.9), rgba(9, 13, 18, 0.86));
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(243, 246, 244, 0.12);
+        background: linear-gradient(145deg, rgba(18, 27, 34, 0.92), rgba(8, 12, 16, 0.88));
+        box-shadow: 0 34px 94px rgba(0, 0, 0, 0.28);
         display: grid;
         grid-template-columns: 1fr auto;
         align-items: center;
-        gap: 24px;
+        gap: 26px;
         text-align: left;
       }
 
       .repo-name {
-        color: #f4f7f8;
+        color: #f3f6f4;
         font-size: 31px;
-        font-weight: 620;
+        font-weight: 660;
       }
 
-      .repo-meta {
-        margin-top: 10px;
-        color: #aeb8bc;
-        font-size: 21px;
+      .repo-sub {
+        margin-top: 8px;
+        color: #aab6b7;
+        font-size: 20px;
       }
 
-      .star-pill {
-        min-width: 210px;
-        padding: 19px 26px;
+      .cta {
+        min-width: 228px;
+        padding: 18px 26px;
         border-radius: 999px;
-        background: rgba(214, 199, 161, 0.12);
-        border: 1px solid rgba(214, 199, 161, 0.28);
-        color: #f4f7f8;
+        border: 1px solid rgba(216, 199, 157, 0.28);
+        background: rgba(216, 199, 157, 0.12);
+        color: #f3f6f4;
         text-align: center;
         font-size: 24px;
-        font-weight: 540;
+        font-weight: 560;
       }
 
       .tag-row {
         display: flex;
         justify-content: center;
         gap: 14px;
-        flex-wrap: wrap;
       }
 
       .tag {
         padding: 12px 20px;
         border-radius: 999px;
-        border: 1px solid rgba(244, 247, 248, 0.12);
+        border: 1px solid rgba(243, 246, 244, 0.12);
         background: rgba(255, 255, 255, 0.045);
-        color: #c8d0d2;
+        color: #c8d0d0;
         font-size: 19px;
       }
 
-      .transition-band {
+      .light-wash,
+      .light-beam,
+      .final-dim {
         position: absolute;
-        top: -12%;
-        width: 420px;
-        height: 124%;
+        pointer-events: none;
+      }
+
+      .light-wash {
+        inset: 0;
         z-index: 80;
-        pointer-events: none;
-        transform: skewX(-14deg);
+        background: rgba(216, 199, 157, 0.18);
+        opacity: 0;
+      }
+
+      .light-beam {
+        z-index: 82;
+        left: -760px;
+        top: -180px;
+        width: 760px;
+        height: 1500px;
+        opacity: 0;
+        filter: blur(26px);
+        transform: skewX(-18deg);
         background:
-          linear-gradient(90deg, rgba(214, 199, 161, 0), rgba(214, 199, 161, 0.24), rgba(244, 247, 248, 0.22), rgba(214, 199, 161, 0));
-        filter: blur(18px);
-        opacity: 0;
+          linear-gradient(90deg, rgba(216, 199, 157, 0), rgba(216, 199, 157, 0.28), rgba(243, 246, 244, 0.2), rgba(216, 199, 157, 0));
       }
 
-      .transition-veil {
-        position: absolute;
+      .final-dim {
         inset: 0;
-        z-index: 70;
-        pointer-events: none;
-        background: rgba(7, 9, 13, 0.42);
+        z-index: 100;
+        background: #05070a;
         opacity: 0;
-      }
-
-      .stage-dim {
-        position: absolute;
-        inset: 0;
-        z-index: 90;
-        background: #07090d;
-        opacity: 0;
-        pointer-events: none;
       }
     </style>
   </head>
@@ -554,162 +571,121 @@
     <div
       id="create-x-app-tutorial"
       data-composition-id="create-x-app-tutorial"
-      data-start="0"
       data-width="1920"
       data-height="1080"
+      data-start="0"
       data-duration="15"
     >
-      <div class="orb orb-a" data-layout-ignore></div>
-      <div class="orb orb-b" data-layout-ignore></div>
-      <div class="grain" data-layout-ignore></div>
-      <div class="particle-field" data-layout-ignore>
-        <span class="particle p1"></span>
-        <span class="particle p2"></span>
-        <span class="particle p3"></span>
-        <span class="particle p4"></span>
-        <span class="particle p5"></span>
-        <span class="particle p6"></span>
-        <span class="particle p7"></span>
-        <span class="particle p8"></span>
-        <span class="particle p9"></span>
-        <span class="particle p10"></span>
-        <span class="particle p11"></span>
-        <span class="particle p12"></span>
-        <span class="particle p13"></span>
-        <span class="particle p14"></span>
-        <span class="particle p15"></span>
-        <span class="particle p16"></span>
+      <div class="ambient" data-layout-ignore>
+        <div class="grid-dust"></div>
+        <div class="soft-field"></div>
+        <span class="spark s1"></span>
+        <span class="spark s2"></span>
+        <span class="spark s3"></span>
+        <span class="spark s4"></span>
+        <span class="spark s5"></span>
+        <span class="spark s6"></span>
+        <span class="spark s7"></span>
+        <span class="spark s8"></span>
+        <span class="spark s9"></span>
+        <span class="spark s10"></span>
       </div>
 
-      <section
-        id="scene-one"
-        class="clip scene scene-one"
-        data-start="0"
-        data-duration="3.55"
-        data-track-index="1"
-      >
+      <section id="scene-hook" class="scene">
         <div class="scene-content">
-          <div class="scene-one-layout">
-            <div id="hero-terminal" class="terminal">
+          <div class="ring"></div>
+          <div class="ring ring-b"></div>
+          <div class="core-mark">X</div>
+          <div class="hook-layout">
+            <div id="hero-terminal" class="terminal hero-terminal">
               <div class="terminal-bar">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
+                <span class="dot dot-a"></span>
+                <span class="dot dot-b"></span>
+                <span class="dot dot-c"></span>
               </div>
               <div class="terminal-body mono">
-                <div><span class="prompt">$</span> npx create-x-app-cli my-app</div>
-                <div class="muted-line">正在检测开发环境...</div>
-                <div class="success-line">项目骨架准备完成</div>
+                <div><span class="prompt">$</span> <span id="typed-command"></span></div>
+                <div class="muted">检测环境、选择模板、恢复点文件</div>
+                <div class="ok">生产级项目骨架已生成</div>
               </div>
             </div>
-            <div class="scene-one-copy">
-              <p id="hero-eyebrow" class="eyebrow">create-x-app-cli</p>
-              <h1 id="hero-title" class="headline">别再从零开始。</h1>
-              <p id="hero-copy" class="subhead">一条命令，生成生产级项目骨架。</p>
+            <div class="hook-copy">
+              <p id="hook-kicker" class="eyebrow">create-x-app-cli</p>
+              <h1 id="hook-title" class="display">别再从零开始。</h1>
+              <p id="hook-copy" class="copy">一条命令，把工程起点准备好。</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section
-        id="scene-two"
-        class="clip scene scene-two"
-        data-start="2.85"
-        data-duration="4.45"
-        data-track-index="2"
-      >
+      <section id="scene-infra" class="scene">
         <div class="scene-content">
-          <div class="scene-two-layout">
-            <div id="flow-terminal" class="terminal terminal-compact">
-              <div class="terminal-bar">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
-              </div>
-              <div class="terminal-body mono">
-                <div><span class="prompt">◆</span> 请选择项目模板</div>
-                <div class="muted-line">前端 / 后端 / 全栈 / 桌面端</div>
-                <div><span class="prompt">◆</span> 请选择功能模块</div>
-                <div class="success-line">配置摘要已确认</div>
-              </div>
+          <div class="infra-layout">
+            <div class="infra-copy">
+              <p id="infra-kicker" class="eyebrow">工程起点</p>
+              <h2 id="infra-title" class="section-title">把模板变成基础设施。</h2>
+              <p id="infra-copy" class="section-copy">不是复制文件，而是把环境、规范、依赖和 Git 流程一起交付。</p>
             </div>
-            <div class="ability-wrap">
-              <div class="title-block">
-                <h2 id="infra-title" class="scene-title">把模板变成基础设施。</h2>
-                <p id="infra-copy" class="scene-copy">不只是复制文件，而是交付一套工程起点。</p>
-              </div>
-              <div class="ability-grid">
-                <div class="ability-card ability-a"><span>01</span>环境检测</div>
-                <div class="ability-card ability-b"><span>02</span>交互问答</div>
-                <div class="ability-card ability-c"><span>03</span>模板渲染</div>
-                <div class="ability-card ability-d"><span>04</span>点文件恢复</div>
-                <div class="ability-card ability-e"><span>05</span>依赖安装</div>
-                <div class="ability-card ability-f"><span>06</span>Git / Husky 初始化</div>
-              </div>
+            <div id="pipeline" class="pipeline">
+              <div class="rail"></div>
+              <div class="step step-a"><small>01</small>环境检测</div>
+              <div class="step step-b"><small>02</small>交互问答</div>
+              <div class="step step-c"><small>03</small>模板渲染</div>
+              <div class="step step-d"><small>04</small>点文件恢复</div>
+              <div class="step step-e"><small>05</small>依赖安装</div>
+              <div class="step step-f"><small>06</small>Git / Husky 初始化</div>
             </div>
           </div>
         </div>
       </section>
 
-      <section
-        id="scene-three"
-        class="clip scene scene-three"
-        data-start="6.85"
-        data-duration="4.55"
-        data-track-index="3"
-      >
+      <section id="scene-ecosystem" class="scene">
         <div class="scene-content">
           <div class="ecosystem-layout">
-            <div id="plugin-terminal" class="terminal cli-question">
+            <div id="plugin-terminal" class="terminal plugin-terminal">
               <div class="terminal-bar">
-                <span class="dot dot-red"></span>
-                <span class="dot dot-yellow"></span>
-                <span class="dot dot-green"></span>
+                <span class="dot dot-a"></span>
+                <span class="dot dot-b"></span>
+                <span class="dot dot-c"></span>
               </div>
               <div class="terminal-body mono">
                 <div><span class="prompt">$</span> create-x-app search admin</div>
-                <div class="muted-line">找到社区模板 cxa-plugin-admin-shell</div>
+                <div class="muted">找到 cxa-plugin-admin-shell</div>
                 <div><span class="prompt">$</span> create-x-app install cxa-plugin-admin-shell</div>
-                <div class="success-line">模板已加入选择列表</div>
-                <div class="choice"><span class="check"></span><strong>后台管理系统</strong></div>
+                <div class="ok">模板已加入选择列表</div>
               </div>
             </div>
-            <div class="ecosystem">
-              <div class="ecosystem-copy">
-                <h2 id="community-title" class="scene-title">社区模板，一条命令接入。</h2>
+            <div class="network">
+              <div class="network-title">
+                <p id="eco-kicker" class="eyebrow">社区生态</p>
+                <h2 id="eco-title" class="section-title">社区模板，一条命令接入。</h2>
               </div>
-              <span class="network-line line-a" data-layout-ignore></span>
-              <span class="network-line line-b" data-layout-ignore></span>
-              <span class="network-line line-c" data-layout-ignore></span>
-              <span class="network-line line-d" data-layout-ignore></span>
+              <span class="network-line nl-a"></span>
+              <span class="network-line nl-b"></span>
+              <span class="network-line nl-c"></span>
+              <span class="network-line nl-d"></span>
               <div class="node node-core">create-x-app<small>模板注册中心</small></div>
               <div class="node node-a">后台模板<small>管理端起点</small></div>
               <div class="node node-b">业务插件<small>按需接入</small></div>
               <div class="node node-c">团队规范<small>共同维护</small></div>
               <div class="node node-d">远端模板<small>缓存更新</small></div>
-              <p id="ecosystem-bottom" class="bottom-line">搜索。安装。创建。移除。</p>
+              <p id="eco-caption" class="ecosystem-caption">搜索。安装。创建。移除。</p>
             </div>
           </div>
         </div>
       </section>
 
-      <section
-        id="scene-four"
-        class="clip scene scene-four"
-        data-start="10.9"
-        data-duration="4.1"
-        data-track-index="4"
-      >
-        <div class="scene-content">
+      <section id="scene-finale" class="scene">
+        <div class="scene-content final-layout">
           <div id="final-mark" class="final-mark">X</div>
           <h2 id="final-title" class="final-title">发布规范。共同进化。</h2>
           <p id="final-copy" class="final-copy">模板可以生长在社区，而不只存在于核心仓库。</p>
-          <div id="github-card" class="github-card">
+          <div id="repo-card" class="repo-card">
             <div>
               <div class="repo-name mono">create-x-app-cli</div>
-              <div class="repo-meta">开源脚手架基础设施</div>
+              <div class="repo-sub">开源脚手架基础设施</div>
             </div>
-            <div class="star-pill">在 GitHub 点亮 Star</div>
+            <div class="cta">在 GitHub 点亮 Star</div>
           </div>
           <div class="tag-row">
             <span class="tag mono">npm</span>
@@ -719,71 +695,114 @@
         </div>
       </section>
 
-      <div class="transition-veil veil-one" data-layout-ignore></div>
-      <div class="transition-band band-one" data-layout-ignore></div>
-      <div class="transition-veil veil-two" data-layout-ignore></div>
-      <div class="transition-band band-two" data-layout-ignore></div>
-      <div class="transition-veil veil-three" data-layout-ignore></div>
-      <div class="transition-band band-three" data-layout-ignore></div>
-      <div class="stage-dim" data-layout-ignore></div>
-
-      <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
-      <script>
-        window.__timelines = window.__timelines || {};
-
-        const tl = gsap.timeline({ paused: true });
-
-        tl.from(".orb-a", { x: -34, y: 22, opacity: 0, duration: 1.4, ease: "power2.out" }, 0.1);
-        tl.from(".orb-b", { x: 36, y: -26, opacity: 0, duration: 1.5, ease: "power3.out" }, 0.12);
-        tl.to(".orb-a", { x: 42, y: -18, duration: 13.2, ease: "sine.inOut" }, 1.62);
-        tl.to(".orb-b", { x: -38, y: 26, duration: 13.1, ease: "sine.inOut" }, 1.72);
-        tl.to(".particle-field", { x: -18, y: 12, duration: 15, ease: "none" }, 0);
-        tl.from(".particle", { opacity: 0, scale: 0.4, duration: 1.2, stagger: 0.035, ease: "power2.out" }, 0.18);
-
-        tl.from("#hero-terminal", { x: -86, y: 42, rotationY: -10, opacity: 0, duration: 1.05, ease: "expo.out" }, 0.22);
-        tl.from("#hero-eyebrow", { y: 28, opacity: 0, duration: 0.62, ease: "power3.out" }, 0.45);
-        tl.from("#hero-title", { y: 54, opacity: 0, duration: 0.82, ease: "power4.out" }, 0.62);
-        tl.from("#hero-copy", { y: 34, opacity: 0, duration: 0.7, ease: "power2.out" }, 0.88);
-        tl.to("#hero-terminal", { x: -20, y: -12, duration: 2.0, ease: "power1.inOut" }, 1.34);
-
-        tl.fromTo(".veil-one", { opacity: 0 }, { opacity: 0.62, duration: 0.34, ease: "power2.inOut" }, 2.86);
-        tl.to(".veil-one", { opacity: 0, duration: 0.38, ease: "power2.inOut" }, 3.2);
-        tl.fromTo(".band-one", { x: -520, opacity: 0 }, { x: 2100, opacity: 1, duration: 0.82, ease: "power3.inOut" }, 2.78);
-
-        tl.from("#flow-terminal", { x: -58, y: 34, scale: 0.96, opacity: 0, duration: 0.85, ease: "expo.out" }, 3.08);
-        tl.from("#infra-title", { y: 46, opacity: 0, duration: 0.72, ease: "power3.out" }, 3.28);
-        tl.from("#infra-copy", { y: 28, opacity: 0, duration: 0.56, ease: "power2.out" }, 3.48);
-        tl.from(".ability-card", { y: 54, x: 18, opacity: 0, scale: 0.96, duration: 0.58, stagger: 0.13, ease: "power3.out" }, 3.72);
-        tl.to("#flow-terminal", { x: -34, y: -8, duration: 2.9, ease: "sine.inOut" }, 4.0);
-        tl.to(".ability-grid", { y: -14, duration: 3.25, ease: "sine.inOut" }, 3.8);
-
-        tl.fromTo(".veil-two", { opacity: 0 }, { opacity: 0.58, duration: 0.34, ease: "power2.inOut" }, 6.92);
-        tl.to(".veil-two", { opacity: 0, duration: 0.42, ease: "power2.inOut" }, 7.26);
-        tl.fromTo(".band-two", { x: -520, opacity: 0 }, { x: 2100, opacity: 1, duration: 0.84, ease: "power3.inOut" }, 6.82);
-
-        tl.from("#plugin-terminal", { x: -66, y: 38, rotationY: -7, opacity: 0, duration: 0.84, ease: "expo.out" }, 7.08);
-        tl.from("#community-title", { y: 42, opacity: 0, duration: 0.7, ease: "power4.out" }, 7.28);
-        tl.from(".node-core", { scale: 0.9, y: 30, opacity: 0, duration: 0.66, ease: "power3.out" }, 7.56);
-        tl.from(".network-line", { scaleX: 0, opacity: 0, duration: 0.72, stagger: 0.11, ease: "power2.inOut" }, 7.82);
-        tl.from(".node:not(.node-core)", { y: 42, x: 20, opacity: 0, scale: 0.94, duration: 0.58, stagger: 0.12, ease: "expo.out" }, 8.08);
-        tl.from("#ecosystem-bottom", { y: 24, opacity: 0, duration: 0.58, ease: "power2.out" }, 8.72);
-        tl.to(".ecosystem", { y: -18, x: 10, duration: 3.0, ease: "sine.inOut" }, 8.2);
-        tl.to("#plugin-terminal", { y: -16, duration: 3.1, ease: "sine.inOut" }, 8.05);
-
-        tl.fromTo(".veil-three", { opacity: 0 }, { opacity: 0.6, duration: 0.36, ease: "power2.inOut" }, 10.95);
-        tl.to(".veil-three", { opacity: 0, duration: 0.44, ease: "power2.inOut" }, 11.31);
-        tl.fromTo(".band-three", { x: -520, opacity: 0 }, { x: 2100, opacity: 1, duration: 0.86, ease: "power3.inOut" }, 10.86);
-
-        tl.from("#final-mark", { y: 42, scale: 0.86, opacity: 0, duration: 0.72, ease: "expo.out" }, 11.12);
-        tl.from("#final-title", { y: 44, opacity: 0, duration: 0.78, ease: "power4.out" }, 11.34);
-        tl.from("#final-copy", { y: 28, opacity: 0, duration: 0.62, ease: "power2.out" }, 11.68);
-        tl.from("#github-card", { y: 44, scale: 0.97, opacity: 0, duration: 0.78, ease: "power3.out" }, 12.02);
-        tl.from(".tag", { y: 22, opacity: 0, duration: 0.46, stagger: 0.1, ease: "power2.out" }, 12.44);
-        tl.to("#scene-four .scene-content", { y: -2, duration: 2.1, ease: "sine.inOut" }, 12.6);
-        tl.to(".stage-dim", { opacity: 0.72, duration: 0.65, ease: "power2.inOut" }, 14.32);
-
-        window.__timelines["create-x-app-tutorial"] = tl;
-      </script>
+      <div class="light-wash" data-layout-ignore></div>
+      <div class="light-wash wash-b" data-layout-ignore></div>
+      <div class="light-wash wash-c" data-layout-ignore></div>
+      <div class="light-beam beam-a" data-layout-ignore></div>
+      <div class="light-beam beam-b" data-layout-ignore></div>
+      <div class="light-beam beam-c" data-layout-ignore></div>
+      <div class="final-dim" data-layout-ignore></div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/TextPlugin.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      gsap.registerPlugin(TextPlugin);
+      gsap.defaults({ force3D: true });
+
+      var tl = gsap.timeline({
+        paused: true,
+        defaults: { duration: 0.64, ease: "power3.out" },
+      });
+
+      tl.addLabel("hook", 0);
+      tl.from(".soft-field", { scale: 0.9, opacity: 0, duration: 1.2, ease: "power2.out" }, "hook+=0.12");
+      tl.from(".grid-dust", { opacity: 0, y: 26, duration: 1.1, ease: "sine.out" }, "hook+=0.16");
+      tl.from(".spark", { opacity: 0, scale: 0.35, duration: 0.9, stagger: { amount: 0.34, from: "center" }, ease: "power1.out" }, "hook+=0.18");
+      tl.from(".ring", { scale: 0.74, opacity: 0, rotation: -16, duration: 1.0, stagger: 0.14, ease: "expo.out" }, "hook+=0.2");
+      tl.from(".core-mark", { scale: 0.72, y: 24, opacity: 0, duration: 0.82, ease: "power4.out" }, "hook+=0.3");
+      tl.from("#hero-terminal", { x: -118, y: 42, rotationY: -18, opacity: 0, duration: 1.05, ease: "expo.out" }, "hook+=0.28");
+      tl.to("#typed-command", { text: { value: "npx create-x-app-cli my-app" }, duration: 1.0, ease: "none" }, "hook+=0.62");
+      tl.from("#hook-kicker", { x: 26, opacity: 0, duration: 0.48, ease: "power2.out" }, "hook+=0.58");
+      tl.from("#hook-title", { y: 58, opacity: 0, duration: 0.82, ease: "power4.out" }, "hook+=0.74");
+      tl.from("#hook-copy", { y: 28, opacity: 0, duration: 0.56, ease: "sine.out" }, "hook+=1.02");
+      tl.to(".ring", { rotation: 10, scale: 1.025, duration: 2.2, ease: "sine.inOut" }, "hook+=0.98");
+      tl.to("#hero-terminal", { x: 18, y: -10, duration: 2.0, ease: "sine.inOut" }, "hook+=1.14");
+
+      tl.to(".light-wash:not(.wash-b):not(.wash-c)", { opacity: 0.34, duration: 0.26, ease: "power1.in" }, 3.0);
+      tl.fromTo(".beam-a", { x: 0, opacity: 0 }, { x: 2680, opacity: 1, duration: 0.78, ease: "power3.inOut", immediateRender: false }, 2.96);
+      tl.to("#scene-hook", { filter: "blur(10px) brightness(1.18)", scale: 1.015, duration: 0.46, ease: "power2.inOut" }, 3.0);
+      tl.set("#scene-hook", { opacity: 0, filter: "none", scale: 1 }, 3.45);
+      tl.set("#scene-infra", { opacity: 1 }, 3.45);
+      tl.from("#scene-infra .scene-content", { scale: 0.995, opacity: 0, duration: 0.5, ease: "expo.out" }, 3.48);
+      tl.to(".light-wash:not(.wash-b):not(.wash-c)", { opacity: 0, duration: 0.5, ease: "power2.out" }, 3.5);
+      tl.to(".beam-a", { opacity: 0, duration: 0.28, ease: "power2.out" }, 3.74);
+
+      tl.addLabel("infra", 3.48);
+      tl.from("#infra-kicker", { x: -28, opacity: 0, duration: 0.5, ease: "power2.out" }, "infra+=0.08");
+      tl.from("#infra-title", { y: 42, opacity: 0, duration: 0.78, ease: "power4.out" }, "infra+=0.22");
+      tl.from("#infra-copy", { y: 24, opacity: 0, duration: 0.58, ease: "sine.out" }, "infra+=0.48");
+      tl.from(".rail", { scaleX: 0, opacity: 0, duration: 0.78, ease: "power2.inOut" }, "infra+=0.38");
+      tl.from(".step", {
+        y: function (i) { return i % 2 === 0 ? 42 : -34; },
+        x: function (i) { return i % 3 === 0 ? -28 : 24; },
+        rotationY: function (i) { return i % 2 === 0 ? -10 : 8; },
+        opacity: 0,
+        scale: 0.94,
+        duration: 0.66,
+        stagger: { amount: 0.58, from: "start" },
+        ease: "expo.out",
+      }, "infra+=0.7");
+      tl.to("#pipeline", { y: -18, rotationX: 2, duration: 2.4, ease: "sine.inOut" }, "infra+=1.35");
+
+      tl.to(".wash-b", { opacity: 0.34, duration: 0.26, ease: "power1.in" }, 7.0);
+      tl.fromTo(".beam-b", { x: 0, opacity: 0 }, { x: 2680, opacity: 1, duration: 0.78, ease: "power3.inOut", immediateRender: false }, 6.96);
+      tl.to("#scene-infra", { filter: "blur(10px) brightness(1.18)", scale: 1.015, duration: 0.46, ease: "power2.inOut" }, 7.0);
+      tl.set("#scene-infra", { opacity: 0, filter: "none", scale: 1 }, 7.45);
+      tl.set("#scene-ecosystem", { opacity: 1 }, 7.45);
+      tl.from("#scene-ecosystem .scene-content", { scale: 0.995, opacity: 0, duration: 0.5, ease: "expo.out" }, 7.48);
+      tl.to(".wash-b", { opacity: 0, duration: 0.5, ease: "power2.out" }, 7.5);
+      tl.to(".beam-b", { opacity: 0, duration: 0.28, ease: "power2.out" }, 7.74);
+
+      tl.addLabel("ecosystem", 7.48);
+      tl.from("#plugin-terminal", { x: -82, y: 34, rotationY: -16, opacity: 0, duration: 0.86, ease: "expo.out" }, "ecosystem+=0.08");
+      tl.from("#eco-kicker", { x: 30, opacity: 0, duration: 0.48, ease: "power2.out" }, "ecosystem+=0.22");
+      tl.from("#eco-title", { y: 42, opacity: 0, duration: 0.72, ease: "power4.out" }, "ecosystem+=0.36");
+      tl.from(".node-core", { scale: 0.86, y: 30, opacity: 0, duration: 0.64, ease: "power3.out" }, "ecosystem+=0.72");
+      tl.from(".network-line", { scaleX: 0, opacity: 0, duration: 0.76, stagger: { amount: 0.34, from: "center" }, ease: "power2.inOut" }, "ecosystem+=0.98");
+      tl.from(".node:not(.node-core)", {
+        y: 38,
+        x: function (i) { return i % 2 === 0 ? 22 : -16; },
+        opacity: 0,
+        scale: 0.92,
+        duration: 0.6,
+        stagger: 0.12,
+        ease: "expo.out",
+      }, "ecosystem+=1.18");
+      tl.from("#eco-caption", { y: 22, opacity: 0, duration: 0.48, ease: "sine.out" }, "ecosystem+=1.74");
+      tl.to(".network", { x: 12, y: -16, duration: 2.4, ease: "sine.inOut" }, "ecosystem+=1.4");
+      tl.to("#plugin-terminal", { y: -12, duration: 2.2, ease: "sine.inOut" }, "ecosystem+=1.5");
+
+      tl.to(".wash-c", { opacity: 0.34, duration: 0.26, ease: "power1.in" }, 11.0);
+      tl.fromTo(".beam-c", { x: 0, opacity: 0 }, { x: 2680, opacity: 1, duration: 0.78, ease: "power3.inOut", immediateRender: false }, 10.96);
+      tl.to("#scene-ecosystem", { filter: "blur(10px) brightness(1.18)", scale: 1.015, duration: 0.46, ease: "power2.inOut" }, 11.0);
+      tl.set("#scene-ecosystem", { opacity: 0, filter: "none", scale: 1 }, 11.45);
+      tl.set("#scene-finale", { opacity: 1 }, 11.45);
+      tl.from("#scene-finale .scene-content", { scale: 0.995, opacity: 0, duration: 0.5, ease: "expo.out" }, 11.48);
+      tl.to(".wash-c", { opacity: 0, duration: 0.5, ease: "power2.out" }, 11.5);
+      tl.to(".beam-c", { opacity: 0, duration: 0.28, ease: "power2.out" }, 11.74);
+
+      tl.addLabel("finale", 11.48);
+      tl.from("#final-mark", { scale: 0.78, y: 38, opacity: 0, duration: 0.74, ease: "expo.out" }, "finale+=0.02");
+      tl.from("#final-title", { y: 44, opacity: 0, duration: 0.78, ease: "power4.out" }, "finale+=0.24");
+      tl.from("#final-copy", { y: 24, opacity: 0, duration: 0.58, ease: "sine.out" }, "finale+=0.56");
+      tl.from("#repo-card", { y: 42, scale: 0.97, opacity: 0, duration: 0.72, ease: "power3.out" }, "finale+=0.84");
+      tl.from(".tag", { y: 18, opacity: 0, duration: 0.44, stagger: 0.1, ease: "power2.out" }, "finale+=1.22");
+      tl.to("#repo-card", { y: -3, duration: 2.1, ease: "sine.inOut" }, "finale+=1.36");
+      tl.to(".final-dim", { opacity: 0.7, duration: 0.62, ease: "power2.inOut" }, 14.36);
+
+      window.__timelines["create-x-app-tutorial"] = tl;
+    </script>
   </body>
 </html>
