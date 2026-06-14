@@ -1,18 +1,28 @@
 {
   "name": "create-x-app-cli",
   "version": "1.0.1",
-  "description": "交互式 Node.js CLI，用于生成多场景项目模板",
+  "description": "交互式 Node.js CLI，用于生成生产级多场景项目模板",
   "keywords": [
     "cli",
+    "cli-tool",
     "scaffold",
+    "scaffolding",
     "starter",
+    "starter-kit",
     "template",
+    "templates",
     "generator",
+    "project-generator",
+    "create-app",
     "nodejs",
     "react",
     "vite",
     "typescript",
-    "spring-boot"
+    "spring-boot",
+    "electron",
+    "chrome-extension",
+    "monorepo",
+    "plugin"
   ],
   "author": "赵铁柱",
   "license": "MIT",
@@ -36,7 +46,12 @@
     "bin",
     "src",
     "templates",
-    "shared"
+    "shared",
+    "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "SUPPORT.md"
   ],
   "scripts": {
     "dev": "node bin/cli.js",

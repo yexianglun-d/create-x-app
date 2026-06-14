@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>create-x-app 使用证明与影响力证明</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f8fb;
+        --surface: #ffffff;
+        --surface-soft: #eef3f8;
+        --text: #182230;
+        --muted: #526071;
+        --line: #d8e0ea;
+        --primary: #0f766e;
+        --primary-dark: #115e59;
+        --accent: #b45309;
+        --code: #111827;
+        --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(180deg, rgba(15, 118, 110, 0.08), transparent 360px),
+          var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.65;
+      }
+
+      a {
+        color: var(--primary-dark);
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .page {
+        width: min(1120px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 48px 0 64px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+        gap: 32px;
+        align-items: center;
+        min-height: 520px;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--primary-dark);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 18px;
+        font-size: clamp(36px, 6vw, 68px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 18px;
+        font-size: 30px;
+        line-height: 1.2;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 18px;
+        line-height: 1.35;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 18px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 10px 16px;
+        border: 1px solid var(--primary);
+        border-radius: 8px;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .button.secondary {
+        background: transparent;
+        color: var(--primary-dark);
+      }
+
+      .proof-panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .proof-panel img,
+      .proof-panel video {
+        display: block;
+        width: 100%;
+      }
+
+      .proof-panel-body {
+        padding: 18px;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 16px 0 0;
+      }
+
+      .badge-row img {
+        width: auto;
+        height: 20px;
+      }
+
+      section {
+        margin-top: 40px;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        align-items: end;
+        margin-bottom: 18px;
+      }
+
+      .section-head p {
+        max-width: 620px;
+        margin-bottom: 0;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card {
+        min-height: 100%;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 20px;
+      }
+
+      .metric {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--primary-dark);
+        font-size: 34px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .tag {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--surface-soft);
+        padding: 5px 10px;
+        color: #27364a;
+        font-size: 13px;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        counter-reset: flow;
+      }
+
+      .flow-step {
+        position: relative;
+        min-height: 132px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 18px;
+      }
+
+      .flow-step::before {
+        counter-increment: flow;
+        content: counter(flow);
+        display: inline-grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        margin-bottom: 12px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        font-weight: 800;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 0;
+        border-radius: 8px;
+        background: var(--code);
+        color: #e5e7eb;
+        padding: 18px;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .proof-list {
+        display: grid;
+        gap: 12px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .proof-list li {
+        border-left: 4px solid var(--primary);
+        background: var(--surface);
+        padding: 14px 16px;
+      }
+
+      .proof-list strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .notice {
+        border: 1px solid rgba(180, 83, 9, 0.35);
+        border-radius: 8px;
+        background: rgba(245, 158, 11, 0.1);
+        padding: 16px 18px;
+      }
+
+      footer {
+        margin-top: 42px;
+        border-top: 1px solid var(--line);
+        padding-top: 22px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      @media (max-width: 880px) {
+        .hero,
+        .grid,
+        .grid.two,
+        .flow {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          min-height: auto;
+        }
+
+        .section-head {
+          display: block;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">create-x-app · 使用证明与影响力证明</p>
+          <h1 id="page-title">把项目初始化从重复手工配置变成一条可验证的 CLI 流程</h1>
+          <p class="lead">
+            create-x-app 是一个面向真实项目启动场景的 Node.js 脚手架 CLI。它通过交互问答、模板
+            manifest、公共规范注入、依赖安装和 Git 初始化，把多技术栈项目启动流程沉淀为可复用工具。
+          </p>
+          <div class="actions" aria-label="项目链接">
+            <a class="button" href="https://www.npmjs.com/package/create-x-app-cli">查看 npm 包</a>
+            <a class="button secondary" href="https://github.com/yexianglun-d/create-x-app">查看 GitHub 仓库</a>
+          </div>
+          <div class="badge-row" aria-label="公开状态徽章">
+            <img alt="npm version" src="https://img.shields.io/npm/v/create-x-app-cli.svg" />
+            <img alt="npm downloads" src="https://img.shields.io/npm/dm/create-x-app-cli.svg" />
+            <img alt="Node.js >= 18" src="https://img.shields.io/badge/node-%3E%3D18.0.0-339933.svg" />
+            <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue.svg" />
+          </div>
+        </div>
+
+        <aside class="proof-panel" aria-label="演示视频证明">
+          <video controls poster="media/create-x-app-tutorial-15s-preview.png">
+            <source src="media/create-x-app-tutorial-15s.mp4" type="video/mp4" />
+          </video>
+          <div class="proof-panel-body">
+            <h2>15 秒使用演示</h2>
+            <p class="muted">
+              仓库已提供演示视频和预览图，用于证明 CLI 可以通过命令和交互流程完成项目生成。
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section aria-labelledby="pain-title">
+        <div class="section-head">
+          <h2 id="pain-title">解决的核心痛点</h2>
+          <p>重点不是“复制模板”，而是把启动一个真实项目需要做的基础工程动作统一收口。</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <h3>初始化重复且容易遗漏</h3>
+            <p class="muted">新项目常见的 ESLint、Prettier、Husky、README、Git 初始化等配置，手动处理成本高。</p>
+          </article>
+          <article class="card">
+            <h3>多技术栈模板难维护</h3>
+            <p class="muted">React、Node、Electron、移动端、Monorepo 等模板需要不同环境、依赖和功能开关。</p>
+          </article>
+          <article class="card">
+            <h3>AI 协作规则难沉淀</h3>
+            <p class="muted">团队希望每个新项目都带有 AGENTS.md 和代码规范，避免 AI 助手缺少上下文。</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="usage-title">
+        <div class="section-head">
+          <h2 id="usage-title">使用证明</h2>
+          <p>以下内容来自项目当前代码和文档，可通过仓库、npm 页面和本地命令交叉核验。</p>
+        </div>
+        <div class="grid two">
+          <article class="card">
+            <span class="metric">1 条命令</span>
+            <h3>npx 即用</h3>
+            <pre><code>npx create-x-app-cli my-app</code></pre>
+            <p class="muted">npm 包名为 create-x-app-cli，命令别名包含 create-x-app 和 create-x-app-cli。</p>
+          </article>
+          <article class="card">
+            <span class="metric">8 套模板</span>
+            <h3>覆盖常见项目起步场景</h3>
+            <div class="tag-list">
+              <span class="tag">React Vite</span>
+              <span class="tag">Node TS</span>
+              <span class="tag">Java 全栈</span>
+              <span class="tag">React Admin</span>
+              <span class="tag">Electron</span>
+              <span class="tag">Chrome Extension</span>
+              <span class="tag">Monorepo</span>
+              <span class="tag">Mobile H5</span>
+            </div>
+          </article>
+        </div>
+        <ul class="proof-list" aria-label="使用证明清单">
+          <li>
+            <strong>CLI 命令体系已落地</strong>
+            支持创建项目、升级配置、搜索插件、安装插件、列出插件和移除插件。
+          </li>
+          <li>
+            <strong>生成产物可直接进入开发</strong>
+            生成后包含项目源码、README、AGENTS.md、coding-rules.md、commitlint 和可选 Husky。
+          </li>
+          <li>
+            <strong>演示材料已沉淀</strong>
+            docs/media 中包含 15 秒教程视频，可展示从执行命令到生成项目的过程。
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="flow-title">
+        <div class="section-head">
+          <h2 id="flow-title">核心逻辑流</h2>
+          <p>项目运行时是确定性的 CLI 工作流，不包含 LLM 长链推理或多 Agent 调度。</p>
+        </div>
+        <div class="flow">
+          <div class="flow-step">
+            <h3>入口解析</h3>
+            <p class="muted">解析项目名、skip-install、remote、latest、verbose 等参数。</p>
+          </div>
+          <div class="flow-step">
+            <h3>环境检测</h3>
+            <p class="muted">检测 Node.js、Git、pnpm、Java，并展示版本与影响范围。</p>
+          </div>
+          <div class="flow-step">
+            <h3>交互配置</h3>
+            <p class="muted">读取 manifest，选择模板、功能模块、扩展项和包管理器。</p>
+          </div>
+          <div class="flow-step">
+            <h3>项目生成</h3>
+            <p class="muted">复制模板、渲染 EJS、恢复点文件、裁剪未启用产物。</p>
+          </div>
+          <div class="flow-step">
+            <h3>后置动作</h3>
+            <p class="muted">按配置执行依赖安装、Husky 初始化、Git 初始化和初始提交。</p>
+          </div>
+          <div class="flow-step">
+            <h3>远程能力</h3>
+            <p class="muted">支持远程模板、24 小时缓存和 latest 依赖刷新。</p>
+          </div>
+          <div class="flow-step">
+            <h3>升级能力</h3>
+            <p class="muted">upgrade 命令用于更新脚手架管理的配置文件，不主动改业务代码。</p>
+          </div>
+          <div class="flow-step">
+            <h3>插件生态</h3>
+            <p class="muted">支持 cxa-plugin-* 社区模板插件的发现、安装和移除。</p>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="impact-title">
+        <div class="section-head">
+          <h2 id="impact-title">影响力证明</h2>
+          <p>这里展示的是可证明的工程影响，不虚构用户数、下载量或生产案例。</p>
+        </div>
+        <div class="grid">
+          <article class="card">
+            <span class="metric">标准化</span>
+            <h3>统一项目启动口径</h3>
+            <p class="muted">把环境检查、模板选择、依赖安装、Git 初始化和团队规范注入统一为同一条流程。</p>
+          </article>
+          <article class="card">
+            <span class="metric">可扩展</span>
+            <h3>Manifest + 插件机制</h3>
+            <p class="muted">新模板可以通过 manifest 声明能力，也可以通过 cxa-plugin-* 方式扩展到主 CLI。</p>
+          </article>
+          <article class="card">
+            <span class="metric">AI 协作</span>
+            <h3>规则随项目生成</h3>
+            <p class="muted">AGENTS.md 和 coding-rules.md 会随项目生成，让后续 AI 编程助手按项目约定工作。</p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="ai-title">
+        <div class="section-head">
+          <h2 id="ai-title">AI / Agent 驱动说明</h2>
+          <p>该项目的 AI 价值主要体现在构建与规范沉淀阶段，而不是 CLI 运行时推理。</p>
+        </div>
+        <div class="notice">
+          <strong>准确口径：</strong>
+          当前项目不包含运行时 LLM 长链推理，也不包含多 Agent 协作调度系统。Agent/AI 的贡献体现在需求拆解、架构设计、模块实现、模板整理、文档沉淀和验证流程；同时通过自动注入 AGENTS.md，把 AI 协作规则固化到每个生成项目中。
+        </div>
+      </section>
+
+      <section aria-labelledby="verify-title">
+        <div class="section-head">
+          <h2 id="verify-title">可核验入口</h2>
+          <p>评审或展示时，可以使用以下入口验证项目真实存在、命令可用、能力可查。</p>
+        </div>
+        <div class="grid two">
+          <article class="card">
+            <h3>本地验证命令</h3>
+            <pre><code>npm install
+node bin/cli.js --help
+node bin/cli.js my-demo --skip-install --skip-git
+npm pack --dry-run</code></pre>
+          </article>
+          <article class="card">
+            <h3>公开验证链接</h3>
+            <p><a href="https://www.npmjs.com/package/create-x-app-cli">npm 包页面：create-x-app-cli</a></p>
+            <p><a href="https://github.com/yexianglun-d/create-x-app">GitHub 仓库：yexianglun-d/create-x-app</a></p>
+            <p><a href="https://github.com/yexianglun-d/create-x-app/blob/main/docs/media/create-x-app-tutorial-15s.mp4">15 秒使用演示视频</a></p>
+          </article>
+        </div>
+      </section>
+
+      <footer>
+        页面说明：本页只展示仓库中已实现或可通过公开入口核验的内容；下载量、Star 数和真实用户案例以 npm 与 GitHub 实时数据为准。
+      </footer>
+    </main>
+  </body>
+</html>

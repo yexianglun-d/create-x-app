@@ -1,0 +1,83 @@
+name: Bug 报告
+description: 报告 CLI、模板生成、upgrade、remote、latest 或插件相关问题。
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请尽量提供可复现信息，缺少复现步骤的问题可能会被要求补充后再处理。
+  - type: input
+    id: version
+    attributes:
+      label: create-x-app-cli 版本
+      description: 可通过 `npx create-x-app-cli --version` 查看。
+      placeholder: "1.0.1"
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js 版本
+      placeholder: "v22.22.1"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统
+      placeholder: "macOS 15 / Ubuntu 24.04 / Windows 11"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题范围
+      options:
+        - create 命令
+        - upgrade 命令
+        - remote 模板
+        - latest 依赖刷新
+        - 插件市场
+        - 内置模板
+        - 文档
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: 执行命令
+      description: 请粘贴触发问题的完整命令。
+      render: bash
+      placeholder: "npx create-x-app-cli my-app --debug"
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 执行 ...
+        2. 选择 ...
+        3. 出现 ...
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果
+      description: 包含错误输出、截图或关键日志。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望结果
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: 补充信息
+      description: 如果和某个模板、插件、网络代理、npm registry 或包管理器有关，请在这里说明。

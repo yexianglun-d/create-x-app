@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: npm 包页面
+    url: https://www.npmjs.com/package/create-x-app-cli
+    about: 查看已发布版本、安装命令和 npm 元数据。
+  - name: 使用文档
+    url: https://github.com/yexianglun-d/create-x-app#readme
+    about: 先阅读 README，确认命令、模板和插件机制是否已有说明。

@@ -1,0 +1,45 @@
+name: 模板请求
+description: 请求新增内置模板或改进已有模板。
+title: "[Template]: "
+labels: ["template", "needs-triage"]
+body:
+  - type: input
+    id: template
+    attributes:
+      label: 模板名称或技术栈
+      placeholder: "Next.js SaaS / NestJS API / Tauri App"
+    validations:
+      required: true
+  - type: textarea
+    id: scenario
+    attributes:
+      label: 使用场景
+      description: 说明这个模板服务什么项目起点，为什么适合内置或作为官方示例插件。
+    validations:
+      required: true
+  - type: textarea
+    id: stack
+    attributes:
+      label: 建议技术栈
+      placeholder: |
+        - Framework:
+        - Router:
+        - State:
+        - UI:
+        - Build:
+    validations:
+      required: true
+  - type: textarea
+    id: features
+    attributes:
+      label: 期望内置能力
+      description: 例如鉴权、布局、请求封装、测试、Docker、CI、i18n。
+  - type: textarea
+    id: validation
+    attributes:
+      label: 生成后如何验证？
+      placeholder: |
+        npm install
+        npm run build
+        npm run lint
+        npm run dev

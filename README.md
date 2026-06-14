@@ -23,13 +23,16 @@ npx create-x-app-cli my-app
 - [功能特性](#功能特性)
 - [快速开始](#快速开始)
 - [视频演示](#视频演示)
+- [使用证明](#使用证明)
 - [内置模板](#内置模板)
 - [命令参考](#命令参考)
 - [插件生态](#插件生态)
 - [匿名统计与隐私](#匿名统计与隐私)
 - [本地开发](#本地开发)
 - [贡献指南](#贡献指南)
+- [支持与安全](#支持与安全)
 - [路线图](#路线图)
+- [更新记录](#更新记录)
 - [许可证](#许可证)
 
 ## 为什么使用
@@ -104,6 +107,12 @@ node bin/cli.js my-app --verbose
 [观看 15 秒教学视频](https://github.com/yexianglun-d/create-x-app/blob/main/docs/media/create-x-app-tutorial-15s.mp4)
 
 ![create-x-app 15 秒教学视频预览](https://raw.githubusercontent.com/yexianglun-d/create-x-app/main/docs/media/create-x-app-tutorial-15s-preview.png)
+
+## 使用证明
+
+仓库提供了一个面向展示和评审场景的静态证明页面，集中说明项目解决的问题、可验证入口、CLI 主流程、模板覆盖范围和影响力边界。
+
+[查看使用证明与影响力证明](./docs/usage-impact-proof.html)
 
 ## 交互流程
 
@@ -310,7 +319,9 @@ npm pack --dry-run
 
 ```text
 create-x-app/
+├── .github/                # Issue / PR 模板
 ├── bin/                    # CLI 入口
+├── docs/                   # 演示视频、证明页面和媒体资源
 ├── src/
 │   ├── analytics/          # 匿名统计同意和上报
 │   ├── commands/           # create / upgrade / marketplace 命令
@@ -329,13 +340,24 @@ create-x-app/
 
 ## 贡献指南
 
-欢迎提交 Issue 和 Pull Request。建议遵循以下规则：
+欢迎提交 Issue 和 Pull Request。正式贡献规范请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
-- Bug 报告请包含复现命令、Node.js 版本、操作系统、期望结果和实际结果。
+快速规则：
+
+- Bug 报告请使用 Issue 模板，并包含复现命令、Node.js 版本、操作系统、期望结果和实际结果。
 - 新增模板请提供 `manifest.json`、模板目录、生成后的运行说明和最小验证步骤。
 - 新增 CLI 能力请保持 ESM 写法，不使用 CommonJS `require()`。
 - 新增依赖前请说明必要性，避免为简单逻辑引入重型依赖。
 - 提交信息建议遵循 Conventional Commits，例如 `feat:`、`fix:`、`docs:`、`chore:`。
+
+社区行为准则见 [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)。
+
+## 支持与安全
+
+- 使用问题和 Bug 反馈：请通过 GitHub Issue 模板提交。
+- 支持范围和自查命令：见 [SUPPORT.md](./SUPPORT.md)。
+- 安全漏洞反馈：见 [SECURITY.md](./SECURITY.md)，不要在公开 Issue 中披露可利用细节。
+- 发布命令清单：见 [RELEASE_COMMANDS.md](./RELEASE_COMMANDS.md)。
 
 ## 路线图
 
@@ -344,6 +366,10 @@ create-x-app/
 - 提供更多官方示例插件。
 - 为社区模板市场补充更严格的插件健康度检查。
 - 增加模板生成结果的快照验证和端到端 smoke test。
+
+## 更新记录
+
+版本变更记录见 [CHANGELOG.md](./CHANGELOG.md)。
 
 ## 许可证
 

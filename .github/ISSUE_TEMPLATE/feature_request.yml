@@ -1,0 +1,43 @@
+name: 功能建议
+description: 提出新的 CLI 能力、模板能力、插件市场能力或工程体验改进。
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题？
+      description: 请描述当前痛点，而不只是描述一个实现方案。
+      placeholder: "当我需要...时，目前..."
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望方案
+      description: 描述你希望 CLI 如何交互、输出什么、影响哪些命令或模板。
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 影响范围
+      options:
+        - CLI 主流程
+        - 内置模板
+        - 社区插件
+        - 远程模板
+        - upgrade
+        - 文档
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 你考虑过的替代方案
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: 兼容性影响
+      description: 是否会影响已有命令、模板 manifest、插件包或生成项目？
