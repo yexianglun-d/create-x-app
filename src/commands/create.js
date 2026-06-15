@@ -18,11 +18,14 @@ export async function createCommand(projectNameArg, options) {
 
     await runEnvCheck()
 
-    const config = await runPrompts(projectNameArg)
+    const config = await runPrompts(projectNameArg, options)
     validateConfig(config)
-    const telemetryEnabled = await ensureTelemetryConsent({
-      noTelemetry: options.telemetry === false,
-    })
+
+    if (options.printConfig) {
+      console.log(JSON.stringify(config, null, 2))
+      return
+    }
+
     const templatePath = await resolveTemplate(config.template, {
       remote: options.remote,
       noCache: options.cache === false,
@@ -34,9 +37,20 @@ export async function createCommand(projectNameArg, options) {
     await generateProject({
       config,
       options: {
+        dryRun: options.dryRun,
+        force: options.force,
         latest: options.latest,
       },
       templatePath,
+    })
+
+    if (options.dryRun) {
+      outro(chalk.green('Dry run 完成，未写入任何文件'))
+      return
+    }
+
+    const telemetryEnabled = await ensureTelemetryConsent({
+      noTelemetry: options.telemetry === false,
     })
 
     await runPostActions({

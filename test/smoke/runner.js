@@ -25,6 +25,7 @@ await runCli(['list', '--help'])
 await runCli(['remove', '--help'])
 
 const targetDir = await createTempDir('cxa-smoke-')
+const cliTargetDir = await createTempDir('cxa-cli-smoke-')
 
 try {
   const manifest = loadManifest('node-ts')
@@ -43,7 +44,29 @@ try {
 
   assert.equal(await fs.pathExists(join(targetDir, 'package.json')), true)
   assert.equal(await fs.pathExists(join(targetDir, 'AGENTS.md')), true)
+
+  await runCli([
+    'cli-smoke-project',
+    '--template',
+    'node-ts',
+    '--pm',
+    'npm',
+    '--features',
+    'agents,coding-rules',
+    '--extras',
+    '',
+    '--target',
+    cliTargetDir,
+    '--skip-install',
+    '--skip-git',
+    '--no-telemetry',
+    '--yes',
+  ])
+
+  assert.equal(await fs.pathExists(join(cliTargetDir, 'package.json')), true)
+  assert.equal(await fs.pathExists(join(cliTargetDir, 'AGENTS.md')), true)
   console.log('✔ smoke')
 } finally {
   await removeTempDir(targetDir)
+  await removeTempDir(cliTargetDir)
 }

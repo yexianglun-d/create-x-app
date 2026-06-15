@@ -9,11 +9,19 @@
 - 恢复 `node:test` 单元测试、模板集成测试、CLI smoke 测试和 GitHub Actions CI。
 - 新增插件 manifest 校验、插件安装前 npm metadata 预检和插件开发文档。
 - 新增主包与示例插件的 GitHub Actions 发布 workflow。
+- 新增非交互创建参数：`--template`、`--pm`、`--features`、`--extras`、`--yes`、`--cwd`、`--target`、`--print-config`。
 
 ### Changed
 
 - 模板 ESLint 配置迁移到 ESLint 9 flat config 体系。
 - README 和发布文档补充真实插件市场验证流程。
+- 非空目标目录默认不再清空，必须显式使用 `--force`；新增 `--dry-run` 用于预览生成计划且不写入文件。
+
+### Fixed
+
+- 修复选择 Husky 时 `--skip-install` 仍会触发依赖安装和 Husky 初始化的问题。
+- 修复生成后 next steps 固定展示不存在文档的问题，改为按实际生成文件输出。
+- Husky hook 权限设置改为 Node `chmod`，Windows 环境不再执行无效 chmod。
 
 ## [1.0.1] - 2026-05-18
 

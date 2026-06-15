@@ -1,7 +1,6 @@
-import { cancel, confirm, isCancel } from '@clack/prompts'
 import ejs from 'ejs'
 import fs from 'fs-extra'
-import { dirname, join } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadManifest } from '../manifest/loader.js'
 import { logger } from '../utils/logger.js'
@@ -30,18 +29,19 @@ const DEPENDENCY_FIELDS = [
   'optionalDependencies',
 ]
 
-function ensurePromptNotCancelled(value) {
-  if (isCancel(value)) {
-    cancel('操作已取消')
-    process.exit(0)
-  }
-
-  return value
-}
-
 async function isDirectoryEmpty(targetDir) {
   const entries = await fs.readdir(targetDir)
   return entries.length === 0
+}
+
+function resolveDisplayPath(targetPath) {
+  const relativePath = relative(process.cwd(), targetPath)
+
+  if (!relativePath || relativePath.startsWith('..')) {
+    return targetPath
+  }
+
+  return relativePath
 }
 
 /**
@@ -49,12 +49,13 @@ async function isDirectoryEmpty(targetDir) {
  *
  * 说明：
  * 1. 非空目录直接写入会产生混合产物，后续难以判断哪些文件来自脚手架
- * 2. 只有在用户明确确认覆盖后才允许清空目录，避免隐式破坏已有内容
+ * 2. 默认拒绝覆盖非空目录，只有用户显式传入 --force 才允许清空
  *
  * @param {string} targetDir 目标目录
+ * @param {{force?: boolean, dryRun?: boolean}} options 目录安全选项
  * @returns {Promise<void>}
  */
-async function ensureTargetDirectoryReady(targetDir) {
+async function ensureTargetDirectoryReady(targetDir, options = {}) {
   const targetExists = await fs.pathExists(targetDir)
 
   if (!targetExists) {
@@ -65,17 +66,62 @@ async function ensureTargetDirectoryReady(targetDir) {
     return
   }
 
-  const shouldOverwrite = ensurePromptNotCancelled(await confirm({
-    message: `目标目录 ${targetDir} 已存在且非空，是否覆盖？`,
-    initialValue: false,
-  }))
-
-  if (!shouldOverwrite) {
-    cancel('操作已取消')
-    process.exit(0)
+  if (options.dryRun) {
+    return
   }
 
+  if (!options.force) {
+    throw new Error(`目标目录已存在且非空：${targetDir}。如需覆盖，请显式添加 --force`)
+  }
+
+  logger.warn(`将覆盖非空目录：${targetDir}`)
   await fs.emptyDir(targetDir)
+}
+
+async function collectRelativeFiles(sourceDir, rootDir = sourceDir) {
+  const sourceExists = await fs.pathExists(sourceDir)
+
+  if (!sourceExists) {
+    return []
+  }
+
+  const entries = await fs.readdir(sourceDir, { withFileTypes: true })
+  const files = []
+
+  for (const entry of entries) {
+    const currentPath = join(sourceDir, entry.name)
+
+    if (entry.isDirectory()) {
+      files.push(...await collectRelativeFiles(currentPath, rootDir))
+      continue
+    }
+
+    files.push(relative(rootDir, currentPath).replaceAll('\\', '/'))
+  }
+
+  return files
+}
+
+async function printDryRunSummary({ config, templatePath, manifest }) {
+  const plannedFiles = new Set([
+    ...await collectRelativeFiles(SHARED_DIR),
+    ...await collectRelativeFiles(templatePath),
+  ])
+
+  for (const extra of config.fileBasedExtras ?? config.extras) {
+    if (!FILE_BASED_EXTRAS.has(extra)) {
+      continue
+    }
+
+    for (const filePath of await collectRelativeFiles(join(EXTRA_TEMPLATES_DIR, extra))) {
+      plannedFiles.add(filePath)
+    }
+  }
+
+  logger.note('Dry run:', '不会写入、覆盖或删除任何文件')
+  console.log(`  目标目录：${resolveDisplayPath(config.targetDir)}`)
+  console.log(`  模板：${manifest.name} (${manifest.key})`)
+  console.log(`  预计复制文件数：${plannedFiles.size}`)
 }
 
 async function copyDirectory(sourceDir, targetDir, overwrite) {
@@ -415,7 +461,16 @@ export async function generateProject({ config, options = {}, templatePath }) {
   try {
     const manifest = loadManifest(config.template)
 
-    await ensureTargetDirectoryReady(config.targetDir)
+    await ensureTargetDirectoryReady(config.targetDir, {
+      force: options.force,
+      dryRun: options.dryRun,
+    })
+
+    if (options.dryRun) {
+      await printDryRunSummary({ config, templatePath, manifest })
+      return { dryRun: true }
+    }
+
     await fs.ensureDir(config.targetDir)
 
     await copyDirectory(SHARED_DIR, config.targetDir, false)

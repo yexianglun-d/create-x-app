@@ -481,6 +481,12 @@
 - [x] 已验证：`npm run test:smoke`
 - [x] 已验证：示例插件 `npm pack --dry-run` 产物只包含 `manifest.json`、`template`、`README.md` 与必要 package 元数据
 - [!] 后续确认：`cxa-plugin-example` 当前 npm registry 返回 404，可发布；但当前本机 `npm whoami` 返回 `E401 Unauthorized`，需要登录 npm 后执行发布和真实市场闭环验证
+- [→] 已开始：`create_x_app_repair_plan_v1.md` 稳定性修复批次
+- [x] 已完成：`CXA-FIX-005`，`--skip-install` 现在会跳过依赖安装和 Husky 初始化，Husky hook 权限改为平台感知处理
+- [x] 已完成：`CXA-FIX-010`，生成后 next steps 改为只展示实际存在的项目文档，并从 manifest 读取 dev script
+- [x] 已完成：`CXA-FIX-002` 基础非交互模式，支持 `--template`、`--pm`、`--features`、`--extras`、`--yes`、`--cwd`、`--target`、`--print-config`
+- [x] 已完成：`CXA-FIX-004` 第一阶段目录安全策略，支持 `--dry-run` 不写入和 `--force` 显式覆盖；非空目录默认拒绝
+- [ ] 下一步：`CXA-FIX-003` manifest schema 化与生成器硬编码消除
 
 ## 当前约定
 

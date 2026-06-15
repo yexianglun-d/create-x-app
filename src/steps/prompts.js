@@ -137,6 +137,74 @@ function buildFileBasedExtras(manifest, extras) {
     .find((extra) => extra.key === extraKey)?.source === 'file')
 }
 
+function parseListOption(value, fallback) {
+  if (typeof value !== 'string') {
+    return [...fallback]
+  }
+
+  if (value.trim() === '') {
+    return []
+  }
+
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function shouldBuildConfigFromOptions(options) {
+  return Boolean(
+    options.template
+      || options.pm
+      || typeof options.features === 'string'
+      || typeof options.extras === 'string'
+      || options.yes
+      || options.cwd
+      || options.target
+      || options.printConfig,
+  )
+}
+
+export function buildConfigFromOptions(projectNameArg, options = {}) {
+  const manifests = loadAllManifests()
+  const template = options.template ?? manifests[0]?.key
+  const selectedManifest = manifests.find((manifest) => manifest.key === template)
+
+  if (!selectedManifest) {
+    throw new Error(`未找到模板定义：${template}`)
+  }
+
+  const projectName = projectNameArg ?? DEFAULT_PROJECT_NAME
+  const projectNameValidationResult = validateProjectName(projectName)
+
+  if (projectNameValidationResult) {
+    throw new Error(`无效的项目名称：${projectNameValidationResult}`)
+  }
+
+  const defaultExtras = selectedManifest.extras
+    .filter((extra) => extra.default)
+    .map((extra) => extra.key)
+  const features = parseListOption(options.features, selectedManifest.defaultFeatures)
+  const extras = parseListOption(options.extras, defaultExtras)
+  const baseDir = options.cwd ? resolve(options.cwd) : process.cwd()
+  const targetDir = options.target ? resolve(baseDir, options.target) : resolve(baseDir, projectName)
+  const config = {
+    projectName,
+    template,
+    features,
+    extras,
+    fileBasedExtras: buildFileBasedExtras(selectedManifest, extras),
+    targetDir,
+    packageManager: selectedManifest.requiredPm ?? options.pm ?? 'npm',
+  }
+
+  for (const subPrompt of selectedManifest.subPrompts ?? []) {
+    config[subPrompt.key] = subPrompt.default
+  }
+
+  return config
+}
+
 function buildConfirmationMessage({
   projectName,
   manifest,
@@ -182,8 +250,12 @@ async function runSubPrompt(subPrompt) {
   }
 }
 
-export async function runPrompts(projectNameArg) {
+export async function runPrompts(projectNameArg, options = {}) {
   try {
+    if (shouldBuildConfigFromOptions(options)) {
+      return buildConfigFromOptions(projectNameArg, options)
+    }
+
     const manifests = loadAllManifests()
     let projectName = projectNameArg
 

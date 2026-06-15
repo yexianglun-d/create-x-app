@@ -1,7 +1,9 @@
 import chalk from 'chalk'
 import { execa } from 'execa'
+import fs from 'fs-extra'
 import ora from 'ora'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
+import { loadManifest } from '../manifest/loader.js'
 import { logger } from '../utils/logger.js'
 import { createPmAdapter } from '../utils/pm-adapter.js'
 
@@ -22,6 +24,29 @@ function resolveWorkspaceLayout(config) {
     gitWorkspace: config.targetDir,
     huskyWorkspace: config.targetDir,
     installTargets: [config.targetDir],
+  }
+}
+
+function formatCommand(command, args = []) {
+  return [command, ...args].join(' ')
+}
+
+function resolveDisplayPath(targetPath) {
+  const relativePath = relative(process.cwd(), targetPath)
+
+  if (!relativePath || relativePath.startsWith('..')) {
+    return targetPath
+  }
+
+  return relativePath
+}
+
+function loadTemplateManifest(templateKey) {
+  try {
+    return loadManifest(templateKey)
+  } catch (error) {
+    logger.detail(`读取模板 manifest 失败，使用默认后续步骤：${error.message}`)
+    return {}
   }
 }
 
@@ -74,33 +99,100 @@ async function runCommandWithSpinner(options) {
   }
 }
 
-function printNextSteps(config, workspaceLayout) {
-  const relativeRuntimePath = workspaceLayout.applicationWorkspace.replace(`${process.cwd()}/`, '')
+async function setHuskyHookPermission({ chmodFile, platform, huskyWorkspace }) {
+  if (platform === 'win32') {
+    logger.detail('Windows 环境跳过 commit-msg chmod')
+    return false
+  }
+
+  try {
+    await chmodFile(join(huskyWorkspace, '.husky', 'commit-msg'), 0o755)
+    return true
+  } catch (error) {
+    logger.warn(`设置 commit-msg 钩子权限失败：${error.message}`)
+    return false
+  }
+}
+
+function printSkippedHuskyInstructions(pm, workspaceLayout) {
+  const installCommand = pm.getInstallCommand()
+  const huskyInstallCommand = pm.getDlxCommand('husky', ['install'])
+
+  logger.warn('已跳过依赖安装，Husky 初始化也已跳过。安装依赖后可手动执行：')
+
+  for (const installTarget of workspaceLayout.installTargets) {
+    console.log(`  cd ${resolveDisplayPath(installTarget)}`)
+    console.log(`  ${formatCommand(installCommand.command, installCommand.args)}`)
+  }
+
+  console.log(`  cd ${resolveDisplayPath(workspaceLayout.huskyWorkspace)}`)
+  console.log(`  ${formatCommand(huskyInstallCommand.command, huskyInstallCommand.args)}`)
+}
+
+async function collectProjectDocuments(targetDir, pathExists) {
+  const documents = [
+    {
+      fileName: 'AGENTS.md',
+      description: 'AI 协作规则说明',
+    },
+    {
+      fileName: 'coding-rules.md',
+      description: '团队代码规范',
+    },
+  ]
+  const existingDocuments = []
+
+  for (const document of documents) {
+    if (await pathExists(join(targetDir, document.fileName))) {
+      existingDocuments.push(document)
+    }
+  }
+
+  return existingDocuments
+}
+
+async function printNextSteps(config, workspaceLayout, manifest, pathExists) {
+  const relativeRuntimePath = resolveDisplayPath(workspaceLayout.applicationWorkspace)
+  const devScript = manifest.devScript ?? 'dev'
+  const existingDocuments = await collectProjectDocuments(config.targetDir, pathExists)
 
   console.log()
   logger.note(chalk.cyan('后续步骤：'), '')
   console.log(`  cd ${relativeRuntimePath}`)
-  console.log(`  ${config.packageManager} run dev`)
-  console.log()
-  logger.note(chalk.cyan('项目文档：'), '')
-  console.log('  AGENTS.md       ← AI 协作规则说明')
-  console.log('  coding-rules.md ← 团队代码规范')
+  console.log(`  ${config.packageManager} run ${devScript}`)
+
+  if (existingDocuments.length > 0) {
+    console.log()
+    logger.note(chalk.cyan('项目文档：'), '')
+
+    for (const document of existingDocuments) {
+      console.log(`  ${document.fileName.padEnd(16)}← ${document.description}`)
+    }
+  }
 }
 
-export async function runPostActions({ config, options }) {
+export async function runPostActions({
+  config,
+  options,
+  runner = runCommandWithSpinner,
+  chmodFile = fs.chmod,
+  pathExists = fs.pathExists,
+  platform = process.platform,
+}) {
   const pm = createPmAdapter(config.packageManager)
   const workspaceLayout = resolveWorkspaceLayout(config)
-  const shouldInstallDependencies = config.features.includes('husky') || !options.skipInstall
+  const manifest = loadTemplateManifest(config.template)
+  const hasHusky = config.features.includes('husky')
 
   try {
     logger.debug(`应用工作目录：${workspaceLayout.applicationWorkspace}`)
     logger.debug(`Git 工作目录：${workspaceLayout.gitWorkspace}`)
 
-    if (shouldInstallDependencies) {
+    if (!options.skipInstall) {
       for (const installTarget of workspaceLayout.installTargets) {
         const installCommand = pm.getInstallCommand()
 
-        await runCommandWithSpinner({
+        await runner({
           title: `正在安装依赖（${config.packageManager} install）...`,
           command: installCommand.command,
           args: installCommand.args,
@@ -112,10 +204,12 @@ export async function runPostActions({ config, options }) {
       logger.detail('已跳过依赖安装步骤')
     }
 
-    if (config.features.includes('husky')) {
+    if (hasHusky && options.skipInstall) {
+      printSkippedHuskyInstructions(pm, workspaceLayout)
+    } else if (hasHusky) {
       const huskyInstallCommand = pm.getDlxCommand('husky', ['install'])
 
-      await runCommandWithSpinner({
+      await runner({
         title: '正在初始化 Husky...',
         command: huskyInstallCommand.command,
         args: huskyInstallCommand.args,
@@ -123,19 +217,17 @@ export async function runPostActions({ config, options }) {
         continueOnError: true,
       })
 
-      await runCommandWithSpinner({
-        title: '正在设置 commit-msg 钩子权限...',
-        command: 'chmod',
-        args: ['+x', '.husky/commit-msg'],
-        cwd: workspaceLayout.huskyWorkspace,
-        continueOnError: true,
+      await setHuskyHookPermission({
+        chmodFile,
+        platform,
+        huskyWorkspace: workspaceLayout.huskyWorkspace,
       })
     } else {
       logger.detail('未启用 Husky，跳过 Git Hooks 初始化')
     }
 
     if (!options.skipGit) {
-      await runCommandWithSpinner({
+      await runner({
         title: '正在初始化 Git 仓库...',
         command: 'git',
         args: ['init'],
@@ -143,7 +235,7 @@ export async function runPostActions({ config, options }) {
         continueOnError: true,
       })
 
-      await runCommandWithSpinner({
+      await runner({
         title: '正在暂存项目文件...',
         command: 'git',
         args: ['add', '.'],
@@ -151,7 +243,7 @@ export async function runPostActions({ config, options }) {
         continueOnError: true,
       })
 
-      await runCommandWithSpinner({
+      await runner({
         title: '正在创建初始提交...',
         command: 'git',
         args: ['commit', '-m', 'chore: 通过 create-x-app 初始化项目'],
@@ -162,7 +254,7 @@ export async function runPostActions({ config, options }) {
       logger.detail('已跳过 Git 初始化步骤')
     }
 
-    printNextSteps(config, workspaceLayout)
+    await printNextSteps(config, workspaceLayout, manifest, pathExists)
   } catch (error) {
     throw new Error(`后置步骤执行失败：${error.message}`, {
       cause: error,

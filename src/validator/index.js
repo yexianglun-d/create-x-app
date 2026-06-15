@@ -19,6 +19,28 @@ function buildAllowedPackageManagers(forbiddenPm = []) {
 export function getConfigValidationErrors(config) {
   const manifest = loadManifest(config.template)
   const errors = []
+  const supportedFeatures = new Set(manifest.supportedFeatures ?? [])
+  const supportedExtras = new Set((manifest.extras ?? []).map((extra) => extra.key))
+
+  if (!PACKAGE_MANAGERS.includes(config.packageManager)) {
+    errors.push(`不支持的包管理器：${config.packageManager}`)
+  }
+
+  for (const feature of config.features ?? []) {
+    if (!supportedFeatures.has(feature)) {
+      errors.push(`${manifest.name} 不支持功能项：${feature}`)
+    }
+  }
+
+  for (const extra of config.extras ?? []) {
+    if (!supportedExtras.has(extra)) {
+      if (extra === 'react-router') {
+        errors.push('React Router 仅适用于 React 类模板')
+      } else {
+        errors.push(`${manifest.name} 不支持模板扩展：${extra}`)
+      }
+    }
+  }
 
   if (config.template === 'monorepo' && config.packageManager !== 'pnpm') {
     errors.push('Monorepo 模板必须使用 pnpm（依赖 pnpm workspace）')
@@ -30,7 +52,11 @@ export function getConfigValidationErrors(config) {
     errors.push(`${manifest.name} 不支持 ${config.packageManager}，请选择 ${allowedPackageManagers.join(' 或 ')}`)
   }
 
-  if (config.extras?.includes('react-router') && manifest.framework !== 'react') {
+  if (
+    config.extras?.includes('react-router')
+      && supportedExtras.has('react-router')
+      && manifest.framework !== 'react'
+  ) {
     errors.push('React Router 仅适用于 React 类模板')
   }
 
