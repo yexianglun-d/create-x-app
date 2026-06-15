@@ -11,6 +11,8 @@
 - 新增主包与示例插件的 GitHub Actions 发布 workflow。
 - 新增非交互创建参数：`--template`、`--pm`、`--features`、`--extras`、`--yes`、`--cwd`、`--target`、`--print-config`。
 - 新增 `schemas/manifest.schema.json`，并为模板 manifest 补齐 `schemaVersion`、`features` 和 `upgrade.managedFiles` 声明。
+- 新增远程模板 `--ref` 和 `--strict-remote`，支持按 tag / sha / branch 固定拉取。
+- 生成项目新增 `.create-x-app/template-lock.json`，记录模板来源、ref、commit、CLI 版本和选择项。
 
 ### Changed
 
@@ -18,6 +20,7 @@
 - README 和发布文档补充真实插件市场验证流程。
 - 非空目标目录默认不再清空，必须显式使用 `--force`；新增 `--dry-run` 用于预览生成计划且不写入文件。
 - 生成器、问答、配置校验和 upgrade diff 改为读取 manifest 中的 feature artifacts、extra metadata 和 managed files。
+- 远程模板缓存按 `template + ref + commit` 分离，避免不同 ref 复用同一缓存目录。
 
 ### Fixed
 

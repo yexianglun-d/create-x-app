@@ -217,6 +217,54 @@ async function writeProjectMetadata(targetDir, config, manifest) {
   await fs.writeFile(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
 }
 
+function normalizeTemplateSource(templateSource, manifest) {
+  if (templateSource) {
+    return templateSource
+  }
+
+  if (manifest.source === 'plugin') {
+    return {
+      type: 'plugin',
+      packageName: manifest.packageName,
+      packageVersion: manifest.packageVersion,
+    }
+  }
+
+  return {
+    type: manifest.source ?? 'builtin',
+  }
+}
+
+async function writeTemplateLock(targetDir, config, manifest, options = {}) {
+  const templateSource = normalizeTemplateSource(options.templateSource, manifest)
+  const safeTemplateSource = { ...templateSource }
+  delete safeTemplateSource.templatePath
+  const lock = {
+    schemaVersion: '1.0',
+    template: {
+      key: manifest.key,
+      name: manifest.name,
+      version: manifest.version,
+    },
+    source: safeTemplateSource,
+    cli: {
+      name: 'create-x-app-cli',
+      version: options.cliVersion ?? null,
+    },
+    selection: {
+      packageManager: config.packageManager,
+      features: config.features,
+      extras: config.extras,
+    },
+    createdAt: new Date().toISOString(),
+  }
+
+  await fs.outputJson(join(targetDir, '.create-x-app', 'template-lock.json'), lock, {
+    spaces: 2,
+  })
+  await fs.appendFile(join(targetDir, '.create-x-app', 'template-lock.json'), '\n')
+}
+
 async function collectPackageJsonFiles(targetDir) {
   const entries = await fs.readdir(targetDir, { withFileTypes: true })
   const packageJsonFiles = []
@@ -463,7 +511,7 @@ async function pruneSubPromptArtifacts(config, targetDir, manifest) {
   }
 }
 
-export async function generateProject({ config, options = {}, templatePath }) {
+export async function generateProject({ config, options = {}, templatePath, templateSource }) {
   try {
     const manifest = loadManifest(config.template)
 
@@ -485,6 +533,10 @@ export async function generateProject({ config, options = {}, templatePath }) {
     await removeTemplateMetadata(config.targetDir)
     await renderEjsFiles(config.targetDir, buildTemplateVariables(config))
     await writeProjectMetadata(config.targetDir, config, manifest)
+    await writeTemplateLock(config.targetDir, config, manifest, {
+      cliVersion: options.cliVersion,
+      templateSource,
+    })
     await renameDotfiles(config.targetDir)
     await pruneSubPromptArtifacts(config, config.targetDir, manifest)
     await pruneExtraArtifacts(config, config.targetDir, manifest)

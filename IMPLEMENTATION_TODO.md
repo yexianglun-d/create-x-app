@@ -488,7 +488,9 @@
 - [x] 已完成：`CXA-FIX-004` 第一阶段目录安全策略，支持 `--dry-run` 不写入和 `--force` 显式覆盖；非空目录默认拒绝
 - [x] 已完成：`CXA-FIX-003` 第一阶段 manifest schema 化，新增 `schemas/manifest.schema.json`，模板 manifest 补齐 `schemaVersion`、`features`、`upgrade.managedFiles`
 - [x] 已完成：生成器、问答、配置校验和 upgrade diff 改为读取 manifest feature artifacts、extra metadata 和 managed files
-- [ ] 下一步：`CXA-FIX-006` 远程模板 `--ref` / `--strict-remote` / 来源记录
+- [x] 已完成：`CXA-FIX-006A`，远程模板支持 `--ref`、`--strict-remote`，缓存按 `template + ref + commit` 隔离
+- [x] 已完成：`CXA-FIX-006B`，生成项目写入 `.create-x-app/template-lock.json`，记录模板来源、ref、commit、CLI 版本和选择项
+- [ ] 下一步：`CXA-FIX-007` 插件健康度与安装前风险摘要增强
 
 ## 当前约定
 

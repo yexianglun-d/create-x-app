@@ -86,3 +86,37 @@ test('force allows replacing a non-empty target directory', async () => {
     await removeTempDir(targetDir)
   }
 })
+
+test('generateProject writes template source lock without local paths', async () => {
+  const targetDir = await createTempDir('cxa-template-lock-')
+
+  try {
+    const { config, templatePath } = await buildNodeTemplateConfig(targetDir)
+
+    await generateProject({
+      config,
+      options: { cliVersion: '1.2.3' },
+      templatePath,
+      templateSource: {
+        type: 'github',
+        owner: 'yexianglun-d',
+        repo: 'create-x-app',
+        ref: 'v1.2.3',
+        commit: 'abcdef123456',
+        cacheHit: false,
+        templatePath: '/tmp/private-cache-path',
+      },
+    })
+
+    const lock = await fs.readJson(join(targetDir, '.create-x-app', 'template-lock.json'))
+
+    assert.equal(lock.template.key, 'node-ts')
+    assert.equal(lock.source.type, 'github')
+    assert.equal(lock.source.ref, 'v1.2.3')
+    assert.equal(lock.source.commit, 'abcdef123456')
+    assert.equal(lock.source.templatePath, undefined)
+    assert.equal(lock.cli.version, '1.2.3')
+  } finally {
+    await removeTempDir(targetDir)
+  }
+})

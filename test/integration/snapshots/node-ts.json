@@ -1,5 +1,6 @@
 {
   "files": [
+    ".create-x-app/template-lock.json",
     ".env.example",
     ".gitignore",
     ".husky/commit-msg",

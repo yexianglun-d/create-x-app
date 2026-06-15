@@ -6,9 +6,17 @@ import { generateProject } from '../generator/index.js'
 import { runPostActions } from '../steps/post-actions.js'
 import { runEnvCheck } from '../steps/env-check.js'
 import { runPrompts } from '../steps/prompts.js'
-import { resolveTemplate } from '../steps/resolver.js'
+import { resolveTemplateSource } from '../steps/resolver.js'
 import { logger } from '../utils/logger.js'
 import { validateConfig } from '../validator/index.js'
+
+function resolveDefaultRemoteRef(options) {
+  if (options.ref) {
+    return options.ref
+  }
+
+  return options.cliVersion ? `v${options.cliVersion}` : undefined
+}
 
 export async function createCommand(projectNameArg, options) {
   try {
@@ -26,22 +34,26 @@ export async function createCommand(projectNameArg, options) {
       return
     }
 
-    const templatePath = await resolveTemplate(config.template, {
+    const templateSource = await resolveTemplateSource(config.template, {
       remote: options.remote,
       noCache: options.cache === false,
+      ref: resolveDefaultRemoteRef(options),
+      strictRemote: options.strictRemote,
     })
 
     logger.detail(`目标目录：${config.targetDir}`)
-    logger.detail(`模板目录：${templatePath}`)
+    logger.detail(`模板目录：${templateSource.templatePath}`)
 
     await generateProject({
       config,
       options: {
+        cliVersion: options.cliVersion,
         dryRun: options.dryRun,
         force: options.force,
         latest: options.latest,
       },
-      templatePath,
+      templatePath: templateSource.templatePath,
+      templateSource: templateSource.source,
     })
 
     if (options.dryRun) {

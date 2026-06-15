@@ -56,7 +56,8 @@ npx create-x-app-cli my-app
 - 自动恢复点文件，例如 `_gitignore` -> `.gitignore`。
 - 自动注入公共协作文件，包括 `AGENTS.md`、`coding-rules.md`、项目 README 和 commitlint 配置。
 - 可选执行依赖安装、Husky 初始化、Git 初始化和初始提交。
-- 支持 `--remote` 从 GitHub 拉取远端模板，并带有 24 小时本地缓存。
+- 支持 `--remote --ref` 从 GitHub 拉取可复现远端模板，并带有 24 小时本地缓存和 strict 失败语义。
+- 生成项目会写入 `.create-x-app/template-lock.json`，记录模板来源、ref、commit 和 CLI 版本。
 - 支持 `--latest` 在生成项目时刷新依赖到 npm 最新版本。
 - 支持 `upgrade` 命令，为已生成项目升级脚手架管理的配置文件。
 - 支持 `cxa-plugin-*` 社区模板插件，并提供搜索、安装、列出和移除命令。
@@ -77,10 +78,16 @@ npx create-x-app-cli my-app
 npx create-x-app-cli my-app --skip-install --skip-git
 ```
 
-使用远端最新模板：
+使用远端模板。未指定 `--ref` 时，CLI 会优先使用当前版本对应的 tag，例如 `v1.0.1`：
 
 ```bash
 npx create-x-app-cli my-app --remote
+```
+
+固定远端模板 ref，并在拉取失败时直接退出：
+
+```bash
+npx create-x-app-cli my-app --remote --ref v1.0.1 --strict-remote
 ```
 
 强制刷新远端模板缓存：
@@ -182,7 +189,19 @@ create-x-app [project-name] [options]
 |---|---|
 | `--skip-install` | 跳过脚手架完成后的依赖安装 |
 | `--skip-git` | 跳过 `git init`、`git add` 和初始提交 |
-| `--remote` | 从 GitHub 拉取远端最新模板，默认使用 npm 包内置模板 |
+| `--template <key>` | 非交互模式：直接指定模板 key |
+| `--pm <npm\|pnpm\|yarn>` | 非交互模式：指定包管理器 |
+| `--features <list>` | 非交互模式：指定通用功能，使用逗号分隔 |
+| `--extras <list>` | 非交互模式：指定模板扩展，使用逗号分隔 |
+| `--yes` / `-y` | 非交互模式：使用默认值并跳过确认 |
+| `--cwd <path>` | 指定创建项目时使用的基准目录 |
+| `--target <path>` | 指定生成项目的目标目录 |
+| `--force` | 允许覆盖非空目标目录 |
+| `--dry-run` | 只输出生成计划，不写入文件 |
+| `--print-config` | 输出最终生成配置 JSON 后退出 |
+| `--remote` | 从 GitHub 拉取远端模板，默认使用 npm 包内置模板 |
+| `--ref <tag\|sha\|branch>` | 配合 `--remote` 使用，指定远端模板 ref |
+| `--strict-remote` | 配合 `--remote` 使用，远端拉取失败时直接退出 |
 | `--no-cache` | 配合 `--remote` 使用，忽略 24 小时缓存 |
 | `--latest` | 生成时从 npm 拉取最新依赖版本 |
 | `--no-telemetry` | 跳过本次匿名使用统计 |
