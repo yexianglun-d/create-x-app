@@ -469,8 +469,18 @@
 - [x] 已验证：`npx -y create-x-app-cli --version` 返回 `1.0.1`
 - [x] 已验证：`npx -y create-x-app-cli cxa-v101-smoke --skip-install --skip-git --no-telemetry` 可生成项目
 - [x] 已验证：发布后生成的 `chrome-ext` 项目执行 `npm install`、`npm run build`、`npm run lint` 均通过
-- [ ] 后续优化：模板依赖仍有 ESLint 8 deprecated 与 `npm audit` moderate 警告，后续统一升级 ESLint 9 配置体系
-- [ ] 后续确认：`cxa-plugin-example` 当前 npm registry 仍返回 404，如需社区市场真实搜索结果，需要单独发布该示例插件包
+- [x] 已完成：恢复 `node:test` 单元测试、模板集成测试、CLI smoke 测试和 GitHub Actions CI
+- [x] 已完成：模板 ESLint 配置统一迁移到 ESLint 9 flat config 体系，并保留 `.eslintrc.json` 升级兼容识别
+- [x] 已完成：新增插件 manifest 校验、安装前 npm metadata 预检、搜索结果更新时间展示和插件开发文档
+- [x] 已完成：新增主包 release workflow 与示例插件 release workflow
+- [x] 已验证：`npm run lint`
+- [x] 已验证：`npm test`
+- [x] 已验证：`CXA_SKIP_TEMPLATE_INSTALL=1 npm run test:snapshot-update`
+- [x] 已验证：`CXA_SKIP_TEMPLATE_INSTALL=1 npm run test:integration`
+- [x] 已验证：`npm run test:integration`，8 套模板均完成 install / build / lint
+- [x] 已验证：`npm run test:smoke`
+- [x] 已验证：示例插件 `npm pack --dry-run` 产物只包含 `manifest.json`、`template`、`README.md` 与必要 package 元数据
+- [!] 后续确认：`cxa-plugin-example` 当前 npm registry 返回 404，可发布；但当前本机 `npm whoami` 返回 `E401 Unauthorized`，需要登录 npm 后执行发布和真实市场闭环验证
 
 ## 当前约定
 

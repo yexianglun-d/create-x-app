@@ -1,0 +1,41 @@
+{
+  "files": [
+    ".gitignore",
+    ".husky/commit-msg",
+    ".prettierrc",
+    "AGENTS.md",
+    "README.md",
+    "coding-rules.md",
+    "commitlint.config.js",
+    "eslint.config.js",
+    "index.html",
+    "package.json",
+    "public/favicon.svg",
+    "src/App.tsx",
+    "src/api/client.ts",
+    "src/api/user.ts",
+    "src/hooks/useAppCopy.ts",
+    "src/hooks/useRequest.ts",
+    "src/index.css",
+    "src/layouts/MainLayout.tsx",
+    "src/main.tsx",
+    "src/pages/Dashboard.tsx",
+    "src/pages/Login.tsx",
+    "src/pages/NotFound.tsx",
+    "src/router/index.tsx",
+    "src/router/routes.tsx",
+    "src/stores/auth.ts",
+    "src/types/index.ts",
+    "src/vite-env.d.ts",
+    "tsconfig.json",
+    "tsconfig.node.json",
+    "vite.config.ts"
+  ],
+  "packageJsonFields": {
+    "scripts.build": "tsc && vite build",
+    "scripts.lint": "eslint src",
+    "cxa-template": "react-admin",
+    "cxa-version": "1.0.0"
+  }
+}
+

@@ -1,0 +1,30 @@
+{
+  "files": [
+    ".gitignore",
+    ".prettierrc",
+    "AGENTS.md",
+    "README.md",
+    "coding-rules.md",
+    "eslint.config.js",
+    "index.html",
+    "package.json",
+    "src/App.vue",
+    "src/composables/useRequest.ts",
+    "src/main.ts",
+    "src/router/index.ts",
+    "src/styles/reset.css",
+    "src/utils/rem.ts",
+    "src/views/Detail.vue",
+    "src/views/Home.vue",
+    "src/vite-env.d.ts",
+    "tsconfig.json",
+    "vite.config.ts"
+  ],
+  "packageJsonFields": {
+    "scripts.build": "vue-tsc --noEmit && vite build",
+    "scripts.lint": "eslint src",
+    "cxa-template": "mobile-h5",
+    "cxa-version": "1.0.0"
+  }
+}
+

@@ -1,0 +1,39 @@
+name: Release Example Plugin
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'cxa-plugin-example-v*'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  release-plugin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/cxa-plugin-example
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Check package version is not published
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "$NAME@$VERSION already exists on npm"
+            exit 1
+          fi
+      - run: npm pack --dry-run
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

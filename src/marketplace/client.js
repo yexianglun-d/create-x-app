@@ -74,6 +74,28 @@ async function getWeeklyDownloads(packageName) {
   }
 }
 
+async function requestPackageMetadata(packageName) {
+  const url = getRegistryUrl(encodeURIComponent(packageName))
+  return requestJson(url)
+}
+
+function pickLatestVersion(metadata) {
+  return metadata['dist-tags']?.latest ?? metadata.version ?? null
+}
+
+function normalizePackageMetadata(packageName, metadata, weeklyDownloads = null) {
+  const version = pickLatestVersion(metadata)
+  const latestVersion = version ? metadata.versions?.[version] : null
+
+  return {
+    name: metadata.name ?? packageName,
+    version: version ?? '-',
+    description: latestVersion?.description ?? metadata.description ?? '',
+    weeklyDownloads,
+    updatedAt: metadata.time?.modified ?? null,
+  }
+}
+
 export function isPluginPackageName(packageName) {
   if (typeof packageName !== 'string') {
     return false
@@ -114,5 +136,20 @@ export async function searchMarketplacePlugins(keyword, options = {}) {
     version: pkg.version,
     description: pkg.description ?? '',
     weeklyDownloads: await getWeeklyDownloads(pkg.name),
+    updatedAt: pkg.date ?? null,
   })))
+}
+
+export async function getPluginPackageMetadata(packageName) {
+  const normalizedPackageName = normalizePluginPackageName(packageName)
+  const [metadata, weeklyDownloads] = await Promise.all([
+    requestPackageMetadata(normalizedPackageName),
+    getWeeklyDownloads(normalizedPackageName),
+  ])
+
+  if (!metadata['cxa-plugin'] && !metadata.versions?.[pickLatestVersion(metadata)]?.['cxa-plugin']) {
+    throw new Error(`${normalizedPackageName} 不是有效的 create-x-app 插件包`)
+  }
+
+  return normalizePackageMetadata(normalizedPackageName, metadata, weeklyDownloads)
 }

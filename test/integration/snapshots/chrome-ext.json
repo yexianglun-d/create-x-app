@@ -1,0 +1,28 @@
+{
+  "files": [
+    ".gitignore",
+    ".prettierrc",
+    "AGENTS.md",
+    "README.md",
+    "coding-rules.md",
+    "eslint.config.js",
+    "manifest.json",
+    "package.json",
+    "popup/index.html",
+    "scripts/post-build.mjs",
+    "src/background/index.ts",
+    "src/content/index.ts",
+    "src/popup/Popup.tsx",
+    "src/popup/main.tsx",
+    "src/types/chrome.d.ts",
+    "tsconfig.json",
+    "vite.config.ts"
+  ],
+  "packageJsonFields": {
+    "scripts.build": "tsc && vite build && node scripts/post-build.mjs",
+    "scripts.lint": "eslint src",
+    "cxa-template": "chrome-ext",
+    "cxa-version": "1.0.0"
+  }
+}
+

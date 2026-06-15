@@ -2,6 +2,19 @@
 
 本项目的变更记录遵循“面向用户可理解”的原则，重点记录发布版本中的能力变化、修复和迁移影响。
 
+## [Unreleased]
+
+### Added
+
+- 恢复 `node:test` 单元测试、模板集成测试、CLI smoke 测试和 GitHub Actions CI。
+- 新增插件 manifest 校验、插件安装前 npm metadata 预检和插件开发文档。
+- 新增主包与示例插件的 GitHub Actions 发布 workflow。
+
+### Changed
+
+- 模板 ESLint 配置迁移到 ESLint 9 flat config 体系。
+- README 和发布文档补充真实插件市场验证流程。
+
 ## [1.0.1] - 2026-05-18
 
 ### Fixed

@@ -1,0 +1,23 @@
+{
+  "files": [
+    ".env.example",
+    ".gitignore",
+    ".husky/commit-msg",
+    ".prettierrc",
+    "AGENTS.md",
+    "README.md",
+    "coding-rules.md",
+    "commitlint.config.js",
+    "eslint.config.js",
+    "package.json",
+    "src/index.ts",
+    "tsconfig.json"
+  ],
+  "packageJsonFields": {
+    "scripts.build": "tsc",
+    "scripts.lint": "eslint src",
+    "cxa-template": "node-ts",
+    "cxa-version": "1.0.0"
+  }
+}
+

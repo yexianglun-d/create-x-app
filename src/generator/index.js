@@ -12,7 +12,7 @@ const SHARED_DIR = join(__dirname, '../../shared')
 const EXTRA_TEMPLATES_DIR = join(__dirname, '../../templates/extras')
 const FILE_BASED_EXTRAS = new Set(['tailwind'])
 const FEATURE_ARTIFACTS = {
-  eslint: ['.eslintrc.json'],
+  eslint: ['eslint.config.js'],
   prettier: ['.prettierrc'],
   husky: ['.husky', 'commitlint.config.js'],
   agents: ['AGENTS.md'],

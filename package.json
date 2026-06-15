@@ -55,7 +55,12 @@
   ],
   "scripts": {
     "dev": "node bin/cli.js",
-    "lint": "eslint src"
+    "lint": "eslint src test",
+    "test": "npm run test:unit",
+    "test:unit": "node --test test/unit/*.test.js",
+    "test:integration": "node test/integration/runner.js",
+    "test:snapshot-update": "node test/integration/runner.js --update-snapshots",
+    "test:smoke": "node test/smoke/runner.js"
   },
   "publishConfig": {
     "access": "public"

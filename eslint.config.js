@@ -18,14 +18,14 @@ export default [
       'node_modules/**',
       'dist/**',
       'coverage/**',
-      'templates/**',
       'shared/**',
+      'test/integration/snapshots/**',
       '*.tgz',
     ],
   },
   js.configs.recommended,
   {
-    files: ['src/**/*.js', 'bin/**/*.js'],
+    files: ['src/**/*.js', 'bin/**/*.js', 'test/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

@@ -1,5 +1,42 @@
 # create-x-app 发布命令清单
 
+## 推荐方式：GitHub Actions 自动发布
+
+主包发布使用 `.github/workflows/release.yml`：
+
+```bash
+git tag -a v1.0.2 -m "create-x-app-cli v1.0.2"
+git push origin v1.0.2
+```
+
+推送 `v*` tag 后，GitHub Actions 会执行：
+
+- `npm ci`
+- `npm run lint`
+- `npm test`
+- `npm run test:integration`
+- `npm run test:smoke`
+- `npm pack --dry-run`
+- `npm publish --provenance --access public`
+- 创建或更新 GitHub Release
+
+要求仓库配置 Secret：
+
+```text
+NPM_TOKEN
+```
+
+示例插件发布使用 `.github/workflows/plugin-release.yml`，可通过 GitHub Actions 手动触发，也可推送：
+
+```bash
+git tag -a cxa-plugin-example-v0.1.0 -m "cxa-plugin-example v0.1.0"
+git push origin cxa-plugin-example-v0.1.0
+```
+
+---
+
+## 备用方式：本地手动发布
+
 ## 1. 安装依赖
 
 ```bash

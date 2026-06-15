@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadPluginTemplates } from './loader.js'
+import { validateManifestDefinition } from '../manifest/validate.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 export const TEMPLATES_DIR = join(__dirname, '../../templates')
@@ -17,11 +18,13 @@ function loadBuiltinTemplates() {
       const templatePath = join(TEMPLATES_DIR, directoryName)
       const manifest = readJsonFile(join(templatePath, 'manifest.json'))
 
-      return {
+      return validateManifestDefinition({
         ...manifest,
         source: 'builtin',
         templatePath,
-      }
+      }, {
+        sourceName: `内置模板 ${directoryName}`,
+      })
     })
     .sort((left, right) => left.key.localeCompare(right.key))
 }

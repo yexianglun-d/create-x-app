@@ -5,6 +5,14 @@ function formatDownloads(downloads) {
   return downloads === null ? '-' : String(downloads)
 }
 
+function formatDate(value) {
+  if (!value) {
+    return '-'
+  }
+
+  return String(value).slice(0, 10)
+}
+
 export async function searchCommand(keyword, options = {}) {
   try {
     const plugins = await searchMarketplacePlugins(keyword, {
@@ -21,11 +29,13 @@ export async function searchCommand(keyword, options = {}) {
         { key: 'name', title: '包名' },
         { key: 'version', title: '版本' },
         { key: 'weeklyDownloads', title: '周下载量' },
+        { key: 'updatedAt', title: '更新时间' },
         { key: 'description', title: '描述' },
       ],
       plugins.map((plugin) => ({
         ...plugin,
         weeklyDownloads: formatDownloads(plugin.weeklyDownloads),
+        updatedAt: formatDate(plugin.updatedAt),
       })),
     )
   } catch (error) {

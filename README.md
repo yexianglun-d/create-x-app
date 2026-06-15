@@ -248,6 +248,18 @@ create-x-app my-plugin-app
 npm uninstall -g cxa-plugin-example
 ```
 
+示例插件发布到 npm 后，也可以按真实市场流程验证：
+
+```bash
+create-x-app search cxa-plugin-example
+create-x-app install cxa-plugin-example
+create-x-app list
+create-x-app my-plugin-app --skip-install --skip-git
+create-x-app remove cxa-plugin-example
+```
+
+插件开发规范见 [docs/plugin-development.md](./docs/plugin-development.md)。
+
 ## 匿名统计与隐私
 
 首次创建项目时，CLI 会询问是否允许发送匿名使用统计，并将选择保存到：

@@ -1,0 +1,32 @@
+{
+  "files": [
+    ".gitignore",
+    ".husky/commit-msg",
+    "AGENTS.md",
+    "BACKEND.md",
+    "README.md",
+    "coding-rules.md",
+    "commitlint.config.js",
+    "docker-compose.yml",
+    "frontend/.prettierrc",
+    "frontend/eslint.config.js",
+    "frontend/index.html",
+    "frontend/package.json",
+    "frontend/public/favicon.svg",
+    "frontend/src/App.css",
+    "frontend/src/App.tsx",
+    "frontend/src/main.tsx",
+    "frontend/src/vite-env.d.ts",
+    "frontend/tsconfig.json",
+    "frontend/tsconfig.node.json",
+    "frontend/vite.config.ts",
+    "package.json"
+  ],
+  "packageJsonFields": {
+    "scripts.build": null,
+    "scripts.lint": null,
+    "cxa-template": "java-fullstack",
+    "cxa-version": "1.0.0"
+  }
+}
+

@@ -1,0 +1,30 @@
+{
+  "files": [
+    ".gitignore",
+    ".prettierrc",
+    "AGENTS.md",
+    "README.md",
+    "coding-rules.md",
+    "electron-builder.json",
+    "electron/ipc/handlers.ts",
+    "electron/main.ts",
+    "electron/preload.ts",
+    "eslint.config.js",
+    "index.html",
+    "package.json",
+    "src/App.vue",
+    "src/composables/useElectron.ts",
+    "src/main.ts",
+    "src/vite-env.d.ts",
+    "tsconfig.electron.json",
+    "tsconfig.json",
+    "vite.config.ts"
+  ],
+  "packageJsonFields": {
+    "scripts.build": "vue-tsc --noEmit && vite build && tsc -p tsconfig.electron.json",
+    "scripts.lint": "eslint src electron",
+    "cxa-template": "electron-app",
+    "cxa-version": "1.0.0"
+  }
+}
+

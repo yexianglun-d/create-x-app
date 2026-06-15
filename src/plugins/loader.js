@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
+import { validateManifestDefinition } from '../manifest/validate.js'
 
 const PLUGIN_PACKAGE_PREFIX = 'cxa-plugin-'
 
@@ -98,22 +99,18 @@ function normalizePluginManifest(packageDir, packageJson) {
   const templatePath = join(packageDir, 'template')
 
   if (!existsSync(manifestPath) || !existsSync(templatePath)) {
-    return null
+    throw new Error(`插件 ${packageJson.name} 必须包含 manifest.json 和 template/`)
   }
 
   let manifest
 
   try {
     manifest = readJsonFile(manifestPath)
-  } catch {
-    return null
+  } catch (error) {
+    throw new Error(`插件 ${packageJson.name} 的 manifest.json 解析失败：${error.message}`)
   }
 
-  if (!manifest.key || !manifest.name) {
-    return null
-  }
-
-  return {
+  const normalizedManifest = {
     version: '1.0.0',
     framework: 'plugin',
     requiredPm: null,
@@ -136,6 +133,10 @@ function normalizePluginManifest(packageDir, packageJson) {
     packagePath: packageDir,
     templatePath,
   }
+
+  return validateManifestDefinition(normalizedManifest, {
+    packageName: packageJson.name,
+  })
 }
 
 export function loadPluginTemplates() {

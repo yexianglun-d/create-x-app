@@ -15,7 +15,7 @@
     "build": "<% if (renderer === 'vue') { %>vue-tsc --noEmit && <% } else { %>tsc && <% } %>vite build && tsc -p tsconfig.electron.json",
     "preview": "vite preview",
     "pack": "<% if (renderer === 'vue') { %>vue-tsc --noEmit && <% } else { %>tsc && <% } %>vite build && tsc -p tsconfig.electron.json && electron-builder --config electron-builder.json"<% if (hasEslint) { %>,
-    "lint": "eslint src electron --ext .ts<% if (renderer === 'react') { %>,.tsx<% } %> --report-unused-disable-directives"<% } %>
+    "lint": "eslint src electron"<% } %>
   },
   "dependencies": {<% if (renderer === 'vue') { %>
     "vue": "^3.4.31"<% } else { %>
@@ -35,9 +35,12 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0"<% } %><% if (hasEslint) { %>,
-    "eslint": "^8.57.0",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0"<% } %><% if (hasPrettier) { %>,
+    "eslint": "^9.39.4",
+    "@eslint/js": "^9.39.4",
+    "globals": "^17.6.0",
+    "typescript-eslint": "^8.61.0"<% if (renderer === 'vue') { %>,
+    "eslint-plugin-vue": "^10.9.2",
+    "vue-eslint-parser": "^10.4.1"<% } %><% } %><% if (hasPrettier) { %>,
     "prettier": "^3.3.0"<% } %>
   }
 }

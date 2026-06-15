@@ -5,6 +5,7 @@ const CONFIG_FILE_NAMES = new Set([
   'tsconfig.json',
   'tsconfig.node.json',
   '.eslintrc.json',
+  'eslint.config.js',
   'vite.config.ts',
   '.prettierrc',
   'commitlint.config.js',

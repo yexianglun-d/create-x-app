@@ -1,0 +1,29 @@
+{
+  "files": [
+    ".gitignore",
+    ".husky/commit-msg",
+    ".prettierrc",
+    "AGENTS.md",
+    "README.md",
+    "coding-rules.md",
+    "commitlint.config.js",
+    "eslint.config.js",
+    "index.html",
+    "package.json",
+    "public/favicon.svg",
+    "src/App.css",
+    "src/App.tsx",
+    "src/main.tsx",
+    "src/vite-env.d.ts",
+    "tsconfig.json",
+    "tsconfig.node.json",
+    "vite.config.ts"
+  ],
+  "packageJsonFields": {
+    "scripts.build": "tsc && vite build",
+    "scripts.lint": "eslint src",
+    "cxa-template": "react-vite-ts",
+    "cxa-version": "1.0.0"
+  }
+}
+
