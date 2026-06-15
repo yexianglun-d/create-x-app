@@ -3,6 +3,7 @@
   "name": "Electron 桌面应用",
   "description": "Electron 31 + Vue 3 / React，含 IPC 通信示例和跨平台打包",
   "version": "1.0.0",
+  "schemaVersion": "1.0",
   "framework": "electron",
   "requiredPm": null,
   "forbiddenPm": [],
@@ -22,6 +23,49 @@
     "agents",
     "coding-rules"
   ],
+  "features": {
+    "eslint": {
+      "label": "ESLint",
+      "hint": "代码质量检查",
+      "default": true,
+      "artifacts": [
+        "eslint.config.js"
+      ]
+    },
+    "prettier": {
+      "label": "Prettier",
+      "hint": "代码格式化",
+      "default": true,
+      "artifacts": [
+        ".prettierrc"
+      ]
+    },
+    "husky": {
+      "label": "commitlint + Husky",
+      "hint": "提交信息校验",
+      "default": false,
+      "artifacts": [
+        ".husky",
+        "commitlint.config.js"
+      ]
+    },
+    "agents": {
+      "label": "AGENTS.md",
+      "hint": "AI 协作约定",
+      "default": true,
+      "artifacts": [
+        "AGENTS.md"
+      ]
+    },
+    "coding-rules": {
+      "label": "coding-rules.md",
+      "hint": "团队代码规范",
+      "default": true,
+      "artifacts": [
+        "coding-rules.md"
+      ]
+    }
+  },
   "extras": [],
   "subPrompts": [
     {
@@ -57,6 +101,16 @@
   "devScript": "dev",
   "buildScript": "build",
   "devPort": null,
+  "upgrade": {
+    "managedFiles": [
+      "tsconfig.json",
+      "tsconfig.electron.json",
+      "eslint.config.js",
+      "vite.config.ts",
+      ".prettierrc",
+      "electron-builder.json"
+    ]
+  },
   "integrationTest": {
     "skipBuild": false,
     "skipDevServer": true,

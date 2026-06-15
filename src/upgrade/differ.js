@@ -1,15 +1,5 @@
 import fs from 'fs-extra'
-import { basename, join, relative } from 'node:path'
-
-const CONFIG_FILE_NAMES = new Set([
-  'tsconfig.json',
-  'tsconfig.node.json',
-  '.eslintrc.json',
-  'eslint.config.js',
-  'vite.config.ts',
-  '.prettierrc',
-  'commitlint.config.js',
-])
+import { join, relative } from 'node:path'
 
 async function collectConfigFiles(rootDir, currentDir = rootDir) {
   const entries = await fs.readdir(currentDir, { withFileTypes: true })
@@ -27,12 +17,26 @@ async function collectConfigFiles(rootDir, currentDir = rootDir) {
       continue
     }
 
-    if (CONFIG_FILE_NAMES.has(basename(entry.name))) {
-      configFiles.push(relative(rootDir, currentPath))
-    }
+    configFiles.push(relative(rootDir, currentPath))
   }
 
   return configFiles
+}
+
+async function resolveExpectedConfigFiles(expectedDir, managedFiles) {
+  if (!Array.isArray(managedFiles) || managedFiles.length === 0) {
+    return collectConfigFiles(expectedDir)
+  }
+
+  const existingManagedFiles = []
+
+  for (const managedFile of managedFiles) {
+    if (await fs.pathExists(join(expectedDir, managedFile))) {
+      existingManagedFiles.push(managedFile)
+    }
+  }
+
+  return existingManagedFiles
 }
 
 function normalizeContent(content) {
@@ -90,8 +94,8 @@ export function createTextDiff(currentContent, expectedContent) {
   return buildDiffOperations(currentLines, expectedLines)
 }
 
-export async function diffConfigFiles(currentDir, expectedDir) {
-  const expectedConfigFiles = await collectConfigFiles(expectedDir)
+export async function diffConfigFiles(currentDir, expectedDir, managedFiles) {
+  const expectedConfigFiles = await resolveExpectedConfigFiles(expectedDir, managedFiles)
   const diffs = []
 
   for (const relativePath of expectedConfigFiles) {

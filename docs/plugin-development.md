@@ -61,6 +61,7 @@ cxa-plugin-example/
   "name": "Example Basic",
   "description": "社区插件示例模板，演示最小插件目录结构",
   "version": "0.1.0",
+  "schemaVersion": "1.0",
   "framework": "plugin",
   "requiredPm": null,
   "forbiddenPm": [],
@@ -68,11 +69,34 @@ cxa-plugin-example/
   "optionalEnv": {},
   "supportedFeatures": ["agents", "coding-rules"],
   "defaultFeatures": ["agents", "coding-rules"],
+  "features": {
+    "husky": {
+      "label": "commitlint + Husky",
+      "hint": "提交信息校验",
+      "default": false,
+      "artifacts": [".husky", "commitlint.config.js"]
+    },
+    "agents": {
+      "label": "AGENTS.md",
+      "hint": "AI 协作约定",
+      "default": true,
+      "artifacts": ["AGENTS.md"]
+    },
+    "coding-rules": {
+      "label": "coding-rules.md",
+      "hint": "团队代码规范",
+      "default": true,
+      "artifacts": ["coding-rules.md"]
+    }
+  },
   "extras": [],
   "subPrompts": [],
   "devScript": "dev",
   "buildScript": null,
-  "devPort": null
+  "devPort": null,
+  "upgrade": {
+    "managedFiles": []
+  }
 }
 ```
 
@@ -82,10 +106,13 @@ cxa-plugin-example/
 - `name`：展示名称，CLI 会显示为 `[插件] <name>`。
 - `description`：模板用途说明。
 - `version`：模板版本，不要求和 npm 包版本一致，但建议同步。
+- `schemaVersion`：manifest schema 版本，当前固定为 `1.0`。
 - `framework`：模板类型，可使用 `plugin`、`react`、`node` 等。
 - `supportedFeatures`：支持的公共功能，例如 `agents`、`coding-rules`。
 - `defaultFeatures`：默认启用的功能，必须是 `supportedFeatures` 的子集。
+- `features`：功能项的展示文案、默认状态和生成产物，CLI 会用它裁剪未启用文件。
 - `extras`：模板专属扩展项。
+- `extras[].artifacts` / `extras[].detectDependencies`：用于升级命令识别已启用的模板扩展。
 - `subPrompts`：模板专属子问答，目前支持 `select`。
 
 ## 本地联调
@@ -130,4 +157,3 @@ create-x-app remove cxa-plugin-example
 - 缺少 `manifest.json` 或 `template/`：插件扫描会报错。
 - `defaultFeatures` 不在 `supportedFeatures` 中：manifest 校验会失败。
 - 插件模板 key 和内置模板冲突：插件会被忽略，内置模板优先。
-

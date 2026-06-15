@@ -12,13 +12,6 @@ import { loadAllManifests } from '../manifest/loader.js'
 const DEFAULT_PROJECT_NAME = 'my-app'
 const PROJECT_NAME_PATTERN = /^[a-z0-9-_]+$/
 const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn']
-const FEATURE_DEFINITIONS = {
-  eslint: { label: 'ESLint', hint: '代码质量检查' },
-  prettier: { label: 'Prettier', hint: '代码格式化' },
-  husky: { label: 'commitlint + Husky', hint: '提交信息校验' },
-  agents: { label: 'AGENTS.md', hint: 'AI 协作约定' },
-  'coding-rules': { label: 'coding-rules.md', hint: '团队代码规范' },
-}
 
 function ensurePromptNotCancelled(value) {
   if (isCancel(value)) {
@@ -41,11 +34,11 @@ function validateProjectName(projectName) {
   return undefined
 }
 
-function getFeatureDefinition(featureKey) {
-  const featureDefinition = FEATURE_DEFINITIONS[featureKey]
+function getFeatureDefinition(manifest, featureKey) {
+  const featureDefinition = manifest.features?.[featureKey]
 
   if (!featureDefinition) {
-    throw new Error(`未定义的功能项：${featureKey}`)
+    throw new Error(`${manifest.name} 未定义功能项：${featureKey}`)
   }
 
   return featureDefinition
@@ -61,7 +54,7 @@ function buildTemplateChoices(manifests) {
 
 function buildFeatureChoices(manifest) {
   return manifest.supportedFeatures.map((featureKey) => {
-    const featureDefinition = getFeatureDefinition(featureKey)
+    const featureDefinition = getFeatureDefinition(manifest, featureKey)
 
     return {
       value: featureKey,
@@ -118,8 +111,8 @@ function buildPackageManagerChoices(manifest) {
     }))
 }
 
-function getFeatureLabel(featureKey) {
-  return getFeatureDefinition(featureKey).label
+function getFeatureLabel(manifest, featureKey) {
+  return getFeatureDefinition(manifest, featureKey).label
 }
 
 function getExtraLabel(manifest, extraKey) {
@@ -212,7 +205,9 @@ function buildConfirmationMessage({
   features,
   extras,
 }) {
-  const featureText = features.length > 0 ? features.map(getFeatureLabel).join(', ') : '无'
+  const featureText = features.length > 0
+    ? features.map((featureKey) => getFeatureLabel(manifest, featureKey)).join(', ')
+    : '无'
   const extraText = extras.length > 0
     ? extras.map((extraKey) => getExtraLabel(manifest, extraKey)).join(', ')
     : '无'

@@ -11,64 +11,45 @@ import { applyDiffs } from '../upgrade/applier.js'
 import { detectProject } from '../upgrade/detector.js'
 import { diffConfigFiles } from '../upgrade/differ.js'
 
-function detectFeatures(projectDir) {
-  return [
-    ['eslint', ['.eslintrc.json', 'frontend/.eslintrc.json']],
-    ['prettier', ['.prettierrc', 'frontend/.prettierrc']],
-    ['husky', ['commitlint.config.js']],
-    ['agents', ['AGENTS.md']],
-    ['coding-rules', ['coding-rules.md']],
-  ]
-    .filter(([, filePaths]) => filePaths.some((filePath) => fs.existsSync(join(projectDir, filePath))))
-    .map(([feature]) => feature)
+function hasAnyFile(projectDir, filePaths = []) {
+  return filePaths.some((filePath) => fs.existsSync(join(projectDir, filePath)))
 }
 
-function detectExtras(projectDir, templateKey, packageJson) {
-  const dependencies = {
-    ...packageJson.dependencies,
-    ...packageJson.devDependencies,
-  }
-  const extras = []
-
-  if ((templateKey === 'react-vite-ts' || templateKey === 'react-admin') && fs.existsSync(join(projectDir, 'tailwind.config.cjs'))) {
-    extras.push('tailwind')
-  }
-
-  if (templateKey === 'react-vite-ts' && dependencies['react-router-dom']) {
-    extras.push('react-router')
-  }
-
-  if (templateKey === 'react-admin' && dependencies.i18next) {
-    extras.push('i18n')
-  }
-
-  if (templateKey === 'node-ts' && dependencies.express) {
-    extras.push('express')
-  }
-
-  if (templateKey === 'node-ts' && dependencies.dotenv) {
-    extras.push('dotenv')
-  }
-
-  return extras
+function detectFeatures(projectDir, manifest) {
+  return (manifest.supportedFeatures ?? [])
+    .filter((feature) => hasAnyFile(projectDir, manifest.features?.[feature]?.artifacts ?? []))
 }
 
-function detectSubPromptValues(projectDir, templateKey, packageJson) {
+function detectExtras(projectDir, manifest, packageJson) {
   const dependencies = {
     ...packageJson.dependencies,
     ...packageJson.devDependencies,
   }
 
-  if (templateKey !== 'electron-app') {
-    return {}
-  }
-
-  return {
-    renderer: dependencies.vue || fs.existsSync(join(projectDir, 'src/App.vue')) ? 'vue' : 'react',
-  }
+  return (manifest.extras ?? [])
+    .filter((extra) => (
+      hasAnyFile(projectDir, extra.artifacts ?? [])
+        || (extra.detectDependencies ?? []).some((dependencyName) => dependencies[dependencyName])
+    ))
+    .map((extra) => extra.key)
 }
 
-function detectPackageManager(projectDir, templateKey, packageJson, manifest) {
+function detectSubPromptValues(projectDir, manifest) {
+  const values = {}
+
+  for (const rule of manifest.subPromptArtifacts ?? []) {
+    for (const [optionValue, artifactPaths] of Object.entries(rule.artifactsByValue ?? {})) {
+      if (hasAnyFile(projectDir, artifactPaths)) {
+        values[rule.key] = optionValue
+        break
+      }
+    }
+  }
+
+  return values
+}
+
+function detectPackageManager(projectDir, packageJson, manifest) {
   if (manifest.requiredPm) {
     return manifest.requiredPm
   }
@@ -89,26 +70,22 @@ function detectPackageManager(projectDir, templateKey, packageJson, manifest) {
     return 'yarn'
   }
 
-  if (templateKey === 'monorepo') {
-    return 'pnpm'
-  }
-
   return 'npm'
 }
 
 function buildUpgradeConfig(projectDir, templateKey, packageJson, manifest, targetDir) {
-  const extras = detectExtras(projectDir, templateKey, packageJson)
+  const extras = detectExtras(projectDir, manifest, packageJson)
 
   return {
     projectName: packageJson.name ?? 'upgrade-preview',
     template: templateKey,
-    features: detectFeatures(projectDir),
+    features: detectFeatures(projectDir, manifest),
     extras,
     fileBasedExtras: extras.filter((extra) => manifest.extras
       .find((candidate) => candidate.key === extra)?.source === 'file'),
-    packageManager: detectPackageManager(projectDir, templateKey, packageJson, manifest),
+    packageManager: detectPackageManager(projectDir, packageJson, manifest),
     targetDir,
-    ...detectSubPromptValues(projectDir, templateKey, packageJson),
+    ...detectSubPromptValues(projectDir, manifest),
   }
 }
 
@@ -138,7 +115,7 @@ export async function upgradeCommand() {
       templatePath,
     })
 
-    const diffs = await diffConfigFiles(projectDir, previewDir)
+    const diffs = await diffConfigFiles(projectDir, previewDir, manifest.upgrade?.managedFiles)
 
     if (diffs.length === 0) {
       outro(chalk.green('配置文件已是最新，无需升级'))

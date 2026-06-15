@@ -1,9 +1,9 @@
 import { existsSync } from 'node:fs'
 
 const PACKAGE_MANAGERS = new Set(['npm', 'pnpm', 'yarn'])
-const REQUIRED_STRING_FIELDS = ['key', 'name', 'description', 'version', 'framework']
+const REQUIRED_STRING_FIELDS = ['schemaVersion', 'key', 'name', 'description', 'version', 'framework']
 const REQUIRED_ARRAY_FIELDS = ['supportedFeatures', 'defaultFeatures', 'extras', 'subPrompts']
-const REQUIRED_OBJECT_FIELDS = ['requiredEnv', 'optionalEnv']
+const REQUIRED_OBJECT_FIELDS = ['requiredEnv', 'optionalEnv', 'features']
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -44,6 +44,51 @@ function validateForbiddenPackageManagers(errors, manifest) {
 
 function validateFeatures(errors, manifest) {
   const supportedFeatures = new Set(manifest.supportedFeatures ?? [])
+  const defaultFeatures = new Set(manifest.defaultFeatures ?? [])
+  const featureDefinitions = manifest.features ?? {}
+
+  for (const [feature, featureDefinition] of Object.entries(featureDefinitions)) {
+    const isSupportedFeature = supportedFeatures.has(feature)
+
+    if (!isPlainObject(featureDefinition)) {
+      errors.push(`features.${feature} 必须是对象`)
+      continue
+    }
+
+    if (typeof featureDefinition.label !== 'string' || featureDefinition.label.length === 0) {
+      errors.push(`features.${feature}.label 必须是非空字符串`)
+    }
+
+    if (featureDefinition.hint !== undefined && typeof featureDefinition.hint !== 'string') {
+      errors.push(`features.${feature}.hint 必须是字符串`)
+    }
+
+    if (typeof featureDefinition.default !== 'boolean') {
+      errors.push(`features.${feature}.default 必须是布尔值`)
+    } else if (isSupportedFeature && featureDefinition.default !== defaultFeatures.has(feature)) {
+      errors.push(`features.${feature}.default 必须与 defaultFeatures 保持一致`)
+    }
+
+    if (featureDefinition.artifacts !== undefined && !Array.isArray(featureDefinition.artifacts)) {
+      errors.push(`features.${feature}.artifacts 必须是数组`)
+    }
+
+    for (const artifact of featureDefinition.artifacts ?? []) {
+      if (typeof artifact !== 'string' || artifact.length === 0) {
+        errors.push(`features.${feature}.artifacts 只能包含非空字符串`)
+      }
+    }
+
+    if (featureDefinition.postActions !== undefined && !Array.isArray(featureDefinition.postActions)) {
+      errors.push(`features.${feature}.postActions 必须是数组`)
+    }
+  }
+
+  for (const feature of supportedFeatures) {
+    if (!isPlainObject(featureDefinitions[feature])) {
+      errors.push(`features.${feature} 必须声明功能定义`)
+    }
+  }
 
   for (const feature of manifest.defaultFeatures ?? []) {
     if (!supportedFeatures.has(feature)) {
@@ -69,6 +114,22 @@ function validateExtras(errors, manifest) {
 
     if (typeof extra.default !== 'boolean') {
       errors.push(`extras[${index}].default 必须是布尔值`)
+    }
+
+    if (!['inline', 'file'].includes(extra.source)) {
+      errors.push(`extras[${index}].source 必须是 inline 或 file`)
+    }
+
+    if (extra.source === 'file' && extra.templatePath !== undefined && typeof extra.templatePath !== 'string') {
+      errors.push(`extras[${index}].templatePath 必须是字符串`)
+    }
+
+    if (extra.artifacts !== undefined && !Array.isArray(extra.artifacts)) {
+      errors.push(`extras[${index}].artifacts 必须是数组`)
+    }
+
+    if (extra.detectDependencies !== undefined && !Array.isArray(extra.detectDependencies)) {
+      errors.push(`extras[${index}].detectDependencies 必须是数组`)
     }
   }
 }
@@ -117,6 +178,10 @@ export function getManifestValidationErrors(manifest, options = {}) {
     if (!isPlainObject(manifest[fieldName])) {
       errors.push(`${fieldName} 必须是对象`)
     }
+  }
+
+  if (manifest.schemaVersion !== '1.0') {
+    errors.push('schemaVersion 必须是 1.0')
   }
 
   validatePackageManagerField(errors, manifest, 'requiredPm')

@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://create-x-app.dev/schemas/manifest-v1.json",
+  "title": "create-x-app template manifest v1",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "key",
+    "name",
+    "description",
+    "version",
+    "framework",
+    "requiredPm",
+    "forbiddenPm",
+    "requiredEnv",
+    "optionalEnv",
+    "features",
+    "supportedFeatures",
+    "defaultFeatures",
+    "extras",
+    "subPrompts",
+    "devScript",
+    "buildScript",
+    "devPort"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "key": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "framework": {
+      "type": "string",
+      "minLength": 1
+    },
+    "requiredPm": {
+      "type": ["string", "null"],
+      "enum": ["npm", "pnpm", "yarn", null]
+    },
+    "forbiddenPm": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["npm", "pnpm", "yarn"]
+      },
+      "uniqueItems": true
+    },
+    "requiredEnv": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "optionalEnv": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["label", "default"],
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "hint": {
+            "type": "string"
+          },
+          "default": {
+            "type": "boolean"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "postActions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "supportedFeatures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "defaultFeatures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "extras": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "default", "source"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "default": {
+            "type": "boolean"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["inline", "file"]
+          },
+          "templatePath": {
+            "type": "string"
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "detectDependencies": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "subPrompts": {
+      "type": "array"
+    },
+    "subPromptArtifacts": {
+      "type": "array"
+    },
+    "devScript": {
+      "type": ["string", "null"]
+    },
+    "buildScript": {
+      "type": ["string", "null"]
+    },
+    "devPort": {
+      "type": ["integer", "null"]
+    },
+    "integrationTest": {
+      "type": "object"
+    },
+    "upgrade": {
+      "type": "object",
+      "properties": {
+        "managedFiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

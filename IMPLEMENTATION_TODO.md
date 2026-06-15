@@ -486,7 +486,9 @@
 - [x] 已完成：`CXA-FIX-010`，生成后 next steps 改为只展示实际存在的项目文档，并从 manifest 读取 dev script
 - [x] 已完成：`CXA-FIX-002` 基础非交互模式，支持 `--template`、`--pm`、`--features`、`--extras`、`--yes`、`--cwd`、`--target`、`--print-config`
 - [x] 已完成：`CXA-FIX-004` 第一阶段目录安全策略，支持 `--dry-run` 不写入和 `--force` 显式覆盖；非空目录默认拒绝
-- [ ] 下一步：`CXA-FIX-003` manifest schema 化与生成器硬编码消除
+- [x] 已完成：`CXA-FIX-003` 第一阶段 manifest schema 化，新增 `schemas/manifest.schema.json`，模板 manifest 补齐 `schemaVersion`、`features`、`upgrade.managedFiles`
+- [x] 已完成：生成器、问答、配置校验和 upgrade diff 改为读取 manifest feature artifacts、extra metadata 和 managed files
+- [ ] 下一步：`CXA-FIX-006` 远程模板 `--ref` / `--strict-remote` / 来源记录
 
 ## 当前约定
 

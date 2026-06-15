@@ -10,12 +10,14 @@
 - 新增插件 manifest 校验、插件安装前 npm metadata 预检和插件开发文档。
 - 新增主包与示例插件的 GitHub Actions 发布 workflow。
 - 新增非交互创建参数：`--template`、`--pm`、`--features`、`--extras`、`--yes`、`--cwd`、`--target`、`--print-config`。
+- 新增 `schemas/manifest.schema.json`，并为模板 manifest 补齐 `schemaVersion`、`features` 和 `upgrade.managedFiles` 声明。
 
 ### Changed
 
 - 模板 ESLint 配置迁移到 ESLint 9 flat config 体系。
 - README 和发布文档补充真实插件市场验证流程。
 - 非空目标目录默认不再清空，必须显式使用 `--force`；新增 `--dry-run` 用于预览生成计划且不写入文件。
+- 生成器、问答、配置校验和 upgrade diff 改为读取 manifest 中的 feature artifacts、extra metadata 和 managed files。
 
 ### Fixed
 

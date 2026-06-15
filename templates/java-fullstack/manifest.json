@@ -3,6 +3,7 @@
   "name": "Java 全栈 + 前端配套说明",
   "description": "前端工程与 Spring Boot 后端搭建说明一并生成",
   "version": "1.0.0",
+  "schemaVersion": "1.0",
   "framework": "react",
   "requiredPm": null,
   "forbiddenPm": [],
@@ -24,11 +25,69 @@
     "agents",
     "coding-rules"
   ],
+  "features": {
+    "eslint": {
+      "label": "ESLint",
+      "hint": "代码质量检查",
+      "default": true,
+      "artifacts": [
+        "frontend/eslint.config.js"
+      ]
+    },
+    "prettier": {
+      "label": "Prettier",
+      "hint": "代码格式化",
+      "default": true,
+      "artifacts": [
+        "frontend/.prettierrc"
+      ]
+    },
+    "husky": {
+      "label": "commitlint + Husky",
+      "hint": "提交信息校验",
+      "default": true,
+      "artifacts": [
+        ".husky",
+        "commitlint.config.js"
+      ],
+      "postActions": [
+        "husky.install",
+        "husky.chmod"
+      ]
+    },
+    "agents": {
+      "label": "AGENTS.md",
+      "hint": "AI 协作约定",
+      "default": true,
+      "artifacts": [
+        "AGENTS.md"
+      ]
+    },
+    "coding-rules": {
+      "label": "coding-rules.md",
+      "hint": "团队代码规范",
+      "default": true,
+      "artifacts": [
+        "coding-rules.md"
+      ]
+    }
+  },
   "extras": [],
   "subPrompts": [],
   "devScript": "dev",
   "buildScript": "build",
   "devPort": 5173,
+  "upgrade": {
+    "managedFiles": [
+      "docker-compose.yml",
+      "frontend/tsconfig.json",
+      "frontend/tsconfig.node.json",
+      "frontend/eslint.config.js",
+      "frontend/vite.config.ts",
+      "frontend/.prettierrc",
+      "commitlint.config.js"
+    ]
+  },
   "integrationTest": {
     "skipBuild": false,
     "skipDevServer": false,

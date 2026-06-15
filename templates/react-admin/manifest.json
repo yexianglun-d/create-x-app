@@ -3,6 +3,7 @@
   "name": "React 后台管理系统",
   "description": "React + Antd + Zustand，含权限路由、请求封装和后台布局",
   "version": "1.0.0",
+  "schemaVersion": "1.0",
   "framework": "react",
   "requiredPm": null,
   "forbiddenPm": [],
@@ -24,6 +25,53 @@
     "agents",
     "coding-rules"
   ],
+  "features": {
+    "eslint": {
+      "label": "ESLint",
+      "hint": "代码质量检查",
+      "default": true,
+      "artifacts": [
+        "eslint.config.js"
+      ]
+    },
+    "prettier": {
+      "label": "Prettier",
+      "hint": "代码格式化",
+      "default": true,
+      "artifacts": [
+        ".prettierrc"
+      ]
+    },
+    "husky": {
+      "label": "commitlint + Husky",
+      "hint": "提交信息校验",
+      "default": true,
+      "artifacts": [
+        ".husky",
+        "commitlint.config.js"
+      ],
+      "postActions": [
+        "husky.install",
+        "husky.chmod"
+      ]
+    },
+    "agents": {
+      "label": "AGENTS.md",
+      "hint": "AI 协作约定",
+      "default": true,
+      "artifacts": [
+        "AGENTS.md"
+      ]
+    },
+    "coding-rules": {
+      "label": "coding-rules.md",
+      "hint": "团队代码规范",
+      "default": true,
+      "artifacts": [
+        "coding-rules.md"
+      ]
+    }
+  },
   "extras": [
     {
       "key": "tailwind",
@@ -42,6 +90,9 @@
       "source": "inline",
       "artifacts": [
         "src/i18n.ts"
+      ],
+      "detectDependencies": [
+        "i18next"
       ]
     }
   ],
@@ -49,6 +100,18 @@
   "devScript": "dev",
   "buildScript": "build",
   "devPort": 5173,
+  "upgrade": {
+    "managedFiles": [
+      "tsconfig.json",
+      "tsconfig.node.json",
+      "eslint.config.js",
+      "vite.config.ts",
+      ".prettierrc",
+      "commitlint.config.js",
+      "postcss.config.cjs",
+      "tailwind.config.cjs"
+    ]
+  },
   "integrationTest": {
     "skipBuild": false,
     "skipDevServer": false,

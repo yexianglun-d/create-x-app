@@ -3,6 +3,7 @@
   "name": "Example Basic",
   "description": "社区插件示例模板，演示最小插件目录结构",
   "version": "0.1.0",
+  "schemaVersion": "1.0",
   "framework": "plugin",
   "requiredPm": null,
   "forbiddenPm": [],
@@ -18,9 +19,39 @@
     "agents",
     "coding-rules"
   ],
+  "features": {
+    "husky": {
+      "label": "commitlint + Husky",
+      "hint": "提交信息校验",
+      "default": false,
+      "artifacts": [
+        ".husky",
+        "commitlint.config.js"
+      ]
+    },
+    "agents": {
+      "label": "AGENTS.md",
+      "hint": "AI 协作约定",
+      "default": true,
+      "artifacts": [
+        "AGENTS.md"
+      ]
+    },
+    "coding-rules": {
+      "label": "coding-rules.md",
+      "hint": "团队代码规范",
+      "default": true,
+      "artifacts": [
+        "coding-rules.md"
+      ]
+    }
+  },
   "extras": [],
   "subPrompts": [],
   "devScript": "dev",
   "buildScript": null,
-  "devPort": null
+  "devPort": null,
+  "upgrade": {
+    "managedFiles": []
+  }
 }

@@ -32,3 +32,23 @@ test('diffConfigFiles includes eslint flat config files', async () => {
     await removeTempDir(expectedDir)
   }
 })
+
+test('diffConfigFiles only compares managed files when provided', async () => {
+  const currentDir = await createTempDir('cxa-current-')
+  const expectedDir = await createTempDir('cxa-expected-')
+
+  try {
+    await fs.outputFile(join(currentDir, 'managed.json'), '{"a":1}\n')
+    await fs.outputFile(join(expectedDir, 'managed.json'), '{"a":2}\n')
+    await fs.outputFile(join(currentDir, 'ignored.json'), '{"a":1}\n')
+    await fs.outputFile(join(expectedDir, 'ignored.json'), '{"a":2}\n')
+
+    const diffs = await diffConfigFiles(currentDir, expectedDir, ['managed.json'])
+
+    assert.equal(diffs.length, 1)
+    assert.equal(diffs[0].relativePath, 'managed.json')
+  } finally {
+    await removeTempDir(currentDir)
+    await removeTempDir(expectedDir)
+  }
+})

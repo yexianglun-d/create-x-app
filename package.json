@@ -45,6 +45,7 @@
   "files": [
     "bin",
     "src",
+    "schemas",
     "templates",
     "shared",
     "CHANGELOG.md",

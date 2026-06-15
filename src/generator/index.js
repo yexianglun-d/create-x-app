@@ -9,14 +9,6 @@ import { getLatestVersions } from '../utils/pkg-version.js'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SHARED_DIR = join(__dirname, '../../shared')
 const EXTRA_TEMPLATES_DIR = join(__dirname, '../../templates/extras')
-const FILE_BASED_EXTRAS = new Set(['tailwind'])
-const FEATURE_ARTIFACTS = {
-  eslint: ['eslint.config.js'],
-  prettier: ['.prettierrc'],
-  husky: ['.husky', 'commitlint.config.js'],
-  agents: ['AGENTS.md'],
-  'coding-rules': ['coding-rules.md'],
-}
 const PACKAGE_MANAGER_VERSIONS = {
   npm: '10.9.2',
   pnpm: '9.12.3',
@@ -42,6 +34,14 @@ function resolveDisplayPath(targetPath) {
   }
 
   return relativePath
+}
+
+function getExtraDefinition(manifest, extraKey) {
+  return (manifest.extras ?? []).find((extra) => extra.key === extraKey)
+}
+
+function isFileBasedExtra(extraDefinition) {
+  return extraDefinition?.source === 'file'
 }
 
 /**
@@ -109,11 +109,15 @@ async function printDryRunSummary({ config, templatePath, manifest }) {
   ])
 
   for (const extra of config.fileBasedExtras ?? config.extras) {
-    if (!FILE_BASED_EXTRAS.has(extra)) {
+    const extraDefinition = getExtraDefinition(manifest, extra)
+
+    if (!isFileBasedExtra(extraDefinition)) {
       continue
     }
 
-    for (const filePath of await collectRelativeFiles(join(EXTRA_TEMPLATES_DIR, extra))) {
+    const extraTemplateDir = join(EXTRA_TEMPLATES_DIR, extraDefinition.templatePath ?? extra)
+
+    for (const filePath of await collectRelativeFiles(extraTemplateDir)) {
       plannedFiles.add(filePath)
     }
   }
@@ -356,13 +360,15 @@ async function renameDotfiles(targetDir) {
   }
 }
 
-async function applyExtras(extras, targetDir) {
+async function applyExtras(extras, targetDir, manifest) {
   for (const extra of extras) {
-    if (!FILE_BASED_EXTRAS.has(extra)) {
+    const extraDefinition = getExtraDefinition(manifest, extra)
+
+    if (!isFileBasedExtra(extraDefinition)) {
       continue
     }
 
-    const extraTemplateDir = join(EXTRA_TEMPLATES_DIR, extra)
+    const extraTemplateDir = join(EXTRA_TEMPLATES_DIR, extraDefinition.templatePath ?? extra)
     const extraExists = await fs.pathExists(extraTemplateDir)
 
     if (!extraExists) {
@@ -393,12 +399,12 @@ async function removeTemplateMetadata(targetDir) {
 async function pruneFeatureArtifacts(config, targetDir) {
   const enabledFeatures = new Set(config.features)
 
-  for (const [featureName, artifactPaths] of Object.entries(FEATURE_ARTIFACTS)) {
+  for (const [featureName, featureDefinition] of Object.entries(config.manifestFeatures ?? {})) {
     if (enabledFeatures.has(featureName)) {
       continue
     }
 
-    for (const artifactPath of artifactPaths) {
+    for (const artifactPath of featureDefinition.artifacts ?? []) {
       await fs.remove(join(targetDir, artifactPath))
     }
   }
@@ -475,14 +481,17 @@ export async function generateProject({ config, options = {}, templatePath }) {
 
     await copyDirectory(SHARED_DIR, config.targetDir, false)
     await copyDirectory(templatePath, config.targetDir, true)
-    await applyExtras(config.fileBasedExtras ?? config.extras, config.targetDir)
+    await applyExtras(config.fileBasedExtras ?? config.extras, config.targetDir, manifest)
     await removeTemplateMetadata(config.targetDir)
     await renderEjsFiles(config.targetDir, buildTemplateVariables(config))
     await writeProjectMetadata(config.targetDir, config, manifest)
     await renameDotfiles(config.targetDir)
     await pruneSubPromptArtifacts(config, config.targetDir, manifest)
     await pruneExtraArtifacts(config, config.targetDir, manifest)
-    await pruneFeatureArtifacts(config, config.targetDir)
+    await pruneFeatureArtifacts({
+      ...config,
+      manifestFeatures: manifest.features,
+    }, config.targetDir)
 
     if (options.latest) {
       await refreshPackageVersions(config.targetDir)

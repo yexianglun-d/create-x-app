@@ -3,6 +3,7 @@
   "name": "移动端 H5（Vue 3 + Vant）",
   "description": "Vue 3 + Vant + rem 自适应，适合微信 H5 / 移动端活动页",
   "version": "1.0.0",
+  "schemaVersion": "1.0",
   "framework": "vue",
   "requiredPm": null,
   "forbiddenPm": [],
@@ -23,11 +24,67 @@
     "agents",
     "coding-rules"
   ],
+  "features": {
+    "eslint": {
+      "label": "ESLint",
+      "hint": "代码质量检查",
+      "default": true,
+      "artifacts": [
+        "eslint.config.js"
+      ]
+    },
+    "prettier": {
+      "label": "Prettier",
+      "hint": "代码格式化",
+      "default": true,
+      "artifacts": [
+        ".prettierrc"
+      ]
+    },
+    "husky": {
+      "label": "commitlint + Husky",
+      "hint": "提交信息校验",
+      "default": false,
+      "artifacts": [
+        ".husky",
+        "commitlint.config.js"
+      ],
+      "postActions": [
+        "husky.install",
+        "husky.chmod"
+      ]
+    },
+    "agents": {
+      "label": "AGENTS.md",
+      "hint": "AI 协作约定",
+      "default": true,
+      "artifacts": [
+        "AGENTS.md"
+      ]
+    },
+    "coding-rules": {
+      "label": "coding-rules.md",
+      "hint": "团队代码规范",
+      "default": true,
+      "artifacts": [
+        "coding-rules.md"
+      ]
+    }
+  },
   "extras": [],
   "subPrompts": [],
   "devScript": "dev",
   "buildScript": "build",
   "devPort": 5173,
+  "upgrade": {
+    "managedFiles": [
+      "tsconfig.json",
+      "eslint.config.js",
+      "vite.config.ts",
+      ".prettierrc",
+      "commitlint.config.js"
+    ]
+  },
   "integrationTest": {
     "skipBuild": false,
     "skipDevServer": false,

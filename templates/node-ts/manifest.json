@@ -3,6 +3,7 @@
   "name": "Node.js + TypeScript + ESLint",
   "description": "适合服务端和脚本场景的 Node.js TypeScript 工程",
   "version": "1.0.0",
+  "schemaVersion": "1.0",
   "framework": "node",
   "requiredPm": null,
   "forbiddenPm": [],
@@ -24,24 +25,86 @@
     "agents",
     "coding-rules"
   ],
+  "features": {
+    "eslint": {
+      "label": "ESLint",
+      "hint": "代码质量检查",
+      "default": true,
+      "artifacts": [
+        "eslint.config.js"
+      ]
+    },
+    "prettier": {
+      "label": "Prettier",
+      "hint": "代码格式化",
+      "default": true,
+      "artifacts": [
+        ".prettierrc"
+      ]
+    },
+    "husky": {
+      "label": "commitlint + Husky",
+      "hint": "提交信息校验",
+      "default": true,
+      "artifacts": [
+        ".husky",
+        "commitlint.config.js"
+      ],
+      "postActions": [
+        "husky.install",
+        "husky.chmod"
+      ]
+    },
+    "agents": {
+      "label": "AGENTS.md",
+      "hint": "AI 协作约定",
+      "default": true,
+      "artifacts": [
+        "AGENTS.md"
+      ]
+    },
+    "coding-rules": {
+      "label": "coding-rules.md",
+      "hint": "团队代码规范",
+      "default": true,
+      "artifacts": [
+        "coding-rules.md"
+      ]
+    }
+  },
   "extras": [
     {
       "key": "express",
       "label": "Express.js",
       "default": false,
-      "source": "inline"
+      "source": "inline",
+      "detectDependencies": [
+        "express"
+      ]
     },
     {
       "key": "dotenv",
       "label": "Dotenv + 环境变量校验",
       "default": false,
-      "source": "inline"
+      "source": "inline",
+      "detectDependencies": [
+        "dotenv"
+      ]
     }
   ],
   "subPrompts": [],
   "devScript": "dev",
   "buildScript": "build",
   "devPort": 3000,
+  "upgrade": {
+    "managedFiles": [
+      "tsconfig.json",
+      "eslint.config.js",
+      ".prettierrc",
+      "commitlint.config.js",
+      ".env.example"
+    ]
+  },
   "integrationTest": {
     "skipBuild": false,
     "skipDevServer": false,

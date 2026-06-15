@@ -9,17 +9,17 @@ test('monorepo must use pnpm', () => {
     extras: [],
   })
 
-  assert.deepEqual(errors, ['Monorepo 模板必须使用 pnpm（依赖 pnpm workspace）'])
+  assert.deepEqual(errors, ['全栈 Monorepo（Turborepo） 必须使用 pnpm'])
 })
 
-test('react-router is limited to react templates', () => {
+test('unknown extras are rejected by manifest rules', () => {
   const errors = getConfigValidationErrors({
     template: 'node-ts',
     packageManager: 'npm',
     extras: ['react-router'],
   })
 
-  assert.deepEqual(errors, ['React Router 仅适用于 React 类模板'])
+  assert.deepEqual(errors, ['Node.js + TypeScript + ESLint 不支持模板扩展：react-router'])
 })
 
 test('valid react router config passes', () => {
