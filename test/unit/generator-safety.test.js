@@ -125,3 +125,53 @@ test('generateProject writes template source lock without local paths', async ()
     await removeTempDir(targetDir)
   }
 })
+
+test('generateProject writes upgrade ownership metadata', async () => {
+  const targetDir = await createTempDir('cxa-upgrade-metadata-')
+
+  try {
+    const { config, templatePath } = await buildNodeTemplateConfig(targetDir)
+
+    await generateProject({
+      config,
+      options: {
+        cliVersion: '1.2.3',
+      },
+      templatePath,
+    })
+
+    const projectMetadata = await fs.readJson(join(targetDir, '.create-x-app', 'project.json'))
+    const filesMetadata = await fs.readJson(join(targetDir, '.create-x-app', 'files.json'))
+
+    assert.equal(projectMetadata.template, 'node-ts')
+    assert.equal(projectMetadata.createdBy, 'create-x-app-cli@1.2.3')
+    assert.equal(filesMetadata.files['package.json'].owned, true)
+    assert.match(filesMetadata.files['package.json'].hash, /^sha256-/)
+    assert.equal(filesMetadata.files['.create-x-app/template-lock.json'], undefined)
+  } finally {
+    await removeTempDir(targetDir)
+  }
+})
+
+test('ai-native feature keeps AI tool instruction artifacts', async () => {
+  const targetDir = await createTempDir('cxa-ai-native-')
+
+  try {
+    const { config, templatePath } = await buildNodeTemplateConfig(targetDir)
+
+    await generateProject({
+      config: {
+        ...config,
+        features: [...config.features, 'ai-native'],
+      },
+      templatePath,
+    })
+
+    assert.equal(await fs.pathExists(join(targetDir, '.cursor', 'rules', 'create-x-app.mdc')), true)
+    assert.equal(await fs.pathExists(join(targetDir, 'CLAUDE.md')), true)
+    assert.equal(await fs.pathExists(join(targetDir, '.github', 'copilot-instructions.md')), true)
+    assert.equal(await fs.pathExists(join(targetDir, 'docs', 'adr', '0001-project-conventions.md')), true)
+  } finally {
+    await removeTempDir(targetDir)
+  }
+})

@@ -50,3 +50,37 @@
 - 依赖安装或脚本执行中出现非预期命令注入。
 - `upgrade` 命令修改业务源码或越权写入文件。
 - 匿名统计泄露项目名、路径、环境变量或个人身份信息。
+
+## 匿名统计与隐私
+
+匿名统计默认需要用户同意，且只有配置了 `CREATE_X_APP_TELEMETRY_ENDPOINT` 时才会发送网络请求。允许收集的字段仅限：
+
+- 事件名，例如 `create_start`、`create_success`、`generate_failed`。
+- 失败阶段，例如 `env_check`、`resolve_template`、`generate`。
+- 粗粒度错误类别，例如 `error`、`abort`、`EACCES`。
+- 模板 key、CLI 版本、Node.js 版本和 OS 类型。
+
+不得收集或上传：
+
+- 项目名、项目路径、用户名、仓库地址。
+- 源码内容、环境变量、密钥或配置文件内容。
+- 错误堆栈、完整错误信息或机器本地路径。
+
+用户可通过以下命令显式管理本机配置：
+
+```bash
+create-x-app telemetry status
+create-x-app telemetry on
+create-x-app telemetry off
+```
+
+也可在单次运行中使用 `--no-telemetry`。
+
+## 供应链约束
+
+- 远程模板建议配合 `--ref` 使用固定 tag 或 commit；需要强一致时使用 `--strict-remote`。
+- 生成项目会写入 `.create-x-app/template-lock.json`，用于记录模板来源、ref、commit 和 CLI 版本。
+- `upgrade` 依赖 `.create-x-app/files.json` 的 ownership/hash 判断，不应静默覆盖用户改过的文件。
+- 插件包名必须是 `cxa-plugin-*` 或 `@scope/cxa-plugin-*`，且安装前必须通过 npm metadata 预检。
+- `plugin doctor` 应报告 manifest 无效、API 不兼容、缺少 license/repository、npm lifecycle 脚本和越界写入风险。
+- `--preset github:...` 会从 `raw.githubusercontent.com` 拉取 JSON，团队生产环境应固定 ref 并审查 preset 内容。

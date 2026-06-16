@@ -1,3 +1,6 @@
+import fs from 'fs-extra'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { inspectPluginTemplates } from '../plugins/loader.js'
 import {
   evaluatePluginHealth,
@@ -5,6 +8,9 @@ import {
   formatRepository,
 } from '../plugins/health.js'
 import { logger } from '../utils/logger.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const EXAMPLE_PLUGIN_DIR = resolve(__dirname, '../../examples/cxa-plugin-example')
 
 function getManifestHealthInput(diagnostic) {
   const manifest = diagnostic.manifest ?? {}
@@ -110,6 +116,31 @@ export async function pluginDoctorCommand(options = {}) {
     }
   } catch (error) {
     logger.reportError('检查社区插件失败', error)
+    process.exit(1)
+  }
+}
+
+export async function pluginInitCommand(targetDir = 'cxa-plugin-example') {
+  try {
+    const resolvedTargetDir = resolve(process.cwd(), targetDir)
+
+    if (await fs.pathExists(resolvedTargetDir)) {
+      const entries = await fs.readdir(resolvedTargetDir)
+
+      if (entries.length > 0) {
+        throw new Error(`目标目录已存在且非空：${resolvedTargetDir}`)
+      }
+    }
+
+    await fs.copy(EXAMPLE_PLUGIN_DIR, resolvedTargetDir, {
+      overwrite: false,
+      errorOnExist: true,
+    })
+
+    logger.success(`插件骨架已创建：${resolvedTargetDir}`)
+    logger.info('下一步：cd 目标目录，修改 package.json 和 manifest.json 后执行 npm pack --dry-run')
+  } catch (error) {
+    logger.reportError('创建插件骨架失败', error)
     process.exit(1)
   }
 }

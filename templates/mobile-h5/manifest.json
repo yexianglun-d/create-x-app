@@ -24,7 +24,8 @@
     "prettier",
     "husky",
     "agents",
-    "coding-rules"
+    "coding-rules",
+    "ai-native"
   ],
   "defaultFeatures": [
     "eslint",
@@ -76,6 +77,20 @@
       "default": true,
       "artifacts": [
         "coding-rules.md"
+      ]
+    },
+    "ai-native": {
+      "label": "AI-native 工程规范",
+      "hint": "Cursor / Claude / Copilot / MCP / ADR / Prompt 文件",
+      "default": false,
+      "artifacts": [
+        ".cursor/rules/create-x-app.mdc",
+        "CLAUDE.md",
+        ".github/copilot-instructions.md",
+        ".mcp.example.json",
+        "docs/adr/0001-project-conventions.md",
+        "docs/prompts/pr-review.md",
+        "docs/prompts/commit-message.md"
       ]
     }
   },

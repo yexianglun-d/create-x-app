@@ -24,6 +24,21 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: node bin/cli.js template lint
+      - run: node bin/cli.js template test --template node-ts
       - run: npm run test:integration
       - run: npm run test:smoke
       - run: npm pack --dry-run
+
+  windows-smoke:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:smoke
+      - run: node bin/cli.js template test --template node-ts

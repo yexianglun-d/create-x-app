@@ -495,7 +495,12 @@
 - [x] 已完成：`CXA-FIX-009`，环境检测拆分为 CLI Node 基础检测和选定模板后的 manifest requirements 检测，React/npm 不再提示 Java/pnpm
 - [x] 已完成：`CXA-FIX-011`，新增 `--deps baseline/latest-patch/latest-minor/latest-major/latest`，默认保持 baseline，`--latest` 作为兼容别名
 - [x] 已完成：`CXA-FIX-012`，新增 `create_start/create_success/*_failed` 阶段事件和 `telemetry status/on/off`，失败事件仅包含阶段与错误类别
-- [ ] 下一步：`CXA-FIX-008` upgrade migration engine 或 `CXA-FIX-013` preset 体系
+- [x] 已完成：`CXA-FIX-008`，新增 `.create-x-app/project.json`、`files.json`、upgrade ownership/hash 判断、backup、`--check/--diff/--apply`
+- [x] 已完成：`CXA-FIX-013`，新增 `--preset`，支持内置 preset、本地 JSON 和 `github:owner/repo/path#ref`
+- [x] 已完成：`CXA-FIX-014`，新增 `template lint/test/pack` 与 `plugin init` 模板作者工具链
+- [x] 已完成：`CXA-FIX-015`，新增可选 `ai-native` feature，按需注入 Cursor、Claude、Copilot、MCP、ADR 和 Prompt 文件
+- [!] 外部阻塞：`cxa-plugin-example` 当前 npm registry 仍返回 404；代码、workflow 和文档已补齐，仍需 npm 登录后发布并执行真实 `search/install/list/create/remove` 闭环
+- [ ] 下一步：发布示例插件后执行真实 npm 市场闭环验证，并视情况发布主包 patch 版本
 
 ## 当前约定
 

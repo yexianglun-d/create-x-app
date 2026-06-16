@@ -48,9 +48,13 @@
     "schemas",
     "templates",
     "shared",
+    "examples/cxa-plugin-example",
+    "docs/*.md",
+    "docs/usage-impact-proof.html",
     "CHANGELOG.md",
     "CODE_OF_CONDUCT.md",
     "CONTRIBUTING.md",
+    "RELEASE_COMMANDS.md",
     "SECURITY.md",
     "SUPPORT.md"
   ],

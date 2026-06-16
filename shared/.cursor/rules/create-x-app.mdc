@@ -1,0 +1,13 @@
+---
+description: create-x-app generated project engineering rules
+globs:
+  - "**/*"
+---
+
+# Engineering Rules
+
+- Respect the project stack and existing directory boundaries.
+- Prefer small, reviewable changes with matching tests or validation commands.
+- Do not commit secrets, local environment files, generated build output, or dependency folders.
+- When changing templates, update README, AGENTS.md, and validation commands together.
+- For bugs, reproduce or collect evidence before applying a fix.

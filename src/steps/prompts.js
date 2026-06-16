@@ -135,6 +135,10 @@ function buildFileBasedExtras(manifest, extras) {
 }
 
 function parseListOption(value, fallback) {
+  if (Array.isArray(value)) {
+    return [...value]
+  }
+
   if (typeof value !== 'string') {
     return [...fallback]
   }
@@ -152,6 +156,7 @@ function parseListOption(value, fallback) {
 function shouldBuildConfigFromOptions(options) {
   return Boolean(
     options.template
+      || options.preset
       || options.pm
       || typeof options.features === 'string'
       || typeof options.extras === 'string'

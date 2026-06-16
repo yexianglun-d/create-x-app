@@ -6,6 +6,7 @@ import semver from 'semver'
 import { loadManifest } from '../manifest/loader.js'
 import { logger } from '../utils/logger.js'
 import { getPackageVersionMetadata } from '../utils/pkg-version.js'
+import { writeProjectTrackingMetadata } from '../upgrade/metadata.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SHARED_DIR = join(__dirname, '../../shared')
@@ -651,11 +652,6 @@ export async function generateProject({ config, options = {}, templatePath, temp
     await removeTemplateMetadata(config.targetDir)
     await renderEjsFiles(config.targetDir, buildTemplateVariables(config))
     await writeProjectMetadata(config.targetDir, config, manifest)
-    await writeTemplateLock(config.targetDir, config, manifest, {
-      cliVersion: options.cliVersion,
-      dependencyStrategy: options.dependencyStrategy,
-      templateSource,
-    })
     await renameDotfiles(config.targetDir)
     await pruneSubPromptArtifacts(config, config.targetDir, manifest)
     await pruneExtraArtifacts(config, config.targetDir, manifest)
@@ -668,6 +664,16 @@ export async function generateProject({ config, options = {}, templatePath, temp
       config.targetDir,
       options.dependencyStrategy ?? DEPENDENCY_STRATEGY_BASELINE,
     )
+    await writeTemplateLock(config.targetDir, config, manifest, {
+      cliVersion: options.cliVersion,
+      dependencyStrategy: options.dependencyStrategy,
+      templateSource,
+    })
+    await writeProjectTrackingMetadata(config.targetDir, config, manifest, {
+      cliVersion: options.cliVersion,
+      dependencyStrategy: options.dependencyStrategy,
+      preset: options.preset,
+    })
   } catch (error) {
     throw new Error(`生成项目失败：${error.message}`)
   }

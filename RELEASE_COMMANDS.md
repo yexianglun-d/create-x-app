@@ -17,6 +17,7 @@ git push origin v1.0.2
 - `npm run test:integration`
 - `npm run test:smoke`
 - `npm pack --dry-run`
+- `windows-smoke` job 在 Windows 上执行 CLI smoke 和单模板渲染测试
 - `npm publish --provenance --access public`
 - 创建或更新 GitHub Release
 
@@ -33,6 +34,18 @@ git tag -a cxa-plugin-example-v0.1.0 -m "cxa-plugin-example v0.1.0"
 git push origin cxa-plugin-example-v0.1.0
 ```
 
+示例插件 workflow 会先检查 npm registry 是否已存在同版本，发布后应验证：
+
+```bash
+npm view cxa-plugin-example version
+npx create-x-app-cli search cxa-plugin-example
+npx create-x-app-cli install cxa-plugin-example
+npx create-x-app-cli list
+npx create-x-app-cli plugin doctor --details
+npx create-x-app-cli my-plugin-app --template example-basic --skip-install --skip-git --no-telemetry --yes
+npx create-x-app-cli remove cxa-plugin-example
+```
+
 ---
 
 ## 备用方式：本地手动发布
@@ -47,12 +60,19 @@ npm install
 
 ```bash
 npm run lint
+npm test
+npm run test:smoke
+npm run test:integration
 ```
 
-## 3. 验证 CLI 基础信息
+## 3. 验证 CLI 基础信息和作者工具链
 
 ```bash
 node bin/cli.js --help
+node bin/cli.js upgrade --help
+node bin/cli.js template lint --template node-ts
+node bin/cli.js template test --template node-ts
+node bin/cli.js template pack --template node-ts
 ```
 
 ## 4. 预览 npm 打包内容
@@ -105,13 +125,31 @@ npm publish --access public --otp=<一次性验证码>
 ## 9. 发布后验证
 
 ```bash
-npx create-x-app-cli my-first-project
+npx -y create-x-app-cli --version
+npx -y create-x-app-cli my-first-project --skip-install --skip-git --no-telemetry
+npx -y create-x-app-cli my-preset-project --preset company-react --skip-install --skip-git --no-telemetry
 ```
 
-## 10. Git 提交与推送
+## 10. 示例插件本地手动发布
+
+当前示例插件包名为 `cxa-plugin-example`。如果 `npm view cxa-plugin-example version` 返回 404，可发布：
+
+```bash
+cd examples/cxa-plugin-example
+npm pack --dry-run
+npm publish --access public
+```
+
+如果 npm 账号启用了 2FA：
+
+```bash
+npm publish --access public --otp=<一次性验证码>
+```
+
+## 11. Git 提交与推送
 
 ```bash
 git add .
-git commit -m "feat: 完成 create-x-app 脚手架开发与发布准备"
+git commit -m "feat: harden create-x-app ecosystem"
 git push -u origin main
 ```

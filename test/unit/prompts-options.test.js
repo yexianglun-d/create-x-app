@@ -2,8 +2,11 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import fs from 'fs-extra'
 import { buildConfigFromOptions } from '../../src/steps/prompts.js'
+import { resolvePresetOptions } from '../../src/presets/loader.js'
 import { getConfigValidationErrors } from '../../src/validator/index.js'
+import { createTempDir, removeTempDir } from '../helpers/project.js'
 
 test('buildConfigFromOptions creates a non-interactive config', () => {
   const cwd = join(tmpdir(), 'cxa-options')
@@ -44,4 +47,44 @@ test('validator rejects unknown non-interactive features and extras', () => {
 
   assert.match(errors.join('\n'), /unknown-feature/)
   assert.match(errors.join('\n'), /tailwind/)
+})
+
+test('built-in preset resolves create options', async () => {
+  const options = await resolvePresetOptions({
+    preset: 'company-react',
+  })
+
+  assert.equal(options.template, 'react-vite-ts')
+  assert.equal(options.pm, 'pnpm')
+  assert.equal(options.features, 'eslint,prettier,husky,agents,coding-rules,ai-native')
+  assert.equal(options.extras, 'react-router,tailwind')
+})
+
+test('local preset resolves create options and keeps explicit overrides', async () => {
+  const rootDir = await createTempDir('cxa-preset-')
+
+  try {
+    const presetPath = join(rootDir, 'preset.json')
+
+    await fs.writeJson(presetPath, {
+      template: 'node-ts',
+      pm: 'pnpm',
+      features: ['agents'],
+      extras: ['express'],
+      install: false,
+    })
+
+    const options = await resolvePresetOptions({
+      preset: presetPath,
+      pm: 'npm',
+    })
+
+    assert.equal(options.template, 'node-ts')
+    assert.equal(options.pm, 'npm')
+    assert.equal(options.features, 'agents')
+    assert.equal(options.extras, 'express')
+    assert.equal(options.skipInstall, true)
+  } finally {
+    await removeTempDir(rootDir)
+  }
 })

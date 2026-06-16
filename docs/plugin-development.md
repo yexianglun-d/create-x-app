@@ -150,6 +150,26 @@ npm uninstall -g cxa-plugin-example
 
 `create-x-app list` 只展示 manifest 校验通过的插件；`create-x-app plugin doctor` 会同时报告无效插件、API 不兼容、缺少 license/repository、安装脚本风险和 manifest 错误。
 
+## 发布前自检
+
+CLI 提供模板作者工具链：
+
+```bash
+create-x-app template lint
+create-x-app template test --template node-ts
+create-x-app template pack
+create-x-app plugin init cxa-plugin-company
+```
+
+插件作者推荐在发布前执行：
+
+```bash
+create-x-app plugin doctor --details
+npm pack --dry-run
+```
+
+`plugin init` 会从仓库示例插件复制一个可发布骨架，适合团队模板从零开始。
+
 ## 发布流程
 
 发布前检查：
@@ -172,8 +192,15 @@ create-x-app search cxa-plugin-example
 create-x-app install cxa-plugin-example
 create-x-app list
 create-x-app plugin doctor --details
-create-x-app my-plugin-app --skip-install --skip-git
+create-x-app my-plugin-app --template example-basic --skip-install --skip-git --no-telemetry --yes
 create-x-app remove cxa-plugin-example
+```
+
+如果使用 GitHub Actions，可推送 tag：
+
+```bash
+git tag -a cxa-plugin-example-v0.1.0 -m "cxa-plugin-example v0.1.0"
+git push origin cxa-plugin-example-v0.1.0
 ```
 
 ## 常见错误

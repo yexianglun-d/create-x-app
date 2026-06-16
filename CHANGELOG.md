@@ -17,6 +17,11 @@
 - 新增 manifest `requirements` 字段，用于声明模板级环境需求。
 - 新增 `--deps` 依赖版本策略，支持 `baseline`、`latest-patch`、`latest-minor`、`latest-major` 和 `latest`。
 - 新增匿名统计阶段事件和 `telemetry status/on/off` 配置命令。
+- 新增 `.create-x-app/project.json` 和 `files.json`，为 upgrade migration engine 提供 ownership/hash。
+- 新增 `upgrade --check/--diff/--apply/--backup`，安全应用未被用户改动的脚手架管理文件。
+- 新增 `--preset`，支持内置 preset、本地 JSON preset 和 GitHub preset。
+- 新增模板作者命令：`template lint`、`template test`、`template pack` 和 `plugin init`。
+- 新增可选 `ai-native` 功能，按需注入 Cursor、Claude、Copilot、MCP、ADR 和 Prompt 文件。
 
 ### Changed
 
@@ -29,6 +34,7 @@
 - 环境检测拆分为 CLI 运行环境检测和模板环境检测，避免无关模板工具提示。
 - `--latest` 降级为兼容别名，等价于 `--deps latest`；默认依赖策略保持模板 baseline。
 - 匿名统计失败事件只记录阶段和错误类别，不上传错误堆栈、完整错误信息或本地路径。
+- `upgrade` 不再把所有差异视为可覆盖项，会区分 `template_changed`、`user_modified`、`conflict` 和 `untracked`。
 
 ### Fixed
 

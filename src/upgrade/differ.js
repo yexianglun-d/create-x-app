@@ -1,5 +1,6 @@
 import fs from 'fs-extra'
 import { join, relative } from 'node:path'
+import { getTrackedFile, hashContent } from './metadata.js'
 
 async function collectConfigFiles(rootDir, currentDir = rootDir) {
   const entries = await fs.readdir(currentDir, { withFileTypes: true })
@@ -41,6 +42,10 @@ async function resolveExpectedConfigFiles(expectedDir, managedFiles) {
 
 function normalizeContent(content) {
   return content.replace(/\r\n/g, '\n').trimEnd()
+}
+
+function buildHash(content) {
+  return hashContent(content)
 }
 
 function buildDiffOperations(currentLines, expectedLines) {
@@ -94,7 +99,55 @@ export function createTextDiff(currentContent, expectedContent) {
   return buildDiffOperations(currentLines, expectedLines)
 }
 
-export async function diffConfigFiles(currentDir, expectedDir, managedFiles) {
+function classifyDiff({ currentExists, currentHash, expectedHash, trackedFile }) {
+  if (!currentExists) {
+    return {
+      migrationStatus: 'missing',
+      userModified: false,
+      templateChanged: true,
+      safeToApply: true,
+    }
+  }
+
+  if (!trackedFile?.hash) {
+    return {
+      migrationStatus: 'untracked',
+      userModified: null,
+      templateChanged: true,
+      safeToApply: false,
+    }
+  }
+
+  const userModified = currentHash !== trackedFile.hash
+  const templateChanged = expectedHash !== trackedFile.hash
+
+  if (!userModified) {
+    return {
+      migrationStatus: 'template_changed',
+      userModified,
+      templateChanged,
+      safeToApply: true,
+    }
+  }
+
+  if (!templateChanged) {
+    return {
+      migrationStatus: 'user_modified',
+      userModified,
+      templateChanged,
+      safeToApply: false,
+    }
+  }
+
+  return {
+    migrationStatus: 'conflict',
+    userModified,
+    templateChanged,
+    safeToApply: false,
+  }
+}
+
+export async function diffConfigFiles(currentDir, expectedDir, managedFiles, options = {}) {
   const expectedConfigFiles = await resolveExpectedConfigFiles(expectedDir, managedFiles)
   const diffs = []
 
@@ -104,6 +157,9 @@ export async function diffConfigFiles(currentDir, expectedDir, managedFiles) {
     const currentExists = await fs.pathExists(currentPath)
     const currentContent = currentExists ? await fs.readFile(currentPath, 'utf8') : ''
     const expectedContent = await fs.readFile(expectedPath, 'utf8')
+    const currentHash = currentExists ? buildHash(currentContent) : null
+    const expectedHash = buildHash(expectedContent)
+    const trackedFile = getTrackedFile(options.filesMetadata, relativePath)
 
     if (normalizeContent(currentContent) === normalizeContent(expectedContent)) {
       continue
@@ -113,8 +169,18 @@ export async function diffConfigFiles(currentDir, expectedDir, managedFiles) {
       relativePath,
       currentPath,
       expectedPath,
+      currentExists,
       currentContent,
       expectedContent,
+      currentHash,
+      expectedHash,
+      storedHash: trackedFile?.hash ?? null,
+      ...classifyDiff({
+        currentExists,
+        currentHash,
+        expectedHash,
+        trackedFile,
+      }),
       operations: createTextDiff(currentContent, expectedContent),
       status: currentExists ? 'modified' : 'missing',
     })

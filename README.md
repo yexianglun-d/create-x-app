@@ -27,6 +27,8 @@ npx create-x-app-cli my-app
 - [内置模板](#内置模板)
 - [命令参考](#命令参考)
 - [插件生态](#插件生态)
+- [团队 Preset](#团队-preset)
+- [模板作者工具链](#模板作者工具链)
 - [匿名统计与隐私](#匿名统计与隐私)
 - [本地开发](#本地开发)
 - [贡献指南](#贡献指南)
@@ -41,7 +43,7 @@ npx create-x-app-cli my-app
 
 - 先检查 CLI 运行所需 Node.js，再按所选模板检查 Git、pnpm、Java 等相关工具。
 - 根据模板差异动态展示功能模块，而不是让所有模板共用一套固定问答。
-- 把 `.gitignore`、`.eslintrc.json`、`.prettierrc` 等点文件安全地从 npm 包中恢复出来。
+- 把 `.gitignore`、`.prettierrc` 等点文件安全地从 npm 包中恢复出来，并默认生成 ESLint 9 flat config。
 - 选择性注入 `AGENTS.md`、`coding-rules.md`、Husky、commitlint 等团队协作约定。
 - 支持模板升级和社区插件，避免模板能力只能停留在内置版本。
 
@@ -58,9 +60,13 @@ npx create-x-app-cli my-app
 - 可选执行依赖安装、Husky 初始化、Git 初始化和初始提交。
 - 支持 `--remote --ref` 从 GitHub 拉取可复现远端模板，并带有 24 小时本地缓存和 strict 失败语义。
 - 生成项目会写入 `.create-x-app/template-lock.json`，记录模板来源、ref、commit 和 CLI 版本。
+- 生成项目会写入 `.create-x-app/project.json` 和 `files.json`，为升级提供 ownership 和 hash 判断。
 - 默认使用模板验证过的依赖 baseline，并支持 `--deps` 显式选择 patch/minor/major/latest 升级策略。
-- 支持 `upgrade` 命令，为已生成项目升级脚手架管理的配置文件。
+- 支持 `upgrade --check/--diff/--apply/--backup`，为已生成项目安全升级脚手架管理的配置文件。
+- 支持 `--preset` 复用团队固定配置，覆盖模板、包管理器、功能模块和安装策略。
+- 支持可选 `ai-native` 工程规范，按需注入 Cursor、Claude、Copilot、MCP、ADR 和 Prompt 文件。
 - 支持 `cxa-plugin-*` 社区模板插件，并提供搜索、安装、列出和移除命令。
+- 支持模板作者工具链：`template lint/test/pack` 和 `plugin init`。
 - 支持匿名统计同意机制，默认首次询问，可通过 `--no-telemetry` 单次关闭。
 - 支持 `--verbose` 和 `--debug`，方便排查模板生成和命令执行问题。
 
@@ -110,6 +116,14 @@ npx create-x-app-cli my-app --deps latest-minor
 ```bash
 npm install
 node bin/cli.js my-app --verbose
+```
+
+使用团队 preset：
+
+```bash
+npx create-x-app-cli my-app --preset company-react
+npx create-x-app-cli my-app --preset ./preset.json
+npx create-x-app-cli my-app --preset github:org/frontend-preset#v1
 ```
 
 ## 视频演示
@@ -182,6 +196,7 @@ CLI 会按以下顺序执行：
 - `commitlint + Husky`：提交信息校验和 Git Hooks。
 - `AGENTS.md`：AI 编程助手协作规则。
 - `coding-rules.md`：团队代码规范。
+- `AI-native 工程规范`：Cursor、Claude、Copilot、MCP、ADR 和 Prompt 文件。
 - 模板专属扩展：React Router、Tailwind、Express、Dotenv 等。
 
 ## 命令参考
@@ -197,6 +212,7 @@ create-x-app [project-name] [options]
 | `--skip-install` | 跳过脚手架完成后的依赖安装 |
 | `--skip-git` | 跳过 `git init`、`git add` 和初始提交 |
 | `--template <key>` | 非交互模式：直接指定模板 key |
+| `--preset <name\|path\|github>` | 使用内置、本地 JSON 或 GitHub preset |
 | `--pm <npm\|pnpm\|yarn>` | 非交互模式：指定包管理器 |
 | `--features <list>` | 非交互模式：指定通用功能，使用逗号分隔 |
 | `--extras <list>` | 非交互模式：指定模板扩展，使用逗号分隔 |
@@ -220,9 +236,22 @@ create-x-app [project-name] [options]
 
 ```bash
 npx create-x-app-cli upgrade
+npx create-x-app-cli upgrade --check
+npx create-x-app-cli upgrade --diff
+npx create-x-app-cli upgrade --apply --backup
 ```
 
-`upgrade` 只处理脚手架管理的配置文件，例如 `tsconfig.json`、`.eslintrc.json`、`vite.config.ts`、`.prettierrc`、`commitlint.config.js`。它不会主动修改业务源码。
+`upgrade` 只处理脚手架管理的配置文件，例如 `tsconfig.json`、`eslint.config.js`、`vite.config.ts`、`.prettierrc`、`commitlint.config.js`。它不会主动修改业务源码。
+
+生成项目中的 `.create-x-app/files.json` 会记录脚手架拥有文件的 hash。升级时会区分：
+
+- `template_changed`：模板更新且用户未改动，可安全应用。
+- `missing`：脚手架管理文件缺失，可安全补齐。
+- `user_modified`：用户改过但模板未变，默认跳过。
+- `conflict`：用户和模板都改过，需要人工合并。
+- `untracked`：旧项目缺少历史 hash，不会自动覆盖。
+
+详细说明见 [docs/upgrade-migration.md](./docs/upgrade-migration.md)。
 
 ### 社区模板市场
 
@@ -231,6 +260,10 @@ npx create-x-app-cli search [keyword]
 npx create-x-app-cli install cxa-plugin-your-template
 npx create-x-app-cli list
 npx create-x-app-cli plugin doctor
+npx create-x-app-cli plugin init cxa-plugin-company
+npx create-x-app-cli template lint
+npx create-x-app-cli template test --template node-ts
+npx create-x-app-cli template pack
 npx create-x-app-cli remove cxa-plugin-your-template
 ```
 
@@ -240,6 +273,10 @@ npx create-x-app-cli remove cxa-plugin-your-template
 | `install <package-name>` | 安装前展示插件风险摘要，然后全局安装社区模板插件 |
 | `list` | 列出当前可被 CLI 发现的社区模板插件 |
 | `plugin doctor` | 检查已安装插件的 manifest、兼容性和安装风险 |
+| `plugin init [target-dir]` | 创建社区插件模板骨架 |
+| `template lint` | 校验模板 manifest |
+| `template test` | 渲染模板并验证生成器链路 |
+| `template pack` | 检查模板发布文件清单 |
 | `remove <package-name>` | 全局卸载一个社区模板插件 |
 
 ## 插件生态
@@ -292,6 +329,43 @@ create-x-app remove cxa-plugin-example
 ```
 
 插件开发规范见 [docs/plugin-development.md](./docs/plugin-development.md)。
+
+## 团队 Preset
+
+Preset 用于沉淀团队固定选择，减少重复问答。
+
+```bash
+create-x-app my-app --preset company-react
+create-x-app my-app --preset ./preset.json
+create-x-app my-app --preset github:org/repo/preset.json#main
+```
+
+示例：
+
+```json
+{
+  "template": "react-vite-ts",
+  "pm": "pnpm",
+  "features": ["eslint", "prettier", "husky", "agents", "coding-rules", "ai-native"],
+  "extras": ["react-router", "tailwind"],
+  "deps": "baseline",
+  "git": true,
+  "install": true
+}
+```
+
+显式 CLI 参数优先级高于 preset。详细说明见 [docs/presets.md](./docs/presets.md)。
+
+## 模板作者工具链
+
+```bash
+create-x-app template lint
+create-x-app template test --template react-vite-ts
+create-x-app template pack
+create-x-app plugin init cxa-plugin-company
+```
+
+这些命令用于模板和插件发布前自检：manifest 校验、模板渲染、文件清单检查和插件骨架生成。详细说明见 [docs/template-authoring.md](./docs/template-authoring.md)。
 
 ## 匿名统计与隐私
 
@@ -355,19 +429,25 @@ node bin/cli.js my-app
 node bin/cli.js --help
 node bin/cli.js upgrade --help
 node bin/cli.js search --help
+node bin/cli.js template --help
 ```
 
 代码质量检查：
 
 ```bash
 npm run lint
+npm test
+npm run test:smoke
+npm run test:integration
 ```
 
 发布前建议执行：
 
 ```bash
 npm run lint
-node bin/cli.js --help
+npm test
+npm run test:smoke
+npm run test:integration
 npm pack --dry-run
 ```
 
@@ -380,10 +460,11 @@ create-x-app/
 ├── docs/                   # 演示视频、证明页面和媒体资源
 ├── src/
 │   ├── analytics/          # 匿名统计同意和上报
-│   ├── commands/           # create / upgrade / marketplace / telemetry 命令
+│   ├── commands/           # create / upgrade / marketplace / telemetry / template 命令
 │   ├── generator/          # 模板复制、渲染、裁剪、依赖刷新
 │   ├── marketplace/        # npm 插件市场客户端
 │   ├── plugins/            # 插件扫描和模板注册
+│   ├── presets/            # 团队 preset 解析
 │   ├── remote/             # 远程模板拉取与缓存
 │   ├── steps/              # 环境检测、问答、后置动作
 │   ├── upgrade/            # 配置升级能力
@@ -417,10 +498,9 @@ create-x-app/
 
 ## 路线图
 
-- 将 `upgrade` 逐步演进为具备 ownership、hash 和备份能力的 migration engine。
-- 补齐匿名统计的失败阶段事件，用于定位真实失败环节。
-- 提供更多官方示例插件。
-- 扩展 preset 和模板作者工具链，降低团队模板维护成本。
+- 发布并持续验证更多官方示例插件。
+- 扩展 preset 生态和模板作者工具链，降低团队模板维护成本。
+- 增强 upgrade migration engine 的三方合并能力。
 
 ## 更新记录
 

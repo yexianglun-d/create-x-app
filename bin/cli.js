@@ -7,9 +7,14 @@ import { program } from 'commander'
 import { createCommand } from '../src/commands/create.js'
 import { installCommand } from '../src/commands/install.js'
 import { listCommand } from '../src/commands/list.js'
-import { pluginDoctorCommand } from '../src/commands/plugin.js'
+import { pluginDoctorCommand, pluginInitCommand } from '../src/commands/plugin.js'
 import { removeCommand } from '../src/commands/remove.js'
 import { searchCommand } from '../src/commands/search.js'
+import {
+  templateLintCommand,
+  templatePackCommand,
+  templateTestCommand,
+} from '../src/commands/template.js'
 import {
   telemetryOffCommand,
   telemetryOnCommand,
@@ -44,15 +49,15 @@ async function handleCliAction(projectNameArg, options) {
   })
 }
 
-async function handleUpgradeAction() {
-  const options = program.opts()
+async function handleUpgradeAction(commandOptions) {
+  const globalOptions = program.opts()
 
   setLoggerOptions({
-    verbose: options.verbose,
-    debug: options.debug,
+    verbose: globalOptions.verbose,
+    debug: globalOptions.debug,
   })
 
-  await upgradeCommand()
+  await upgradeCommand(commandOptions)
 }
 
 function applyGlobalLoggerOptions() {
@@ -64,12 +69,20 @@ function applyGlobalLoggerOptions() {
   })
 }
 
+function mergeTemplateCommandOptions(commandOptions) {
+  return {
+    ...commandOptions,
+    template: commandOptions.template ?? program.opts().template,
+  }
+}
+
 program
   .name('create-x-app')
   .description('几秒内生成生产级项目脚手架')
   .version(packageJson.version)
   .argument('[project-name]', '要创建的项目目录名称')
   .option('--template <key>', '非交互模式：直接指定模板 key')
+  .option('--preset <name|path|github>', '使用团队 preset，可为内置名称、本地 JSON 或 github:owner/repo/path#ref')
   .option('--pm <package-manager>', '非交互模式：指定包管理器 npm / pnpm / yarn')
   .option('--features <list>', '非交互模式：指定通用功能，使用逗号分隔')
   .option('--extras <list>', '非交互模式：指定模板扩展，使用逗号分隔')
@@ -95,6 +108,12 @@ program
 program
   .command('upgrade')
   .description('升级当前项目的脚手架配置文件')
+  .option('--check', '只检查可升级文件，不修改项目')
+  .option('--diff', '打印可升级文件 diff，不修改项目')
+  .option('--apply', '非交互应用可安全升级的文件，冲突文件自动跳过')
+  .option('--backup', '升级前创建 .create-x-app/backups 备份')
+  .option('--from <version>', '记录迁移起始版本')
+  .option('--to <version>', '记录迁移目标版本')
   .action(handleUpgradeAction)
 
 program
@@ -138,12 +157,52 @@ const pluginCommand = program
   .description('管理和诊断社区插件模板')
 
 pluginCommand
+  .command('init')
+  .description('创建社区插件模板骨架')
+  .argument('[target-dir]', '目标目录', 'cxa-plugin-example')
+  .action((targetDir) => {
+    applyGlobalLoggerOptions()
+    return pluginInitCommand(targetDir)
+  })
+
+pluginCommand
   .command('doctor')
   .description('检查已安装社区插件的健康度')
   .option('--details', '显示每个插件的逐项检查结果')
   .action((options) => {
     applyGlobalLoggerOptions()
     return pluginDoctorCommand(options)
+  })
+
+const templateCommand = program
+  .command('template')
+  .description('模板作者工具链')
+
+templateCommand
+  .command('lint')
+  .description('校验模板 manifest')
+  .option('--template <key>', '只检查指定模板')
+  .action((options) => {
+    applyGlobalLoggerOptions()
+    return templateLintCommand(mergeTemplateCommandOptions(options))
+  })
+
+templateCommand
+  .command('test')
+  .description('渲染模板并验证生成器链路')
+  .option('--template <key>', '只测试指定模板')
+  .action((options) => {
+    applyGlobalLoggerOptions()
+    return templateTestCommand(mergeTemplateCommandOptions(options))
+  })
+
+templateCommand
+  .command('pack')
+  .description('检查模板发布文件清单')
+  .option('--template <key>', '只检查指定模板')
+  .action((options) => {
+    applyGlobalLoggerOptions()
+    return templatePackCommand(mergeTemplateCommandOptions(options))
   })
 
 const telemetryCommand = program

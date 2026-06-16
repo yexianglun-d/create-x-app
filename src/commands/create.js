@@ -7,6 +7,7 @@ import { runPostActions } from '../steps/post-actions.js'
 import { runBaseEnvCheck, runTemplateEnvCheck } from '../steps/env-check.js'
 import { runPrompts } from '../steps/prompts.js'
 import { resolveTemplateSource } from '../steps/resolver.js'
+import { resolvePresetOptions } from '../presets/loader.js'
 import { logger } from '../utils/logger.js'
 import { validateConfig } from '../validator/index.js'
 
@@ -71,6 +72,7 @@ function getFailureEvent(stage, error) {
 }
 
 export async function createCommand(projectNameArg, options) {
+  let resolvedOptions = options
   let config = null
   let telemetryEnabled = false
   let currentStage = 'create_start'
@@ -79,20 +81,21 @@ export async function createCommand(projectNameArg, options) {
     await reportAnalyticsEvent({
       event,
       config,
-      cliVersion: options.cliVersion,
+      cliVersion: resolvedOptions.cliVersion,
       enabled: telemetryEnabled,
       ...extra,
     })
   }
 
   try {
+    resolvedOptions = await resolvePresetOptions(options)
     console.log()
     intro(chalk.bgCyan.black(' create-x-app '))
-    logger.debug(`CLI 选项：${JSON.stringify(options)}`)
-    const dependencyStrategy = resolveDependencyStrategy(options)
+    logger.debug(`CLI 选项：${JSON.stringify(resolvedOptions)}`)
+    const dependencyStrategy = resolveDependencyStrategy(resolvedOptions)
     printDependencyStrategyWarning(dependencyStrategy)
     telemetryEnabled = await getTelemetryConsent({
-      noTelemetry: options.telemetry === false,
+      noTelemetry: resolvedOptions.telemetry === false,
     }) === true
     await reportStageEvent('create_start')
 
@@ -101,7 +104,7 @@ export async function createCommand(projectNameArg, options) {
 
     currentStage = 'prompts'
     config = await runPrompts(projectNameArg, {
-      ...options,
+      ...resolvedOptions,
       onCancel: async () => {
         await reportStageEvent('prompt_cancelled', {
           stage: 'prompts',
@@ -112,7 +115,7 @@ export async function createCommand(projectNameArg, options) {
     currentStage = 'validate_config'
     validateConfig(config)
 
-    if (options.printConfig) {
+    if (resolvedOptions.printConfig) {
       console.log(JSON.stringify({
         ...config,
         dependencyStrategy,
@@ -122,15 +125,15 @@ export async function createCommand(projectNameArg, options) {
 
     currentStage = 'resolve_template'
     const templateSource = await resolveTemplateSource(config.template, {
-      remote: options.remote,
-      noCache: options.cache === false,
-      ref: resolveDefaultRemoteRef(options),
-      strictRemote: options.strictRemote,
+      remote: resolvedOptions.remote,
+      noCache: resolvedOptions.cache === false,
+      ref: resolveDefaultRemoteRef(resolvedOptions),
+      strictRemote: resolvedOptions.strictRemote,
     })
 
     currentStage = 'template_env_check'
     await runTemplateEnvCheck(templateSource.manifest, config, {
-      skipGit: options.skipGit,
+      skipGit: resolvedOptions.skipGit,
     })
 
     logger.detail(`目标目录：${config.targetDir}`)
@@ -140,28 +143,29 @@ export async function createCommand(projectNameArg, options) {
     await generateProject({
       config,
       options: {
-        cliVersion: options.cliVersion,
-        dryRun: options.dryRun,
-        force: options.force,
+        cliVersion: resolvedOptions.cliVersion,
+        dryRun: resolvedOptions.dryRun,
+        force: resolvedOptions.force,
         dependencyStrategy,
+        preset: resolvedOptions.presetSource ?? resolvedOptions.preset,
       },
       templatePath: templateSource.templatePath,
       templateSource: templateSource.source,
     })
 
-    if (options.dryRun) {
+    if (resolvedOptions.dryRun) {
       outro(chalk.green('Dry run 完成，未写入任何文件'))
       return
     }
 
     telemetryEnabled = await ensureTelemetryConsent({
-      noTelemetry: options.telemetry === false,
+      noTelemetry: resolvedOptions.telemetry === false,
     })
 
     currentStage = 'post_actions'
     await runPostActions({
       config,
-      options,
+      options: resolvedOptions,
       onStageFailure: async ({ event, action }) => {
         await reportStageEvent(event, {
           stage: 'post_actions',
@@ -174,7 +178,7 @@ export async function createCommand(projectNameArg, options) {
 
     await reportCreateEvent({
       config,
-      cliVersion: options.cliVersion,
+      cliVersion: resolvedOptions.cliVersion,
       enabled: telemetryEnabled,
     })
   } catch (error) {

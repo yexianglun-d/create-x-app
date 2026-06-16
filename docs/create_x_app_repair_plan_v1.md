@@ -88,7 +88,7 @@
     "test:snapshot-update": "node scripts/update-template-snapshots.js",
     "smoke": "node scripts/smoke-all-templates.js",
     "pack:check": "npm pack --dry-run",
-    "release:check": "npm run lint && npm test && npm run smoke && npm run pack:check"
+    "release:check": "npm run lint && npm test && npm run test:smoke && npm run pack:check"
   }
 }
 ```
@@ -121,7 +121,7 @@
 ```bash
 npm run lint
 npm test
-npm run smoke
+npm run test:smoke
 npm run pack:check
 npm run release:check
 ```
@@ -676,7 +676,7 @@ create-x-app plugin doctor
 
 **范围**：
 
-- 新增 `npm test`、`npm run smoke`、`npm run release:check`。
+- 新增 `npm test`、`npm run test:smoke`、`npm run release:check`。
 - CI 覆盖 Node 18/20/22 与 Ubuntu/Windows/macOS。
 - 8 套模板至少执行生成、安装、构建或等价 smoke。
 
@@ -774,7 +774,7 @@ node bin/cli.js demo --template react-vite-ts --pm pnpm --features eslint,pretti
 
 - [ ] `npm run lint` 通过。
 - [ ] `npm test` 通过。
-- [ ] `npm run smoke` 通过。
+- [ ] `npm run test:smoke` 通过。
 - [ ] `npm pack --dry-run` 包含 bin、src、templates、shared 和必要文档。
 - [ ] 至少一个模板执行 install + build。
 - [ ] Windows smoke 通过。
@@ -839,7 +839,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      - run: npm run smoke
+      - run: npm run test:smoke
       - run: npm run pack:check
 ```
 
