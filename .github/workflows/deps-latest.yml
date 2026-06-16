@@ -1,0 +1,33 @@
+name: Dependency Strategy Latest
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 20 * * *'
+
+jobs:
+  latest-strategy:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: corepack enable
+      - run: npm ci
+      - name: Generate with experimental latest dependencies
+        run: |
+          node bin/cli.js cxa-latest-smoke \
+            --template react-vite-ts \
+            --pm npm \
+            --features eslint,prettier,agents,coding-rules \
+            --extras '' \
+            --deps latest \
+            --skip-install \
+            --skip-git \
+            --no-telemetry \
+            --yes \
+            --target /tmp/cxa-latest-smoke

@@ -39,7 +39,7 @@ npx create-x-app-cli my-app
 
 很多脚手架只解决“生成文件”的问题，但实际项目启动通常还包括这些细节：
 
-- 检查 Node.js、Git、pnpm、Java 等本地环境是否满足模板要求。
+- 先检查 CLI 运行所需 Node.js，再按所选模板检查 Git、pnpm、Java 等相关工具。
 - 根据模板差异动态展示功能模块，而不是让所有模板共用一套固定问答。
 - 把 `.gitignore`、`.eslintrc.json`、`.prettierrc` 等点文件安全地从 npm 包中恢复出来。
 - 选择性注入 `AGENTS.md`、`coding-rules.md`、Husky、commitlint 等团队协作约定。
@@ -51,14 +51,14 @@ npx create-x-app-cli my-app
 
 - 交互式创建 8 套内置模板，覆盖前端、后端、桌面端、浏览器插件、移动端和 Monorepo。
 - Manifest 驱动模板能力，每个模板可以声明自己的功能项、环境要求、包管理器限制和构建脚本。
-- 自动检测 Node.js、Git、pnpm、Java，并以表格展示版本和影响范围。
+- 基于 manifest 动态检测模板环境，避免 React 模板提示 Java 这类无关噪声。
 - 支持 `npm`、`pnpm`、`yarn`，并为 `pnpm/yarn` 提供 Corepack 回退能力。
 - 自动恢复点文件，例如 `_gitignore` -> `.gitignore`。
 - 自动注入公共协作文件，包括 `AGENTS.md`、`coding-rules.md`、项目 README 和 commitlint 配置。
 - 可选执行依赖安装、Husky 初始化、Git 初始化和初始提交。
 - 支持 `--remote --ref` 从 GitHub 拉取可复现远端模板，并带有 24 小时本地缓存和 strict 失败语义。
 - 生成项目会写入 `.create-x-app/template-lock.json`，记录模板来源、ref、commit 和 CLI 版本。
-- 支持 `--latest` 在生成项目时刷新依赖到 npm 最新版本。
+- 默认使用模板验证过的依赖 baseline，并支持 `--deps` 显式选择 patch/minor/major/latest 升级策略。
 - 支持 `upgrade` 命令，为已生成项目升级脚手架管理的配置文件。
 - 支持 `cxa-plugin-*` 社区模板插件，并提供搜索、安装、列出和移除命令。
 - 支持匿名统计同意机制，默认首次询问，可通过 `--no-telemetry` 单次关闭。
@@ -96,11 +96,14 @@ npx create-x-app-cli my-app --remote --ref v1.0.1 --strict-remote
 npx create-x-app-cli my-app --remote --no-cache
 ```
 
-生成时刷新依赖版本：
+生成时选择依赖版本策略。默认 `baseline` 不访问 npm registry，保持模板验证版本：
 
 ```bash
-npx create-x-app-cli my-app --latest
+npx create-x-app-cli my-app --deps baseline
+npx create-x-app-cli my-app --deps latest-minor
 ```
+
+`latest-major` 和 `latest` 可能引入 breaking changes，CLI 会给出风险提示。旧参数 `--latest` 仍保留为兼容别名，等价于 `--deps latest`。
 
 本地调试仓库源码：
 
@@ -137,20 +140,24 @@ CLI 会按以下顺序执行：
 
 ```text
 ┌   create-x-app
-- 正在检测开发环境...
-✔ 环境检测完成
+- 正在检测 CLI 运行环境...
+✔ CLI 运行环境检测完成
 
 状态    工具       检测版本      最低要求       影响范围
 ────  ───────  ────────  ─────────  ───────
-✔ 通过  Node.js  v22.22.1  >= 18.0.0  必需
-✔ 通过  Git      v2.50.1   >= 2.0.0   可选
-⚠ 可选  pnpm     未找到       >= 8.0.0   pnpm 用户
-✔ 通过  Java     v21.0.10  >= 21.0.0  可选
+✔ 通过  Node.js  v22.22.1  >= 18.0.0  CLI 运行
 
 ◆  请选择项目模板
 ◆  请选择需要的功能模块
 ◆  请选择包管理器
 ◆  确认开始生成项目？
+
+- 正在检测 Java 全栈 + 前端配套说明 模板环境...
+✔ Java 全栈 + 前端配套说明 模板环境检测完成
+
+状态    工具   检测版本      最低要求       影响范围
+────  ────  ────────  ─────────  ───────
+⚠ 可选  Java  未找到       >= 21.0.0  Java 全栈 + 前端配套说明
 ```
 
 ## 内置模板
@@ -203,7 +210,8 @@ create-x-app [project-name] [options]
 | `--ref <tag\|sha\|branch>` | 配合 `--remote` 使用，指定远端模板 ref |
 | `--strict-remote` | 配合 `--remote` 使用，远端拉取失败时直接退出 |
 | `--no-cache` | 配合 `--remote` 使用，忽略 24 小时缓存 |
-| `--latest` | 生成时从 npm 拉取最新依赖版本 |
+| `--deps <strategy>` | 依赖版本策略：`baseline`、`latest-patch`、`latest-minor`、`latest-major`、`latest` |
+| `--latest` | 已弃用，兼容别名，等价于 `--deps latest` |
 | `--no-telemetry` | 跳过本次匿名使用统计 |
 | `--verbose` | 输出详细执行日志 |
 | `--debug` | 输出调试日志和错误堆栈，包含 `verbose` 信息 |
@@ -222,14 +230,16 @@ npx create-x-app-cli upgrade
 npx create-x-app-cli search [keyword]
 npx create-x-app-cli install cxa-plugin-your-template
 npx create-x-app-cli list
+npx create-x-app-cli plugin doctor
 npx create-x-app-cli remove cxa-plugin-your-template
 ```
 
 | 命令 | 说明 |
 |---|---|
 | `search [keyword]` | 从 npm registry 搜索 `cxa-plugin-*` 社区模板 |
-| `install <package-name>` | 全局安装一个社区模板插件 |
+| `install <package-name>` | 安装前展示插件风险摘要，然后全局安装社区模板插件 |
 | `list` | 列出当前可被 CLI 发现的社区模板插件 |
+| `plugin doctor` | 检查已安装插件的 manifest、兼容性和安装风险 |
 | `remove <package-name>` | 全局卸载一个社区模板插件 |
 
 ## 插件生态
@@ -250,12 +260,15 @@ cxa-plugin-example/
   "name": "cxa-plugin-example",
   "version": "0.1.0",
   "type": "module",
+  "license": "MIT",
+  "repository": "https://github.com/your-org/cxa-plugin-example",
+  "cxaPluginApi": ">=1.0.0 <2.0.0",
   "cxa-plugin": true,
   "files": ["manifest.json", "template", "README.md"]
 }
 ```
 
-插件包名必须使用 `cxa-plugin-*` 或 `@scope/cxa-plugin-*`。安装后，CLI 会扫描当前项目和全局 `node_modules`，并将插件模板追加到模板列表末尾，显示为 `[插件] 模板名称`。
+插件包名必须使用 `cxa-plugin-*` 或 `@scope/cxa-plugin-*`。安装前，CLI 会读取 npm metadata 并展示 license、repository、CLI API 兼容范围和 npm lifecycle 脚本风险。安装后，CLI 会扫描当前项目和全局 `node_modules`，只加载 manifest 校验通过的插件模板，并将其追加到模板列表末尾，显示为 `[插件] 模板名称`。
 
 仓库内提供了一个可本地联调的示例插件：
 
@@ -273,6 +286,7 @@ npm uninstall -g cxa-plugin-example
 create-x-app search cxa-plugin-example
 create-x-app install cxa-plugin-example
 create-x-app list
+create-x-app plugin doctor --details
 create-x-app my-plugin-app --skip-install --skip-git
 create-x-app remove cxa-plugin-example
 ```
@@ -392,11 +406,10 @@ create-x-app/
 
 ## 路线图
 
-- 恢复 `node:test` 自动化回归测试。
-- 将模板内 ESLint 8 配置统一升级到 ESLint 9 flat config。
+- 将 `upgrade` 逐步演进为具备 ownership、hash 和备份能力的 migration engine。
+- 补齐匿名统计的失败阶段事件，用于定位真实失败环节。
 - 提供更多官方示例插件。
-- 为社区模板市场补充更严格的插件健康度检查。
-- 增加模板生成结果的快照验证和端到端 smoke test。
+- 扩展 preset 和模板作者工具链，降低团队模板维护成本。
 
 ## 更新记录
 

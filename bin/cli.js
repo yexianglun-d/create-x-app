@@ -7,6 +7,7 @@ import { program } from 'commander'
 import { createCommand } from '../src/commands/create.js'
 import { installCommand } from '../src/commands/install.js'
 import { listCommand } from '../src/commands/list.js'
+import { pluginDoctorCommand } from '../src/commands/plugin.js'
 import { removeCommand } from '../src/commands/remove.js'
 import { searchCommand } from '../src/commands/search.js'
 import { upgradeCommand } from '../src/commands/upgrade.js'
@@ -79,7 +80,8 @@ program
   .option('--ref <tag|sha|branch>', '配合 --remote 使用，指定远端模板 ref')
   .option('--strict-remote', '配合 --remote 使用，远端拉取失败时直接退出')
   .option('--no-cache', '配合 --remote 使用，忽略缓存强制重新拉取')
-  .option('--latest', '生成时从 npm 拉取最新依赖版本')
+  .option('--deps <strategy>', '依赖版本策略：baseline / latest-patch / latest-minor / latest-major / latest')
+  .option('--latest', '已弃用：等价于 --deps latest')
   .option('--no-telemetry', '跳过本次匿名使用统计')
   .option('--verbose', '显示详细执行日志')
   .option('--debug', '显示调试日志和错误堆栈')
@@ -124,6 +126,19 @@ program
   .action((packageName) => {
     applyGlobalLoggerOptions()
     return removeCommand(packageName)
+  })
+
+const pluginCommand = program
+  .command('plugin')
+  .description('管理和诊断社区插件模板')
+
+pluginCommand
+  .command('doctor')
+  .description('检查已安装社区插件的健康度')
+  .option('--details', '显示每个插件的逐项检查结果')
+  .action((options) => {
+    applyGlobalLoggerOptions()
+    return pluginDoctorCommand(options)
   })
 
 program.parse()

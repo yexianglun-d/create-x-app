@@ -1,6 +1,8 @@
 import { existsSync } from 'node:fs'
+import semver from 'semver'
 
 const PACKAGE_MANAGERS = new Set(['npm', 'pnpm', 'yarn'])
+const REQUIREMENT_TOOL_NAMES = new Set(['node', 'git', 'pnpm', 'yarn', 'java', 'docker'])
 const REQUIRED_STRING_FIELDS = ['schemaVersion', 'key', 'name', 'description', 'version', 'framework']
 const REQUIRED_ARRAY_FIELDS = ['supportedFeatures', 'defaultFeatures', 'extras', 'subPrompts']
 const REQUIRED_OBJECT_FIELDS = ['requiredEnv', 'optionalEnv', 'features']
@@ -97,6 +99,45 @@ function validateFeatures(errors, manifest) {
   }
 }
 
+function validateRequirements(errors, manifest) {
+  if (manifest.requirements === undefined) {
+    return
+  }
+
+  if (!isPlainObject(manifest.requirements)) {
+    errors.push('requirements 必须是对象')
+    return
+  }
+
+  for (const [toolName, requirement] of Object.entries(manifest.requirements)) {
+    if (toolName === 'packageManagers') {
+      if (!Array.isArray(requirement) || requirement.length === 0) {
+        errors.push('requirements.packageManagers 必须是非空数组')
+        continue
+      }
+
+      for (const packageManager of requirement) {
+        if (!PACKAGE_MANAGERS.has(packageManager)) {
+          errors.push(`requirements.packageManagers 包含不支持的包管理器：${packageManager}`)
+        }
+      }
+
+      continue
+    }
+
+    if (!REQUIREMENT_TOOL_NAMES.has(toolName)) {
+      errors.push(`requirements 包含不支持的工具：${toolName}`)
+      continue
+    }
+
+    if (requirement !== null && typeof requirement !== 'string') {
+      errors.push(`requirements.${toolName} 必须是字符串或 null`)
+    } else if (typeof requirement === 'string' && !semver.validRange(requirement)) {
+      errors.push(`requirements.${toolName} 必须是有效的 semver range`)
+    }
+  }
+}
+
 function validateExtras(errors, manifest) {
   for (const [index, extra] of (manifest.extras ?? []).entries()) {
     if (!isPlainObject(extra)) {
@@ -155,6 +196,38 @@ function validateSubPrompts(errors, manifest) {
   }
 }
 
+function validatePluginTrustFields(errors, manifest) {
+  if (manifest.cxaPluginApi !== undefined) {
+    if (typeof manifest.cxaPluginApi !== 'string' || manifest.cxaPluginApi.trim().length === 0) {
+      errors.push('cxaPluginApi 必须是非空字符串')
+    } else if (!semver.validRange(manifest.cxaPluginApi)) {
+      errors.push('cxaPluginApi 必须是有效的 semver range')
+    }
+  }
+
+  for (const fieldName of ['author', 'repository', 'license']) {
+    if (manifest[fieldName] !== undefined && typeof manifest[fieldName] !== 'string') {
+      errors.push(`${fieldName} 必须是字符串`)
+    }
+  }
+
+  for (const fieldName of ['requiresNetwork', 'writesOutsideTarget']) {
+    if (manifest[fieldName] !== undefined && typeof manifest[fieldName] !== 'boolean') {
+      errors.push(`${fieldName} 必须是布尔值`)
+    }
+  }
+
+  if (manifest.postActions !== undefined && !Array.isArray(manifest.postActions)) {
+    errors.push('postActions 必须是数组')
+  }
+
+  for (const [index, action] of (manifest.postActions ?? []).entries()) {
+    if (typeof action !== 'string' || action.length === 0) {
+      errors.push(`postActions[${index}] 必须是非空字符串`)
+    }
+  }
+}
+
 export function getManifestValidationErrors(manifest, options = {}) {
   const errors = []
 
@@ -186,9 +259,11 @@ export function getManifestValidationErrors(manifest, options = {}) {
 
   validatePackageManagerField(errors, manifest, 'requiredPm')
   validateForbiddenPackageManagers(errors, manifest)
+  validateRequirements(errors, manifest)
   validateFeatures(errors, manifest)
   validateExtras(errors, manifest)
   validateSubPrompts(errors, manifest)
+  validatePluginTrustFields(errors, manifest)
 
   if (manifest.templatePath && !existsSync(manifest.templatePath)) {
     errors.push(`templatePath 不存在：${manifest.templatePath}`)

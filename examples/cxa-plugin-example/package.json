@@ -20,6 +20,7 @@
   "bugs": {
     "url": "https://github.com/yexianglun-d/create-x-app/issues"
   },
+  "cxaPluginApi": ">=1.0.0 <2.0.0",
   "publishConfig": {
     "access": "public"
   },

@@ -1,4 +1,5 @@
 import { searchMarketplacePlugins } from '../marketplace/client.js'
+import { formatRepository } from '../plugins/health.js'
 import { logger } from '../utils/logger.js'
 
 function formatDownloads(downloads) {
@@ -30,12 +31,16 @@ export async function searchCommand(keyword, options = {}) {
         { key: 'version', title: '版本' },
         { key: 'weeklyDownloads', title: '周下载量' },
         { key: 'updatedAt', title: '更新时间' },
+        { key: 'license', title: 'License' },
+        { key: 'repository', title: 'Repository' },
         { key: 'description', title: '描述' },
       ],
       plugins.map((plugin) => ({
         ...plugin,
         weeklyDownloads: formatDownloads(plugin.weeklyDownloads),
         updatedAt: formatDate(plugin.updatedAt),
+        license: plugin.license ?? '-',
+        repository: formatRepository(plugin.repository),
       })),
     )
   } catch (error) {

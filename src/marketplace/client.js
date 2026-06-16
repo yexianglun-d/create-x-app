@@ -33,6 +33,22 @@ function getUnscopedPackageName(packageName) {
   return packageName.split('/').at(-1)
 }
 
+function normalizeRepository(repository, links = {}) {
+  if (typeof repository === 'string' && repository.trim()) {
+    return repository.trim()
+  }
+
+  if (repository && typeof repository === 'object' && typeof repository.url === 'string') {
+    return repository.url
+  }
+
+  if (typeof links.repository === 'string' && links.repository.trim()) {
+    return links.repository.trim()
+  }
+
+  return null
+}
+
 async function requestJson(url) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
@@ -86,6 +102,11 @@ function pickLatestVersion(metadata) {
 function normalizePackageMetadata(packageName, metadata, weeklyDownloads = null) {
   const version = pickLatestVersion(metadata)
   const latestVersion = version ? metadata.versions?.[version] : null
+  const cxaPluginApi = latestVersion?.cxaPluginApi
+    ?? latestVersion?.['cxa-plugin-api']
+    ?? metadata.cxaPluginApi
+    ?? metadata['cxa-plugin-api']
+    ?? null
 
   return {
     name: metadata.name ?? packageName,
@@ -93,6 +114,11 @@ function normalizePackageMetadata(packageName, metadata, weeklyDownloads = null)
     description: latestVersion?.description ?? metadata.description ?? '',
     weeklyDownloads,
     updatedAt: metadata.time?.modified ?? null,
+    license: latestVersion?.license ?? metadata.license ?? null,
+    repository: normalizeRepository(latestVersion?.repository ?? metadata.repository, latestVersion?.links ?? metadata.links),
+    cxaPluginApi,
+    scripts: latestVersion?.scripts ?? {},
+    isCxaPlugin: metadata['cxa-plugin'] === true || latestVersion?.['cxa-plugin'] === true,
   }
 }
 
@@ -137,6 +163,8 @@ export async function searchMarketplacePlugins(keyword, options = {}) {
     description: pkg.description ?? '',
     weeklyDownloads: await getWeeklyDownloads(pkg.name),
     updatedAt: pkg.date ?? null,
+    license: pkg.license ?? null,
+    repository: normalizeRepository(pkg.repository, pkg.links),
   })))
 }
 

@@ -490,7 +490,11 @@
 - [x] 已完成：生成器、问答、配置校验和 upgrade diff 改为读取 manifest feature artifacts、extra metadata 和 managed files
 - [x] 已完成：`CXA-FIX-006A`，远程模板支持 `--ref`、`--strict-remote`，缓存按 `template + ref + commit` 隔离
 - [x] 已完成：`CXA-FIX-006B`，生成项目写入 `.create-x-app/template-lock.json`，记录模板来源、ref、commit、CLI 版本和选择项
-- [ ] 下一步：`CXA-FIX-007` 插件健康度与安装前风险摘要增强
+- [x] 已完成：`CXA-FIX-007A`，插件安装前展示包元信息、CLI API 兼容性、license、repository、npm lifecycle 脚本等风险摘要
+- [x] 已完成：`CXA-FIX-007B`，新增 `create-x-app plugin doctor`，已安装插件可诊断 manifest、兼容性和健康度
+- [x] 已完成：`CXA-FIX-009`，环境检测拆分为 CLI Node 基础检测和选定模板后的 manifest requirements 检测，React/npm 不再提示 Java/pnpm
+- [x] 已完成：`CXA-FIX-011`，新增 `--deps baseline/latest-patch/latest-minor/latest-major/latest`，默认保持 baseline，`--latest` 作为兼容别名
+- [ ] 下一步：`CXA-FIX-012` 匿名统计失败阶段事件补齐
 
 ## 当前约定
 

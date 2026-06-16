@@ -72,3 +72,63 @@ test('manifest validator requires feature definitions to match defaults', () => 
 
   assert.match(errors.join('\n'), /features\.eslint\.default 必须与 defaultFeatures 保持一致/)
 })
+
+test('manifest validator validates plugin trust metadata fields', () => {
+  const errors = getManifestValidationErrors({
+    schemaVersion: '1.0',
+    key: 'demo',
+    name: 'Demo',
+    description: 'Demo template',
+    version: '1.0.0',
+    framework: 'plugin',
+    cxaPluginApi: 'not a range',
+    repository: 123,
+    requiresNetwork: 'yes',
+    postActions: ['generate.after', ''],
+    writesOutsideTarget: 'no',
+    requiredPm: null,
+    forbiddenPm: [],
+    requiredEnv: {},
+    optionalEnv: {},
+    supportedFeatures: [],
+    defaultFeatures: [],
+    features: {},
+    extras: [],
+    subPrompts: [],
+  })
+
+  assert.match(errors.join('\n'), /cxaPluginApi 必须是有效的 semver range/)
+  assert.match(errors.join('\n'), /repository 必须是字符串/)
+  assert.match(errors.join('\n'), /requiresNetwork 必须是布尔值/)
+  assert.match(errors.join('\n'), /postActions\[1\] 必须是非空字符串/)
+  assert.match(errors.join('\n'), /writesOutsideTarget 必须是布尔值/)
+})
+
+test('manifest validator validates template requirements metadata', () => {
+  const errors = getManifestValidationErrors({
+    schemaVersion: '1.0',
+    key: 'demo',
+    name: 'Demo',
+    description: 'Demo template',
+    version: '1.0.0',
+    framework: 'node',
+    requirements: {
+      node: 'not a range',
+      go: '>=1.22.0',
+      packageManagers: ['npm', 'bun'],
+    },
+    requiredPm: null,
+    forbiddenPm: [],
+    requiredEnv: {},
+    optionalEnv: {},
+    supportedFeatures: [],
+    defaultFeatures: [],
+    features: {},
+    extras: [],
+    subPrompts: [],
+  })
+
+  assert.match(errors.join('\n'), /requirements\.node 必须是有效的 semver range/)
+  assert.match(errors.join('\n'), /requirements 包含不支持的工具：go/)
+  assert.match(errors.join('\n'), /requirements\.packageManagers 包含不支持的包管理器：bun/)
+})

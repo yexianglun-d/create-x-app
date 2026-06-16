@@ -5,6 +5,14 @@
   "version": "1.0.0",
   "schemaVersion": "1.0",
   "framework": "node",
+  "requirements": {
+    "node": ">=18.0.0",
+    "packageManagers": [
+      "npm",
+      "pnpm",
+      "yarn"
+    ]
+  },
   "requiredPm": null,
   "forbiddenPm": [],
   "requiredEnv": {

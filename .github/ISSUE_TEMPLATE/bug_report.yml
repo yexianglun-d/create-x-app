@@ -1,5 +1,5 @@
 name: Bug 报告
-description: 报告 CLI、模板生成、upgrade、remote、latest 或插件相关问题。
+description: 报告 CLI、模板生成、upgrade、remote、依赖策略或插件相关问题。
 title: "[Bug]: "
 labels: ["bug", "needs-triage"]
 body:
@@ -37,7 +37,7 @@ body:
         - create 命令
         - upgrade 命令
         - remote 模板
-        - latest 依赖刷新
+        - 依赖版本策略
         - 插件市场
         - 内置模板
         - 文档

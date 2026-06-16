@@ -1,42 +1,128 @@
 import chalk from 'chalk'
 import ora from 'ora'
+import semver from 'semver'
 import { logger } from '../utils/logger.js'
 import { detectVersion, meetsMinimum } from '../utils/version.js'
 
-const TOOL_DEFINITIONS = [
-  {
+const TOOL_DEFINITIONS = {
+  node: {
     name: 'Node.js',
     minimum: '18.0.0',
-    required: true,
     command: 'node',
     args: ['--version'],
     missingMessage: 'Node.js 未找到或版本不满足要求',
   },
-  {
+  git: {
     name: 'Git',
     minimum: '2.0.0',
-    required: false,
     command: 'git',
     args: ['--version'],
     missingMessage: 'Git 未找到，后续无法自动初始化仓库',
   },
-  {
+  pnpm: {
     name: 'pnpm',
     minimum: '8.0.0',
-    required: false,
     command: 'pnpm',
     args: ['--version'],
-    missingMessage: 'pnpm 未找到，仅在用户选择 pnpm 时需要',
+    missingMessage: 'pnpm 未找到，将尝试使用 Corepack 回退',
   },
-  {
+  yarn: {
+    name: 'Yarn',
+    minimum: '1.22.0',
+    command: 'yarn',
+    args: ['--version'],
+    missingMessage: 'Yarn 未找到，将尝试使用 Corepack 回退',
+  },
+  java: {
     name: 'Java',
     minimum: '21.0.0',
-    required: false,
     command: 'java',
     args: ['-version'],
-    missingMessage: 'Java 未找到，仅 java-fullstack 模板需要',
+    missingMessage: 'Java 未找到，Java 全栈后端开发需要 Java 21+',
   },
-]
+  docker: {
+    name: 'Docker',
+    minimum: '24.0.0',
+    command: 'docker',
+    args: ['--version'],
+    missingMessage: 'Docker 未找到，相关模板的容器化能力不可用',
+  },
+}
+
+function getToolDefinition(toolKey, options = {}) {
+  const baseDefinition = TOOL_DEFINITIONS[toolKey]
+
+  if (!baseDefinition) {
+    return null
+  }
+
+  return {
+    ...baseDefinition,
+    key: toolKey,
+    required: Boolean(options.required),
+    minimum: options.minimum ?? baseDefinition.minimum,
+    scope: options.scope,
+  }
+}
+
+function getToolMinimum(value, fallback) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return fallback
+  }
+
+  return semver.minVersion(value)?.version ?? value.replace(/^>=\s*/, '').trim()
+}
+
+function addRequirementTools(tools, requirements = {}, options = {}) {
+  for (const [toolKey, requirement] of Object.entries(requirements ?? {})) {
+    if (toolKey === 'packageManagers' || requirement === null || requirement === false) {
+      continue
+    }
+
+    const toolDefinition = getToolDefinition(toolKey, {
+      required: options.required,
+      minimum: getToolMinimum(requirement, TOOL_DEFINITIONS[toolKey]?.minimum),
+      scope: options.scope,
+    })
+
+    if (toolDefinition) {
+      tools.push(toolDefinition)
+    }
+  }
+}
+
+function dedupeTools(tools) {
+  const toolMap = new Map()
+
+  for (const tool of tools) {
+    const existingTool = toolMap.get(tool.key)
+
+    if (!existingTool) {
+      toolMap.set(tool.key, tool)
+      continue
+    }
+
+    toolMap.set(tool.key, {
+      ...existingTool,
+      ...tool,
+      required: existingTool.required || tool.required,
+    })
+  }
+
+  return [...toolMap.values()]
+}
+
+function shouldCheckTemplateTool(tool) {
+  if (tool.key !== 'node') {
+    return true
+  }
+
+  if (!semver.valid(tool.minimum)) {
+    return true
+  }
+
+  return semver.gt(tool.minimum, TOOL_DEFINITIONS.node.minimum)
+}
 
 /**
  * 构建环境检测输出行。
@@ -54,25 +140,19 @@ function buildSummaryRow(result) {
     tool: result.name,
     version: result.detected ? `v${result.detected}` : '未找到',
     requirement: `>= ${result.minimum}`,
-    scope: '按需使用',
+    scope: result.scope ?? '按需使用',
   }
 
   if (result.ok) {
     row.status = chalk.green('✔ 通过')
-    row.scope = result.required ? '必需' : '可选'
+    row.scope = result.scope ?? (result.required ? '必需' : '可选')
     return row
   }
 
   if (result.required) {
     row.status = chalk.red('✖ 阻断')
-    row.scope = '必需'
+    row.scope = result.scope ?? '必需'
     return row
-  }
-
-  if (result.name === 'Java') {
-    row.scope = 'java-fullstack'
-  } else if (result.name === 'pnpm') {
-    row.scope = 'pnpm 用户'
   }
 
   return row
@@ -84,31 +164,88 @@ function buildSummaryRow(result) {
  * @param {{name: string, minimum: string, required: boolean, command: string, args: string[], missingMessage: string}} tool
  * @returns {Promise<{name: string, minimum: string, detected: string | null, ok: boolean, required: boolean, missingMessage: string}>}
  */
-async function checkTool(tool) {
-  const detected = await detectVersion(tool.command, tool.args)
+async function checkTool(tool, options = {}) {
+  const detectVersionImpl = options.detectVersionImpl ?? detectVersion
+  const detected = await detectVersionImpl(tool.command, tool.args)
 
   return {
+    key: tool.key,
     name: tool.name,
     minimum: tool.minimum,
     detected,
     ok: meetsMinimum(detected, tool.minimum),
     required: tool.required,
+    scope: tool.scope,
     missingMessage: tool.missingMessage,
   }
 }
 
-export async function runEnvCheck() {
-  const spinner = ora('正在检测开发环境...').start()
+function getManifestRequirements(manifest) {
+  if (manifest.requirements && typeof manifest.requirements === 'object') {
+    return manifest.requirements
+  }
+
+  return manifest.requiredEnv ?? {}
+}
+
+function getManifestOptionalRequirements(manifest) {
+  return manifest.optionalEnv ?? {}
+}
+
+export function buildTemplateToolDefinitions(manifest, config = {}, options = {}) {
+  const tools = []
+
+  addRequirementTools(tools, getManifestRequirements(manifest), {
+    required: true,
+    scope: manifest.name,
+  })
+
+  addRequirementTools(tools, getManifestOptionalRequirements(manifest), {
+    required: false,
+    scope: manifest.name,
+  })
+
+  if (!options.skipGit) {
+    const gitTool = getToolDefinition('git', {
+      required: false,
+      scope: 'Git 初始化',
+    })
+
+    if (gitTool) {
+      tools.push(gitTool)
+    }
+  }
+
+  if (config.packageManager === 'pnpm' || config.packageManager === 'yarn') {
+    const packageManagerTool = getToolDefinition(config.packageManager, {
+      required: false,
+      scope: `${config.packageManager} 用户`,
+    })
+
+    if (packageManagerTool) {
+      tools.push(packageManagerTool)
+    }
+  }
+
+  return dedupeTools(tools).filter((tool) => shouldCheckTemplateTool(tool))
+}
+
+async function runToolChecks(tools, options = {}) {
+  const title = options.title ?? '正在检测开发环境...'
+  const completedTitle = options.completedTitle ?? '环境检测完成'
+  const spinner = ora(title).start()
+  let spinnerCompleted = false
 
   try {
     const results = []
 
-    for (const tool of TOOL_DEFINITIONS) {
+    for (const tool of tools) {
       spinner.text = `正在检测 ${tool.name}...`
-      results.push(await checkTool(tool))
+      results.push(await checkTool(tool, options))
     }
 
-    spinner.succeed('环境检测完成')
+    spinner.succeed(completedTitle)
+    spinnerCompleted = true
     console.log()
     logger.table(
       [
@@ -123,11 +260,6 @@ export async function runEnvCheck() {
 
     const blockingError = results.find((result) => result.required && !result.ok)
 
-    if (blockingError) {
-      logger.error(blockingError.missingMessage)
-      process.exit(1)
-    }
-
     for (const result of results) {
       if (!result.ok && !result.required) {
         logger.warn(result.missingMessage)
@@ -135,9 +267,58 @@ export async function runEnvCheck() {
         logger.debug(`${result.name} 检测通过：${result.detected}`)
       }
     }
+
+    if (blockingError) {
+      throw new Error(blockingError.missingMessage)
+    }
+
+    return results
   } catch (error) {
-    spinner.fail('环境检测失败')
-    logger.reportError('环境检测过程中发生异常', error)
+    if (!spinnerCompleted) {
+      spinner.fail(`${completedTitle.replace('完成', '失败')}`)
+    }
+
+    throw error
+  }
+}
+
+export async function runBaseEnvCheck(options = {}) {
+  try {
+    return await runToolChecks([
+      getToolDefinition('node', {
+        required: true,
+        scope: 'CLI 运行',
+      }),
+    ], {
+      ...options,
+      title: '正在检测 CLI 运行环境...',
+      completedTitle: 'CLI 运行环境检测完成',
+    })
+  } catch (error) {
+    logger.reportError('CLI 运行环境检测失败', error)
     process.exit(1)
   }
+}
+
+export async function runTemplateEnvCheck(manifest, config, options = {}) {
+  const tools = buildTemplateToolDefinitions(manifest, config, options)
+
+  if (tools.length === 0) {
+    return []
+  }
+
+  try {
+    return await runToolChecks(tools, {
+      ...options,
+      title: `正在检测 ${manifest.name} 模板环境...`,
+      completedTitle: `${manifest.name} 模板环境检测完成`,
+    })
+  } catch (error) {
+    logger.reportError('模板环境检测失败', error)
+    process.exit(1)
+  }
+}
+
+export async function runEnvCheck(options = {}) {
+  return runBaseEnvCheck(options)
 }

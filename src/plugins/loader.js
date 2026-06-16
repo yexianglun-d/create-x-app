@@ -139,10 +139,39 @@ function normalizePluginManifest(packageDir, packageJson) {
   })
 }
 
-export function loadPluginTemplates() {
-  const plugins = []
+function inspectPluginPackage(packageDir, packageJson) {
+  try {
+    const manifest = normalizePluginManifest(packageDir, packageJson)
 
-  for (const nodeModulesDir of getCandidateNodeModulesDirs()) {
+    return {
+      valid: true,
+      packageName: packageJson.name,
+      packageVersion: packageJson.version ?? '-',
+      packageDescription: packageJson.description ?? '',
+      packagePath: packageDir,
+      packageJson,
+      manifest,
+      errors: [],
+    }
+  } catch (error) {
+    return {
+      valid: false,
+      packageName: packageJson.name,
+      packageVersion: packageJson.version ?? '-',
+      packageDescription: packageJson.description ?? '',
+      packagePath: packageDir,
+      packageJson,
+      manifest: null,
+      errors: [error.message],
+    }
+  }
+}
+
+export function inspectPluginTemplates(options = {}) {
+  const diagnostics = []
+  const nodeModulesDirs = options.nodeModulesDirs ?? getCandidateNodeModulesDirs()
+
+  for (const nodeModulesDir of nodeModulesDirs) {
     for (const packageDir of listPackageDirs(nodeModulesDir)) {
       const packageJson = readPackageJson(packageDir)
 
@@ -150,13 +179,15 @@ export function loadPluginTemplates() {
         continue
       }
 
-      const plugin = normalizePluginManifest(packageDir, packageJson)
-
-      if (plugin) {
-        plugins.push(plugin)
-      }
+      diagnostics.push(inspectPluginPackage(packageDir, packageJson))
     }
   }
 
-  return plugins
+  return diagnostics
+}
+
+export function loadPluginTemplates(options = {}) {
+  return inspectPluginTemplates(options)
+    .filter((diagnostic) => diagnostic.valid && diagnostic.manifest)
+    .map((diagnostic) => diagnostic.manifest)
 }

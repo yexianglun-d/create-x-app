@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import test from 'node:test'
+import test, { mock } from 'node:test'
 import fs from 'fs-extra'
 import { join } from 'node:path'
 import { buildTestConfig, createTempDir, removeTempDir } from '../helpers/project.js'
@@ -92,10 +92,14 @@ test('generateProject writes template source lock without local paths', async ()
 
   try {
     const { config, templatePath } = await buildNodeTemplateConfig(targetDir)
+    mock.method(globalThis, 'fetch', async () => ({ ok: false }))
 
     await generateProject({
       config,
-      options: { cliVersion: '1.2.3' },
+      options: {
+        cliVersion: '1.2.3',
+        dependencyStrategy: 'latest-minor',
+      },
       templatePath,
       templateSource: {
         type: 'github',
@@ -116,6 +120,7 @@ test('generateProject writes template source lock without local paths', async ()
     assert.equal(lock.source.commit, 'abcdef123456')
     assert.equal(lock.source.templatePath, undefined)
     assert.equal(lock.cli.version, '1.2.3')
+    assert.equal(lock.selection.dependencyStrategy, 'latest-minor')
   } finally {
     await removeTempDir(targetDir)
   }

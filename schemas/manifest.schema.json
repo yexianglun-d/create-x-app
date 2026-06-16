@@ -47,6 +47,69 @@
       "type": "string",
       "minLength": 1
     },
+    "requirements": {
+      "type": "object",
+      "description": "模板级环境需求。工具字段使用 semver 最低要求，packageManagers 声明可选包管理器。",
+      "properties": {
+        "node": {
+          "type": ["string", "null"]
+        },
+        "git": {
+          "type": ["string", "null"]
+        },
+        "pnpm": {
+          "type": ["string", "null"]
+        },
+        "yarn": {
+          "type": ["string", "null"]
+        },
+        "java": {
+          "type": ["string", "null"]
+        },
+        "docker": {
+          "type": ["string", "null"]
+        },
+        "packageManagers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["npm", "pnpm", "yarn"]
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "cxaPluginApi": {
+      "type": "string",
+      "minLength": 1,
+      "description": "插件兼容的 create-x-app Plugin API semver range，例如 >=1.0.0 <2.0.0"
+    },
+    "author": {
+      "type": "string"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "license": {
+      "type": "string"
+    },
+    "requiresNetwork": {
+      "type": "boolean",
+      "default": false
+    },
+    "postActions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "default": []
+    },
+    "writesOutsideTarget": {
+      "type": "boolean",
+      "default": false
+    },
     "requiredPm": {
       "type": ["string", "null"],
       "enum": ["npm", "pnpm", "yarn", null]

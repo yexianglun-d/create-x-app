@@ -2,9 +2,10 @@ import ejs from 'ejs'
 import fs from 'fs-extra'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import semver from 'semver'
 import { loadManifest } from '../manifest/loader.js'
 import { logger } from '../utils/logger.js'
-import { getLatestVersions } from '../utils/pkg-version.js'
+import { getPackageVersionMetadata } from '../utils/pkg-version.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const SHARED_DIR = join(__dirname, '../../shared')
@@ -20,6 +21,13 @@ const DEPENDENCY_FIELDS = [
   'peerDependencies',
   'optionalDependencies',
 ]
+const DEPENDENCY_STRATEGY_BASELINE = 'baseline'
+const DEPENDENCY_UPGRADE_STRATEGIES = new Set([
+  'latest-patch',
+  'latest-minor',
+  'latest-major',
+  'latest',
+])
 
 async function isDirectoryEmpty(targetDir) {
   const entries = await fs.readdir(targetDir)
@@ -102,7 +110,7 @@ async function collectRelativeFiles(sourceDir, rootDir = sourceDir) {
   return files
 }
 
-async function printDryRunSummary({ config, templatePath, manifest }) {
+async function printDryRunSummary({ config, templatePath, manifest, dependencyStrategy }) {
   const plannedFiles = new Set([
     ...await collectRelativeFiles(SHARED_DIR),
     ...await collectRelativeFiles(templatePath),
@@ -125,6 +133,7 @@ async function printDryRunSummary({ config, templatePath, manifest }) {
   logger.note('Dry run:', '不会写入、覆盖或删除任何文件')
   console.log(`  目标目录：${resolveDisplayPath(config.targetDir)}`)
   console.log(`  模板：${manifest.name} (${manifest.key})`)
+  console.log(`  依赖策略：${dependencyStrategy ?? DEPENDENCY_STRATEGY_BASELINE}`)
   console.log(`  预计复制文件数：${plannedFiles.size}`)
 }
 
@@ -255,6 +264,7 @@ async function writeTemplateLock(targetDir, config, manifest, options = {}) {
       packageManager: config.packageManager,
       features: config.features,
       extras: config.extras,
+      dependencyStrategy: options.dependencyStrategy ?? DEPENDENCY_STRATEGY_BASELINE,
     },
     createdAt: new Date().toISOString(),
   }
@@ -309,7 +319,87 @@ function shouldRefreshVersion(versionSpecifier) {
   return typeof versionSpecifier === 'string' && /^[~^]?\d+\.\d+\.\d+/.test(versionSpecifier)
 }
 
-function applyLatestVersions(packageJson, latestVersions) {
+function getRangePrefix(versionSpecifier) {
+  return versionSpecifier.match(/^[~^]/)?.[0] ?? ''
+}
+
+function getBaseVersion(versionSpecifier) {
+  try {
+    return semver.minVersion(versionSpecifier)?.version ?? null
+  } catch {
+    return null
+  }
+}
+
+function getStableVersions(versionMetadata) {
+  return (versionMetadata?.versions ?? [])
+    .filter((version) => semver.valid(version))
+    .filter((version) => semver.parse(version).prerelease.length === 0)
+}
+
+function pickHighestVersion(versions) {
+  return versions.sort((left, right) => semver.rcompare(left, right))[0] ?? null
+}
+
+function pickPatchVersion(currentVersion, versions) {
+  const current = semver.parse(currentVersion)
+
+  return pickHighestVersion(versions.filter((version) => {
+    const parsedVersion = semver.parse(version)
+
+    return parsedVersion.major === current.major
+      && parsedVersion.minor === current.minor
+      && semver.gt(version, currentVersion)
+  }))
+}
+
+function pickMinorVersion(currentVersion, versions) {
+  const current = semver.parse(currentVersion)
+
+  return pickHighestVersion(versions.filter((version) => {
+    const parsedVersion = semver.parse(version)
+
+    return parsedVersion.major === current.major && semver.gt(version, currentVersion)
+  }))
+}
+
+function pickLatestVersion(currentVersion, versionMetadata) {
+  const latestVersion = versionMetadata?.latest
+
+  if (!latestVersion || !semver.valid(latestVersion) || !semver.gt(latestVersion, currentVersion)) {
+    return null
+  }
+
+  return latestVersion
+}
+
+export function resolveDependencyVersion(currentVersionSpecifier, versionMetadata, strategy) {
+  const currentVersion = getBaseVersion(currentVersionSpecifier)
+
+  if (!currentVersion || !versionMetadata) {
+    return null
+  }
+
+  if (strategy === 'latest-major' || strategy === 'latest') {
+    return pickLatestVersion(currentVersion, versionMetadata)
+  }
+
+  const stableVersions = getStableVersions(versionMetadata)
+
+  if (strategy === 'latest-patch') {
+    return pickPatchVersion(currentVersion, stableVersions)
+  }
+
+  if (strategy === 'latest-minor') {
+    return pickMinorVersion(currentVersion, stableVersions)
+  }
+
+  return null
+}
+
+function applyDependencyStrategy(packageJson, versionMetadataByName, strategy) {
+  let updatedCount = 0
+
   for (const field of DEPENDENCY_FIELDS) {
     const dependencies = packageJson[field]
 
@@ -322,29 +412,44 @@ function applyLatestVersions(packageJson, latestVersions) {
         continue
       }
 
-      const latestVersion = latestVersions[dependencyName]
+      const resolvedVersion = resolveDependencyVersion(
+        currentVersion,
+        versionMetadataByName[dependencyName],
+        strategy,
+      )
 
-      if (!latestVersion) {
+      if (!resolvedVersion) {
         continue
       }
 
-      const rangePrefix = currentVersion.match(/^[~^]/)?.[0] ?? ''
-      dependencies[dependencyName] = `${rangePrefix}${latestVersion}`
+      dependencies[dependencyName] = `${getRangePrefix(currentVersion)}${resolvedVersion}`
+      updatedCount += 1
     }
   }
+
+  return updatedCount
 }
 
 /**
- * 将已渲染 package.json 中的依赖刷新到 npm 最新版本。
+ * 按用户选择的依赖策略刷新已渲染 package.json 中的依赖。
  *
  * 说明：
  * 1. 先渲染再扫描，确保只处理用户真实选择后存在的依赖
  * 2. 单个包拉取失败只回退该包的基线版本，不影响项目生成主流程
  *
  * @param {string} targetDir 项目输出目录
+ * @param {string} strategy 依赖升级策略
  * @returns {Promise<void>}
  */
-async function refreshPackageVersions(targetDir) {
+async function refreshPackageVersions(targetDir, strategy) {
+  if (strategy === DEPENDENCY_STRATEGY_BASELINE) {
+    return
+  }
+
+  if (!DEPENDENCY_UPGRADE_STRATEGIES.has(strategy)) {
+    throw new Error(`不支持的依赖策略：${strategy}`)
+  }
+
   const packageJsonFiles = await collectPackageJsonFiles(targetDir)
   const packageJsonByPath = new Map()
   const dependencyNames = new Set()
@@ -362,11 +467,11 @@ async function refreshPackageVersions(targetDir) {
     return
   }
 
-  logger.step('正在检测最新依赖版本...')
+  logger.step(`正在按 ${strategy} 策略检测依赖版本...`)
 
-  const latestVersions = await getLatestVersions([...dependencyNames])
-  const failedPackages = Object.entries(latestVersions)
-    .filter(([, latestVersion]) => !latestVersion)
+  const versionMetadataByName = await getPackageVersionMetadata([...dependencyNames])
+  const failedPackages = Object.entries(versionMetadataByName)
+    .filter(([, versionMetadata]) => !versionMetadata)
     .map(([packageName]) => packageName)
 
   if (failedPackages.length > 0) {
@@ -377,9 +482,17 @@ async function refreshPackageVersions(targetDir) {
     }
   }
 
+  let updatedCount = 0
+
   for (const [packageJsonFile, packageJson] of packageJsonByPath.entries()) {
-    applyLatestVersions(packageJson, latestVersions)
+    updatedCount += applyDependencyStrategy(packageJson, versionMetadataByName, strategy)
     await fs.writeFile(packageJsonFile, `${JSON.stringify(packageJson, null, 2)}\n`, 'utf8')
+  }
+
+  if (updatedCount === 0) {
+    logger.info(`依赖策略 ${strategy} 未产生可用升级，继续使用模板基线版本`)
+  } else {
+    logger.success(`已按 ${strategy} 策略更新 ${updatedCount} 个依赖声明`)
   }
 }
 
@@ -521,7 +634,12 @@ export async function generateProject({ config, options = {}, templatePath, temp
     })
 
     if (options.dryRun) {
-      await printDryRunSummary({ config, templatePath, manifest })
+      await printDryRunSummary({
+        config,
+        templatePath,
+        manifest,
+        dependencyStrategy: options.dependencyStrategy,
+      })
       return { dryRun: true }
     }
 
@@ -535,6 +653,7 @@ export async function generateProject({ config, options = {}, templatePath, temp
     await writeProjectMetadata(config.targetDir, config, manifest)
     await writeTemplateLock(config.targetDir, config, manifest, {
       cliVersion: options.cliVersion,
+      dependencyStrategy: options.dependencyStrategy,
       templateSource,
     })
     await renameDotfiles(config.targetDir)
@@ -545,9 +664,10 @@ export async function generateProject({ config, options = {}, templatePath, temp
       manifestFeatures: manifest.features,
     }, config.targetDir)
 
-    if (options.latest) {
-      await refreshPackageVersions(config.targetDir)
-    }
+    await refreshPackageVersions(
+      config.targetDir,
+      options.dependencyStrategy ?? DEPENDENCY_STRATEGY_BASELINE,
+    )
   } catch (error) {
     throw new Error(`生成项目失败：${error.message}`)
   }
