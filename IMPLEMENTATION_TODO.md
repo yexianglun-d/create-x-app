@@ -494,7 +494,8 @@
 - [x] 已完成：`CXA-FIX-007B`，新增 `create-x-app plugin doctor`，已安装插件可诊断 manifest、兼容性和健康度
 - [x] 已完成：`CXA-FIX-009`，环境检测拆分为 CLI Node 基础检测和选定模板后的 manifest requirements 检测，React/npm 不再提示 Java/pnpm
 - [x] 已完成：`CXA-FIX-011`，新增 `--deps baseline/latest-patch/latest-minor/latest-major/latest`，默认保持 baseline，`--latest` 作为兼容别名
-- [ ] 下一步：`CXA-FIX-012` 匿名统计失败阶段事件补齐
+- [x] 已完成：`CXA-FIX-012`，新增 `create_start/create_success/*_failed` 阶段事件和 `telemetry status/on/off`，失败事件仅包含阶段与错误类别
+- [ ] 下一步：`CXA-FIX-008` upgrade migration engine 或 `CXA-FIX-013` preset 体系
 
 ## 当前约定
 

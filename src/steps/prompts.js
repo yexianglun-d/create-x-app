@@ -13,8 +13,12 @@ const DEFAULT_PROJECT_NAME = 'my-app'
 const PROJECT_NAME_PATTERN = /^[a-z0-9-_]+$/
 const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn']
 
-function ensurePromptNotCancelled(value) {
+async function ensurePromptNotCancelled(value, options = {}) {
   if (isCancel(value)) {
+    if (options.onCancel) {
+      await options.onCancel()
+    }
+
     cancel('操作已取消')
     process.exit(0)
   }
@@ -222,24 +226,24 @@ function buildConfirmationMessage({
   ].join('\n')
 }
 
-async function runSubPrompt(subPrompt) {
+async function runSubPrompt(subPrompt, options = {}) {
   switch (subPrompt.type) {
     case 'select':
       return ensurePromptNotCancelled(await select({
         message: subPrompt.label,
         options: subPrompt.options,
         initialValue: subPrompt.default,
-      }))
+      }), options)
     case 'text':
       return ensurePromptNotCancelled(await text({
         message: subPrompt.label,
         initialValue: subPrompt.default ?? '',
-      }))
+      }), options)
     case 'confirm':
       return ensurePromptNotCancelled(await confirm({
         message: subPrompt.label,
         initialValue: Boolean(subPrompt.default),
-      }))
+      }), options)
     default:
       throw new Error(`不支持的子问答类型：${subPrompt.type}`)
   }
@@ -261,27 +265,27 @@ export async function runPrompts(projectNameArg, options = {}) {
         throw new Error(`无效的项目名称：${projectNameValidationResult}`)
       }
     } else {
-      projectName = ensurePromptNotCancelled(await text({
+      projectName = await ensurePromptNotCancelled(await text({
         message: '请输入项目名称',
         initialValue: DEFAULT_PROJECT_NAME,
         validate(value) {
           return validateProjectName(value)
         },
-      }))
+      }), options)
     }
 
-    const template = ensurePromptNotCancelled(await select({
+    const template = await ensurePromptNotCancelled(await select({
       message: '请选择项目模板',
       options: buildTemplateChoices(manifests),
       initialValue: manifests[0]?.key,
-    }))
+    }), options)
     const selectedManifest = manifests.find((manifest) => manifest.key === template)
 
     if (!selectedManifest) {
       throw new Error(`未找到模板定义：${template}`)
     }
 
-    const selectedModules = ensurePromptNotCancelled(await multiselect({
+    const selectedModules = await ensurePromptNotCancelled(await multiselect({
       message: '请选择需要的功能模块',
       options: [
         ...buildFeatureChoices(selectedManifest),
@@ -289,7 +293,7 @@ export async function runPrompts(projectNameArg, options = {}) {
       ],
       initialValues: buildInitialModuleValues(selectedManifest),
       required: false,
-    }))
+    }), options)
 
     const { features, extras } = splitSelectedModules(selectedManifest, selectedModules)
     const config = {
@@ -302,7 +306,7 @@ export async function runPrompts(projectNameArg, options = {}) {
     }
 
     for (const subPrompt of selectedManifest.subPrompts ?? []) {
-      config[subPrompt.key] = await runSubPrompt(subPrompt)
+      config[subPrompt.key] = await runSubPrompt(subPrompt, options)
     }
 
     if (selectedManifest.requiredPm) {
@@ -310,14 +314,14 @@ export async function runPrompts(projectNameArg, options = {}) {
     } else {
       const packageManagerChoices = buildPackageManagerChoices(selectedManifest)
 
-      config.packageManager = ensurePromptNotCancelled(await select({
+      config.packageManager = await ensurePromptNotCancelled(await select({
         message: '请选择包管理器',
         options: packageManagerChoices,
         initialValue: packageManagerChoices[0]?.value,
-      }))
+      }), options)
     }
 
-    const confirmed = ensurePromptNotCancelled(await confirm({
+    const confirmed = await ensurePromptNotCancelled(await confirm({
       message: buildConfirmationMessage({
         projectName: config.projectName,
         manifest: selectedManifest,
@@ -326,7 +330,7 @@ export async function runPrompts(projectNameArg, options = {}) {
         extras: config.extras,
       }),
       initialValue: true,
-    }))
+    }), options)
 
     if (!confirmed) {
       cancel('操作已取消')

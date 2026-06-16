@@ -71,3 +71,40 @@ export async function ensureTelemetryConsent({ noTelemetry = false } = {}) {
 
   return enabled
 }
+
+export async function getTelemetryConsent({ noTelemetry = false } = {}) {
+  if (noTelemetry) {
+    return false
+  }
+
+  const config = await readConfig()
+  return getStoredTelemetryConsent(config)
+}
+
+export async function setTelemetryConsent(enabled) {
+  const config = await readConfig()
+
+  await writeConfig({
+    ...config,
+    telemetry: {
+      ...config.telemetry,
+      enabled,
+    },
+  })
+
+  return {
+    enabled,
+    configPath: CONFIG_PATH,
+  }
+}
+
+export async function getTelemetryStatus() {
+  const config = await readConfig()
+  const enabled = getStoredTelemetryConsent(config)
+
+  return {
+    enabled,
+    configured: enabled !== null,
+    configPath: CONFIG_PATH,
+  }
+}

@@ -99,6 +99,18 @@ async function runCommandWithSpinner(options) {
   }
 }
 
+async function notifyStageFailure(onStageFailure, payload) {
+  if (!onStageFailure) {
+    return
+  }
+
+  try {
+    await onStageFailure(payload)
+  } catch {
+    // Telemetry hooks must never affect project creation.
+  }
+}
+
 async function setHuskyHookPermission({ chmodFile, platform, huskyWorkspace }) {
   if (platform === 'win32') {
     logger.detail('Windows 环境跳过 commit-msg chmod')
@@ -178,6 +190,7 @@ export async function runPostActions({
   chmodFile = fs.chmod,
   pathExists = fs.pathExists,
   platform = process.platform,
+  onStageFailure,
 }) {
   const pm = createPmAdapter(config.packageManager)
   const workspaceLayout = resolveWorkspaceLayout(config)
@@ -192,13 +205,18 @@ export async function runPostActions({
       for (const installTarget of workspaceLayout.installTargets) {
         const installCommand = pm.getInstallCommand()
 
-        await runner({
-          title: `正在安装依赖（${config.packageManager} install）...`,
-          command: installCommand.command,
-          args: installCommand.args,
-          cwd: installTarget,
-          continueOnError: false,
-        })
+        try {
+          await runner({
+            title: `正在安装依赖（${config.packageManager} install）...`,
+            command: installCommand.command,
+            args: installCommand.args,
+            cwd: installTarget,
+            continueOnError: false,
+          })
+        } catch (error) {
+          error.telemetryEvent = 'install_failed'
+          throw error
+        }
       }
     } else {
       logger.detail('已跳过依赖安装步骤')
@@ -227,7 +245,7 @@ export async function runPostActions({
     }
 
     if (!options.skipGit) {
-      await runner({
+      const gitInitSucceeded = await runner({
         title: '正在初始化 Git 仓库...',
         command: 'git',
         args: ['init'],
@@ -235,7 +253,14 @@ export async function runPostActions({
         continueOnError: true,
       })
 
-      await runner({
+      if (!gitInitSucceeded) {
+        await notifyStageFailure(onStageFailure, {
+          event: 'git_failed',
+          action: 'init',
+        })
+      }
+
+      const gitAddSucceeded = await runner({
         title: '正在暂存项目文件...',
         command: 'git',
         args: ['add', '.'],
@@ -243,21 +268,37 @@ export async function runPostActions({
         continueOnError: true,
       })
 
-      await runner({
+      if (!gitAddSucceeded) {
+        await notifyStageFailure(onStageFailure, {
+          event: 'git_failed',
+          action: 'add',
+        })
+      }
+
+      const gitCommitSucceeded = await runner({
         title: '正在创建初始提交...',
         command: 'git',
         args: ['commit', '-m', 'chore: 通过 create-x-app 初始化项目'],
         cwd: workspaceLayout.gitWorkspace,
         continueOnError: true,
       })
+
+      if (!gitCommitSucceeded) {
+        await notifyStageFailure(onStageFailure, {
+          event: 'git_failed',
+          action: 'commit',
+        })
+      }
     } else {
       logger.detail('已跳过 Git 初始化步骤')
     }
 
     await printNextSteps(config, workspaceLayout, manifest, pathExists)
   } catch (error) {
-    throw new Error(`后置步骤执行失败：${error.message}`, {
+    const wrappedError = new Error(`后置步骤执行失败：${error.message}`, {
       cause: error,
     })
+    wrappedError.telemetryEvent = error.telemetryEvent
+    throw wrappedError
   }
 }

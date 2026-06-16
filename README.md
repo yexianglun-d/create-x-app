@@ -303,17 +303,28 @@ create-x-app remove cxa-plugin-example
 
 匿名统计只包含以下字段：
 
+- 事件名，例如 `create_start`、`create_success`、`generate_failed`
+- 失败阶段，例如 `env_check`、`resolve_template`、`generate`
+- 粗粒度错误类别，例如 `error`、`abort`、`EACCES`
 - 模板 key
 - CLI 版本
 - Node.js 版本
 - OS 类型
 
-不会收集项目名、项目路径、用户名、仓库地址、源码内容、环境变量或任何个人身份信息。
+不会收集项目名、项目路径、用户名、仓库地址、源码内容、环境变量、错误堆栈、完整错误信息或任何个人身份信息。
 
 如果需要跳过某一次运行：
 
 ```bash
 npx create-x-app-cli my-app --no-telemetry
+```
+
+也可以显式管理本机匿名统计配置：
+
+```bash
+npx create-x-app-cli telemetry status
+npx create-x-app-cli telemetry on
+npx create-x-app-cli telemetry off
 ```
 
 实际上报端点由 `CREATE_X_APP_TELEMETRY_ENDPOINT` 配置。未配置端点时，即使用户同意，CLI 也不会发送网络请求。
@@ -369,7 +380,7 @@ create-x-app/
 ├── docs/                   # 演示视频、证明页面和媒体资源
 ├── src/
 │   ├── analytics/          # 匿名统计同意和上报
-│   ├── commands/           # create / upgrade / marketplace 命令
+│   ├── commands/           # create / upgrade / marketplace / telemetry 命令
 │   ├── generator/          # 模板复制、渲染、裁剪、依赖刷新
 │   ├── marketplace/        # npm 插件市场客户端
 │   ├── plugins/            # 插件扫描和模板注册

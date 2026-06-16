@@ -137,3 +137,42 @@ test('next steps only print documents that exist in the generated project', asyn
     await removeTempDir(targetDir)
   }
 })
+
+test('Git failures notify post action stage failure hook without throwing', async () => {
+  const failures = []
+
+  await captureConsoleOutput(async () => {
+    await runPostActions({
+      config: createConfig(),
+      options: { skipInstall: true, skipGit: false },
+      runner: async (commandOptions) => commandOptions.command !== 'git',
+      pathExists: async () => false,
+      onStageFailure: async (failure) => {
+        failures.push(failure)
+      },
+    })
+  })
+
+  assert.deepEqual(failures, [
+    { event: 'git_failed', action: 'init' },
+    { event: 'git_failed', action: 'add' },
+    { event: 'git_failed', action: 'commit' },
+  ])
+})
+
+test('install failures are tagged for telemetry reporting', async () => {
+  await assert.rejects(
+    () => runPostActions({
+      config: createConfig(),
+      options: { skipInstall: false, skipGit: true },
+      runner: async () => {
+        throw new Error('install failed with local path /tmp/demo')
+      },
+      pathExists: async () => false,
+    }),
+    (error) => {
+      assert.equal(error.telemetryEvent, 'install_failed')
+      return true
+    },
+  )
+})

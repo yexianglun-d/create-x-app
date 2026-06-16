@@ -10,6 +10,11 @@ import { listCommand } from '../src/commands/list.js'
 import { pluginDoctorCommand } from '../src/commands/plugin.js'
 import { removeCommand } from '../src/commands/remove.js'
 import { searchCommand } from '../src/commands/search.js'
+import {
+  telemetryOffCommand,
+  telemetryOnCommand,
+  telemetryStatusCommand,
+} from '../src/commands/telemetry.js'
 import { upgradeCommand } from '../src/commands/upgrade.js'
 import { logger, setLoggerOptions } from '../src/utils/logger.js'
 
@@ -139,6 +144,34 @@ pluginCommand
   .action((options) => {
     applyGlobalLoggerOptions()
     return pluginDoctorCommand(options)
+  })
+
+const telemetryCommand = program
+  .command('telemetry')
+  .description('管理匿名统计配置')
+
+telemetryCommand
+  .command('status')
+  .description('查看匿名统计状态')
+  .action(() => {
+    applyGlobalLoggerOptions()
+    return telemetryStatusCommand()
+  })
+
+telemetryCommand
+  .command('on')
+  .description('开启匿名统计')
+  .action(() => {
+    applyGlobalLoggerOptions()
+    return telemetryOnCommand()
+  })
+
+telemetryCommand
+  .command('off')
+  .description('关闭匿名统计')
+  .action(() => {
+    applyGlobalLoggerOptions()
+    return telemetryOffCommand()
   })
 
 program.parse()

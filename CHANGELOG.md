@@ -16,6 +16,7 @@
 - 新增插件健康度检查、安装前风险摘要和 `create-x-app plugin doctor`。
 - 新增 manifest `requirements` 字段，用于声明模板级环境需求。
 - 新增 `--deps` 依赖版本策略，支持 `baseline`、`latest-patch`、`latest-minor`、`latest-major` 和 `latest`。
+- 新增匿名统计阶段事件和 `telemetry status/on/off` 配置命令。
 
 ### Changed
 
@@ -27,6 +28,7 @@
 - 插件扫描改为跳过无效 manifest，避免单个坏插件阻断主模板列表。
 - 环境检测拆分为 CLI 运行环境检测和模板环境检测，避免无关模板工具提示。
 - `--latest` 降级为兼容别名，等价于 `--deps latest`；默认依赖策略保持模板 baseline。
+- 匿名统计失败事件只记录阶段和错误类别，不上传错误堆栈、完整错误信息或本地路径。
 
 ### Fixed
 

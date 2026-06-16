@@ -25,6 +25,8 @@ await runCli(['list', '--help'])
 await runCli(['remove', '--help'])
 await runCli(['plugin', '--help'])
 await runCli(['plugin', 'doctor', '--help'])
+await runCli(['telemetry', '--help'])
+await runCli(['telemetry', 'status', '--help'])
 
 const targetDir = await createTempDir('cxa-smoke-')
 const cliTargetDir = await createTempDir('cxa-cli-smoke-')
