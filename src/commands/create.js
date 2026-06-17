@@ -1,13 +1,17 @@
-import { intro, outro } from '@clack/prompts'
-import chalk from 'chalk'
 import { ensureTelemetryConsent, getTelemetryConsent } from '../analytics/consent.js'
 import { reportAnalyticsEvent, reportCreateEvent } from '../analytics/index.js'
 import { generateProject } from '../generator/index.js'
 import { runPostActions } from '../steps/post-actions.js'
 import { runBaseEnvCheck, runTemplateEnvCheck } from '../steps/env-check.js'
-import { runPrompts } from '../steps/prompts.js'
+import { buildConfigFromOptions, confirmGenerationPlan, runPrompts } from '../steps/prompts.js'
 import { resolveTemplateSource } from '../steps/resolver.js'
 import { resolvePresetOptions } from '../presets/loader.js'
+import {
+  buildDryRunCompletionLines,
+  printBrandIntro,
+  printLines,
+  printStep,
+} from '../ui/create-ui.js'
 import { logger } from '../utils/logger.js'
 import { validateConfig } from '../validator/index.js'
 
@@ -27,18 +31,24 @@ function resolveDefaultRemoteRef(options) {
   return options.cliVersion ? `v${options.cliVersion}` : undefined
 }
 
-function resolveDependencyStrategy(options = {}) {
+function resolveDependencyStrategy(options = {}, behavior = {}) {
   if (options.deps && !DEPENDENCY_STRATEGIES.has(options.deps)) {
     throw new Error(`不支持的依赖策略：${options.deps}。可选值：${[...DEPENDENCY_STRATEGIES].join(', ')}`)
   }
 
   if (options.latest) {
     if (options.deps) {
-      logger.warn('--latest 已弃用，且当前已显式传入 --deps，将使用 --deps 指定的策略')
+      if (!behavior.silent) {
+        logger.warn('--latest 已弃用，且当前已显式传入 --deps，将使用 --deps 指定的策略')
+      }
+
       return options.deps
     }
 
-    logger.warn('--latest 已弃用，请改用 --deps latest')
+    if (!behavior.silent) {
+      logger.warn('--latest 已弃用，请改用 --deps latest')
+    }
+
     return 'latest'
   }
 
@@ -51,6 +61,10 @@ function printDependencyStrategyWarning(strategy) {
   } else if (strategy === 'latest') {
     logger.warn('依赖策略 latest 为实验模式，会使用 npm latest，可能引入 breaking changes')
   }
+}
+
+function shouldBuildPrintConfig(options = {}) {
+  return Boolean(options.printConfig)
 }
 
 function getFailureEvent(stage, error) {
@@ -89,20 +103,31 @@ export async function createCommand(projectNameArg, options) {
 
   try {
     resolvedOptions = await resolvePresetOptions(options)
-    console.log()
-    intro(chalk.bgCyan.black(' create-x-app '))
+    const dependencyStrategy = resolveDependencyStrategy(resolvedOptions, {
+      silent: shouldBuildPrintConfig(resolvedOptions),
+    })
+
+    if (shouldBuildPrintConfig(resolvedOptions)) {
+      currentStage = 'config'
+      config = buildConfigFromOptions(projectNameArg, resolvedOptions)
+      validateConfig(config)
+      console.log(JSON.stringify({
+        ...config,
+        dependencyStrategy,
+      }, null, 2))
+      return
+    }
+
+    printBrandIntro({ version: resolvedOptions.cliVersion })
     logger.debug(`CLI 选项：${JSON.stringify(resolvedOptions)}`)
-    const dependencyStrategy = resolveDependencyStrategy(resolvedOptions)
     printDependencyStrategyWarning(dependencyStrategy)
     telemetryEnabled = await getTelemetryConsent({
       noTelemetry: resolvedOptions.telemetry === false,
     }) === true
     await reportStageEvent('create_start')
 
-    currentStage = 'env_check'
-    await runBaseEnvCheck()
-
     currentStage = 'prompts'
+    printStep('01', 'Project', 'Choose the project shape and generation defaults.')
     config = await runPrompts(projectNameArg, {
       ...resolvedOptions,
       onCancel: async () => {
@@ -115,14 +140,6 @@ export async function createCommand(projectNameArg, options) {
     currentStage = 'validate_config'
     validateConfig(config)
 
-    if (resolvedOptions.printConfig) {
-      console.log(JSON.stringify({
-        ...config,
-        dependencyStrategy,
-      }, null, 2))
-      return
-    }
-
     currentStage = 'resolve_template'
     const templateSource = await resolveTemplateSource(config.template, {
       remote: resolvedOptions.remote,
@@ -131,15 +148,31 @@ export async function createCommand(projectNameArg, options) {
       strictRemote: resolvedOptions.strictRemote,
     })
 
+    currentStage = 'env_check'
+    printStep('02', 'Check', 'Validate the runtime needed for this template.')
+    await runBaseEnvCheck()
+
     currentStage = 'template_env_check'
     await runTemplateEnvCheck(templateSource.manifest, config, {
       skipGit: resolvedOptions.skipGit,
+    })
+
+    printStep('03', 'Preview', 'Review the exact project plan before generation.')
+    await confirmGenerationPlan({
+      config,
+      manifest: templateSource.manifest,
+      templateSource: templateSource.source,
+      dependencyStrategy,
+      options: resolvedOptions,
     })
 
     logger.detail(`目标目录：${config.targetDir}`)
     logger.detail(`模板目录：${templateSource.templatePath}`)
 
     currentStage = 'generate'
+    printStep('04', 'Generate', resolvedOptions.dryRun
+      ? 'Preview only. No files will be written.'
+      : 'Copy, render, and prepare the generated project.')
     await generateProject({
       config,
       options: {
@@ -148,13 +181,16 @@ export async function createCommand(projectNameArg, options) {
         force: resolvedOptions.force,
         dependencyStrategy,
         preset: resolvedOptions.presetSource ?? resolvedOptions.preset,
+        previewPlanPrinted: resolvedOptions.dryRun,
+        skipInstall: resolvedOptions.skipInstall,
+        skipGit: resolvedOptions.skipGit,
       },
       templatePath: templateSource.templatePath,
       templateSource: templateSource.source,
     })
 
     if (resolvedOptions.dryRun) {
-      outro(chalk.green('Dry run 完成，未写入任何文件'))
+      printLines(buildDryRunCompletionLines(config))
       return
     }
 
@@ -173,8 +209,6 @@ export async function createCommand(projectNameArg, options) {
         })
       },
     })
-
-    outro(chalk.green(`项目 ${config.projectName} 已就绪！`))
 
     await reportCreateEvent({
       config,

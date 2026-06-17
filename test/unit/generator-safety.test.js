@@ -3,7 +3,7 @@ import test, { mock } from 'node:test'
 import fs from 'fs-extra'
 import { join } from 'node:path'
 import { buildTestConfig, createTempDir, removeTempDir } from '../helpers/project.js'
-import { generateProject } from '../../src/generator/index.js'
+import { buildDryRunSummaryLines, generateProject } from '../../src/generator/index.js'
 import { loadManifest } from '../../src/manifest/loader.js'
 import { resolveTemplate } from '../../src/steps/resolver.js'
 
@@ -47,6 +47,34 @@ test('dry-run does not write target files', async () => {
   } finally {
     await removeTempDir(rootDir)
   }
+})
+
+test('dry-run summary includes operation plan and key file preview', () => {
+  const manifest = loadManifest('react-vite-ts')
+  const lines = buildDryRunSummaryLines({
+    config: {
+      projectName: 'demo-app',
+      template: 'react-vite-ts',
+      features: ['eslint', 'husky', 'agents'],
+      extras: ['tailwind'],
+      packageManager: 'npm',
+      targetDir: '/tmp/demo-app',
+    },
+    manifest,
+    plannedFiles: new Set(['package.json.ejs', '_gitignore', 'src/App.tsx.ejs']),
+    dependencyStrategy: 'baseline',
+    templateSource: { type: 'builtin' },
+    options: { skipInstall: true, skipGit: true },
+  })
+  const output = lines.join('\n')
+
+  assert.match(output, /Preview only/)
+  assert.match(output, /No files will be written/)
+  assert.match(output, /source\s+内置模板/)
+  assert.match(output, /install\s+跳过/)
+  assert.match(output, /git\s+跳过/)
+  assert.match(output, /\.gitignore/)
+  assert.match(output, /\.create-x-app\/template-lock\.json/)
 })
 
 test('non-empty target directory requires force', async () => {

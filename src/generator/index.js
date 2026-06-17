@@ -4,6 +4,10 @@ import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import semver from 'semver'
 import { loadManifest } from '../manifest/loader.js'
+import {
+  buildDryRunSummaryLines as buildUiDryRunSummaryLines,
+  printLines,
+} from '../ui/create-ui.js'
 import { logger } from '../utils/logger.js'
 import { getPackageVersionMetadata } from '../utils/pkg-version.js'
 import { writeProjectTrackingMetadata } from '../upgrade/metadata.js'
@@ -33,16 +37,6 @@ const DEPENDENCY_UPGRADE_STRATEGIES = new Set([
 async function isDirectoryEmpty(targetDir) {
   const entries = await fs.readdir(targetDir)
   return entries.length === 0
-}
-
-function resolveDisplayPath(targetPath) {
-  const relativePath = relative(process.cwd(), targetPath)
-
-  if (!relativePath || relativePath.startsWith('..')) {
-    return targetPath
-  }
-
-  return relativePath
 }
 
 function getExtraDefinition(manifest, extraKey) {
@@ -111,7 +105,92 @@ async function collectRelativeFiles(sourceDir, rootDir = sourceDir) {
   return files
 }
 
-async function printDryRunSummary({ config, templatePath, manifest, dependencyStrategy }) {
+function normalizePlannedFilePath(filePath) {
+  const normalizedPath = filePath
+    .replace(/(^|\/)_([^/]+)/g, '$1.$2')
+    .replace(/\.ejs$/, '')
+
+  return normalizedPath
+}
+
+function deletePlannedArtifact(plannedFiles, artifactPath) {
+  plannedFiles.delete(normalizePlannedFilePath(artifactPath))
+}
+
+function buildFinalPlannedFiles(plannedFiles, config, manifest) {
+  const finalFiles = new Set([...plannedFiles].map(normalizePlannedFilePath))
+  const enabledFeatures = new Set(config.features)
+  const enabledExtras = new Set(config.extras)
+
+  finalFiles.delete('manifest.json')
+
+  for (const [featureName, featureDefinition] of Object.entries(manifest.features ?? {})) {
+    if (enabledFeatures.has(featureName)) {
+      continue
+    }
+
+    for (const artifactPath of featureDefinition.artifacts ?? []) {
+      deletePlannedArtifact(finalFiles, artifactPath)
+    }
+  }
+
+  for (const extra of manifest.extras ?? []) {
+    if (enabledExtras.has(extra.key)) {
+      continue
+    }
+
+    for (const artifactPath of extra.artifacts ?? []) {
+      deletePlannedArtifact(finalFiles, artifactPath)
+    }
+  }
+
+  for (const rule of manifest.subPromptArtifacts ?? []) {
+    const selectedValue = config[rule.key]
+
+    for (const [optionValue, artifactPaths] of Object.entries(rule.artifactsByValue ?? {})) {
+      if (optionValue === selectedValue) {
+        continue
+      }
+
+      for (const artifactPath of artifactPaths) {
+        deletePlannedArtifact(finalFiles, artifactPath)
+      }
+    }
+  }
+
+  finalFiles.add('.create-x-app/template-lock.json')
+
+  return finalFiles
+}
+
+export function buildDryRunSummaryLines({
+  config,
+  manifest,
+  plannedFiles,
+  dependencyStrategy,
+  templateSource,
+  options = {},
+}) {
+  const normalizedFiles = new Set([...plannedFiles].map(normalizePlannedFilePath))
+
+  return buildUiDryRunSummaryLines({
+    config,
+    manifest,
+    plannedFiles: normalizedFiles,
+    dependencyStrategy: dependencyStrategy ?? DEPENDENCY_STRATEGY_BASELINE,
+    templateSource,
+    options,
+  })
+}
+
+async function printDryRunSummary({
+  config,
+  templatePath,
+  manifest,
+  dependencyStrategy,
+  templateSource,
+  options = {},
+}) {
   const plannedFiles = new Set([
     ...await collectRelativeFiles(SHARED_DIR),
     ...await collectRelativeFiles(templatePath),
@@ -130,12 +209,16 @@ async function printDryRunSummary({ config, templatePath, manifest, dependencySt
       plannedFiles.add(filePath)
     }
   }
+  const finalPlannedFiles = buildFinalPlannedFiles(plannedFiles, config, manifest)
 
-  logger.note('Dry run:', '不会写入、覆盖或删除任何文件')
-  console.log(`  目标目录：${resolveDisplayPath(config.targetDir)}`)
-  console.log(`  模板：${manifest.name} (${manifest.key})`)
-  console.log(`  依赖策略：${dependencyStrategy ?? DEPENDENCY_STRATEGY_BASELINE}`)
-  console.log(`  预计复制文件数：${plannedFiles.size}`)
+  printLines(buildDryRunSummaryLines({
+    config,
+    manifest,
+    plannedFiles: finalPlannedFiles,
+    dependencyStrategy,
+    templateSource,
+    options,
+  }))
 }
 
 async function copyDirectory(sourceDir, targetDir, overwrite) {
@@ -640,6 +723,8 @@ export async function generateProject({ config, options = {}, templatePath, temp
         templatePath,
         manifest,
         dependencyStrategy: options.dependencyStrategy,
+        templateSource,
+        options,
       })
       return { dryRun: true }
     }

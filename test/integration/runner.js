@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import fs from 'fs-extra'
+import { execa } from 'execa'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { generateProject } from '../../src/generator/index.js'
@@ -12,6 +13,24 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const SNAPSHOT_DIR = join(__dirname, 'snapshots')
 const UPDATE_SNAPSHOTS = process.argv.includes('--update-snapshots')
 const SKIP_INSTALL = process.env.CXA_SKIP_TEMPLATE_INSTALL === '1'
+const TEMPLATE_COPY_PATTERNS = [
+  'create-x-app',
+  '欢迎使用',
+  '示例接口',
+  '编辑 src',
+  '模板',
+]
+const APPLICATION_CONTENT_PATHS = [
+  'src/',
+  'frontend/src/',
+  'apps/web/src/',
+  'apps/api/src/',
+  'packages/shared/src/',
+  'backend/src/main/',
+  'electron/',
+  'popup/',
+  'manifest.json',
+]
 
 async function collectFiles(rootDir, currentDir = rootDir) {
   const entries = await fs.readdir(currentDir, { withFileTypes: true })
@@ -53,6 +72,28 @@ async function buildSnapshot(targetDir) {
   }
 }
 
+function shouldScanApplicationContent(relativePath) {
+  return APPLICATION_CONTENT_PATHS.some((scanPath) => relativePath === scanPath || relativePath.startsWith(scanPath))
+}
+
+async function assertNoTemplateCopyInApplicationContent(targetDir) {
+  const files = await collectFiles(targetDir)
+  const violations = []
+
+  for (const relativePath of files.filter(shouldScanApplicationContent)) {
+    const filePath = join(targetDir, relativePath)
+    const content = await fs.readFile(filePath, 'utf8')
+
+    for (const pattern of TEMPLATE_COPY_PATTERNS) {
+      if (content.includes(pattern)) {
+        violations.push(`${relativePath}: ${pattern}`)
+      }
+    }
+  }
+
+  assert.deepEqual(violations, [])
+}
+
 async function assertSnapshot(templateKey, snapshot) {
   const snapshotPath = join(SNAPSHOT_DIR, `${templateKey}.json`)
 
@@ -77,6 +118,7 @@ async function runInstallAndBuild(manifest, config) {
   const pm = createPmAdapter(config.packageManager)
   const installWorkspaces = manifest.integrationTest?.installWorkspaces ?? ['.']
   const buildWorkspace = manifest.integrationTest?.buildWorkspace ?? '.'
+  const mavenWorkspaces = manifest.integrationTest?.mavenWorkspaces ?? []
 
   for (const workspace of installWorkspaces) {
     await pm.install(join(config.targetDir, workspace), {
@@ -97,6 +139,13 @@ async function runInstallAndBuild(manifest, config) {
       stdio: 'pipe',
     })
   }
+
+  for (const workspace of mavenWorkspaces) {
+    await execa('mvn', ['test'], {
+      cwd: join(config.targetDir, workspace),
+      stdio: 'pipe',
+    })
+  }
 }
 
 async function runTemplateIntegration(manifest) {
@@ -107,6 +156,7 @@ async function runTemplateIntegration(manifest) {
     const templatePath = await resolveTemplate(manifest.key)
 
     await generateProject({ config, templatePath })
+    await assertNoTemplateCopyInApplicationContent(targetDir)
     await assertSnapshot(manifest.key, await buildSnapshot(targetDir))
     await runInstallAndBuild(manifest, config)
 

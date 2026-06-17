@@ -1,9 +1,14 @@
-import chalk from 'chalk'
 import { execa } from 'execa'
 import fs from 'fs-extra'
 import ora from 'ora'
-import { join, relative } from 'node:path'
+import { join } from 'node:path'
 import { loadManifest } from '../manifest/loader.js'
+import {
+  buildBlockLines,
+  buildCompletionLines,
+  printLines,
+  resolveDisplayPath,
+} from '../ui/create-ui.js'
 import { logger } from '../utils/logger.js'
 import { createPmAdapter } from '../utils/pm-adapter.js'
 
@@ -29,16 +34,6 @@ function resolveWorkspaceLayout(config) {
 
 function formatCommand(command, args = []) {
   return [command, ...args].join(' ')
-}
-
-function resolveDisplayPath(targetPath) {
-  const relativePath = relative(process.cwd(), targetPath)
-
-  if (!relativePath || relativePath.startsWith('..')) {
-    return targetPath
-  }
-
-  return relativePath
 }
 
 function loadTemplateManifest(templateKey) {
@@ -129,16 +124,23 @@ async function setHuskyHookPermission({ chmodFile, platform, huskyWorkspace }) {
 function printSkippedHuskyInstructions(pm, workspaceLayout) {
   const installCommand = pm.getInstallCommand()
   const huskyInstallCommand = pm.getDlxCommand('husky', ['install'])
+  const commandRows = []
 
   logger.warn('已跳过依赖安装，Husky 初始化也已跳过。安装依赖后可手动执行：')
 
   for (const installTarget of workspaceLayout.installTargets) {
-    console.log(`  cd ${resolveDisplayPath(installTarget)}`)
-    console.log(`  ${formatCommand(installCommand.command, installCommand.args)}`)
+    commandRows.push(
+      { label: 'open', value: `cd ${resolveDisplayPath(installTarget)}` },
+      { label: 'install', value: formatCommand(installCommand.command, installCommand.args) },
+    )
   }
 
-  console.log(`  cd ${resolveDisplayPath(workspaceLayout.huskyWorkspace)}`)
-  console.log(`  ${formatCommand(huskyInstallCommand.command, huskyInstallCommand.args)}`)
+  commandRows.push(
+    { label: 'hooks', value: `cd ${resolveDisplayPath(workspaceLayout.huskyWorkspace)}` },
+    { label: 'init', value: formatCommand(huskyInstallCommand.command, huskyInstallCommand.args) },
+  )
+
+  printLines(buildBlockLines('Manual setup', commandRows))
 }
 
 async function collectProjectDocuments(targetDir, pathExists) {
@@ -163,24 +165,16 @@ async function collectProjectDocuments(targetDir, pathExists) {
   return existingDocuments
 }
 
-async function printNextSteps(config, workspaceLayout, manifest, pathExists) {
-  const relativeRuntimePath = resolveDisplayPath(workspaceLayout.applicationWorkspace)
-  const devScript = manifest.devScript ?? 'dev'
+export async function buildNextStepLines(config, workspaceLayout, manifest, pathExists, options = {}) {
   const existingDocuments = await collectProjectDocuments(config.targetDir, pathExists)
+  return buildCompletionLines(config, workspaceLayout, manifest, existingDocuments, options)
+}
+
+async function printNextSteps(config, workspaceLayout, manifest, pathExists, options = {}) {
+  const lines = await buildNextStepLines(config, workspaceLayout, manifest, pathExists, options)
 
   console.log()
-  logger.note(chalk.cyan('后续步骤：'), '')
-  console.log(`  cd ${relativeRuntimePath}`)
-  console.log(`  ${config.packageManager} run ${devScript}`)
-
-  if (existingDocuments.length > 0) {
-    console.log()
-    logger.note(chalk.cyan('项目文档：'), '')
-
-    for (const document of existingDocuments) {
-      console.log(`  ${document.fileName.padEnd(16)}← ${document.description}`)
-    }
-  }
+  printLines(lines)
 }
 
 export async function runPostActions({
@@ -196,6 +190,7 @@ export async function runPostActions({
   const workspaceLayout = resolveWorkspaceLayout(config)
   const manifest = loadTemplateManifest(config.template)
   const hasHusky = config.features.includes('husky')
+  const failedGitActions = []
 
   try {
     logger.debug(`应用工作目录：${workspaceLayout.applicationWorkspace}`)
@@ -254,6 +249,7 @@ export async function runPostActions({
       })
 
       if (!gitInitSucceeded) {
+        failedGitActions.push('git init')
         await notifyStageFailure(onStageFailure, {
           event: 'git_failed',
           action: 'init',
@@ -269,6 +265,7 @@ export async function runPostActions({
       })
 
       if (!gitAddSucceeded) {
+        failedGitActions.push('git add')
         await notifyStageFailure(onStageFailure, {
           event: 'git_failed',
           action: 'add',
@@ -284,6 +281,7 @@ export async function runPostActions({
       })
 
       if (!gitCommitSucceeded) {
+        failedGitActions.push('git commit')
         await notifyStageFailure(onStageFailure, {
           event: 'git_failed',
           action: 'commit',
@@ -293,7 +291,9 @@ export async function runPostActions({
       logger.detail('已跳过 Git 初始化步骤')
     }
 
-    await printNextSteps(config, workspaceLayout, manifest, pathExists)
+    await printNextSteps(config, workspaceLayout, manifest, pathExists, {
+      failedGitActions,
+    })
   } catch (error) {
     const wrappedError = new Error(`后置步骤执行失败：${error.message}`, {
       cause: error,

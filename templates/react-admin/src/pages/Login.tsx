@@ -3,16 +3,16 @@ import {
   SafetyCertificateOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Button, Card, Form, Input, Space, Typography } from 'antd'
+import { Button, Form, Input, Typography } from 'antd'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAppCopy } from '../hooks/useAppCopy'
 import { useAuthStore } from '../stores/auth'
 import type { LoginFormValues, UserProfile } from '../types'
 
-const loginMetrics = [
-  { key: 'deploy', value: '24/7', label: '运维值守' },
-  { key: 'release', value: '7', label: '本周发布' },
-  { key: 'alert', value: '0', label: '阻断告警' },
+const loginBenefits = [
+  '客户跟进按阶段沉淀',
+  '服务工单按优先级处理',
+  '审批任务集中收口',
 ]
 
 export default function Login() {
@@ -26,78 +26,69 @@ export default function Login() {
   }
 
   async function handleFinish(values: LoginFormValues) {
-    const demoUser: UserProfile = {
-      id: 'u_admin',
-      name: values.username || '系统管理员',
-      email: 'admin@example.com',
-      role: '超级管理员',
+    const user: UserProfile = {
+      id: 'u-ops-lead',
+      name: values.username || '运营负责人',
+      email: 'ops@example.com',
+      role: '运营负责人',
     }
 
-    setSession('demo-admin-token', demoUser)
+    setSession('local-ops-session', user)
     navigate('/', { replace: true })
   }
 
   return (
     <div className="login-page">
-      <div className="login-shell">
-        <section className="login-showcase">
-          <span className="login-kicker">
-            <SafetyCertificateOutlined />
-            {copy('login.kicker')}
-          </span>
-          <h1 className="login-title">{copy('login.title')}</h1>
-          <p className="login-desc">{copy('login.desc')}</p>
+      <section className="login-intro">
+        <SafetyCertificateOutlined className="login-icon" />
+        <Typography.Title level={1}>{copy('login.title')}</Typography.Title>
+        <Typography.Paragraph>{copy('login.desc')}</Typography.Paragraph>
+        <ul className="login-benefits">
+          {loginBenefits.map((benefit) => (
+            <li key={benefit}>{benefit}</li>
+          ))}
+        </ul>
+      </section>
 
-          <div className="login-metric-grid">
-            {loginMetrics.map((metric) => (
-              <div key={metric.key} className="login-metric">
-                <p className="login-metric-value">{metric.value}</p>
-                <p className="login-metric-label">{metric.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+      <section className="login-panel">
+        <div className="login-panel-head">
+          <Typography.Title level={3}>{copy('login.cardTitle')}</Typography.Title>
+          <Typography.Paragraph type="secondary">
+            本地开发可使用任意账号密码登录，后续接入真实认证服务即可替换。
+          </Typography.Paragraph>
+        </div>
 
-        <Card className="login-panel" bordered={false}>
-          <Space direction="vertical" size={20} style={{ width: '100%' }}>
-            <div>
-              <Typography.Title level={3} style={{ marginBottom: 8 }}>
-                {copy('login.cardTitle')}
-              </Typography.Title>
-              <Typography.Paragraph type="secondary" style={{ margin: 0 }}>
-                默认账号可直接输入任意用户名和密码进入示例后台。
-              </Typography.Paragraph>
-            </div>
+        <Form<LoginFormValues>
+          layout="vertical"
+          onFinish={handleFinish}
+          initialValues={{
+            username: 'ops',
+            password: '123456',
+          }}
+        >
+          <Form.Item
+            label="账号"
+            name="username"
+            rules={[{ required: true, message: '请输入账号' }]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="请输入账号" />
+          </Form.Item>
 
-            <Form<LoginFormValues> layout="vertical" onFinish={handleFinish} initialValues={{
-              username: 'admin',
-              password: '123456',
-            }}>
-              <Form.Item
-                label="用户名"
-                name="username"
-                rules={[{ required: true, message: '请输入用户名' }]}
-              >
-                <Input prefix={<UserOutlined />} placeholder="请输入用户名" />
-              </Form.Item>
+          <Form.Item
+            label="密码"
+            name="password"
+            rules={[{ required: true, message: '请输入密码' }]}
+          >
+            <Input.Password prefix={<LockOutlined />} placeholder="请输入密码" />
+          </Form.Item>
 
-              <Form.Item
-                label="密码"
-                name="password"
-                rules={[{ required: true, message: '请输入密码' }]}
-              >
-                <Input.Password prefix={<LockOutlined />} placeholder="请输入密码" />
-              </Form.Item>
-
-              <Form.Item style={{ marginBottom: 0 }}>
-                <Button type="primary" htmlType="submit" block size="large">
-                  {copy('login.submit')}
-                </Button>
-              </Form.Item>
-            </Form>
-          </Space>
-        </Card>
-      </div>
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Button type="primary" htmlType="submit" block size="large">
+              {copy('login.submit')}
+            </Button>
+          </Form.Item>
+        </Form>
+      </section>
     </div>
   )
 }

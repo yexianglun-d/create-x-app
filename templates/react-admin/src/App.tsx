@@ -9,7 +9,7 @@ export default function App() {
         token: {
           colorPrimary: '#2563eb',
           colorInfo: '#2563eb',
-          borderRadius: 16,
+          borderRadius: 8,
           fontFamily: '"SF Pro Display", "PingFang SC", "Segoe UI", sans-serif',
         },
       }}

@@ -1,17 +1,17 @@
 /// <reference types="vite/client" />
 
-interface ElectronSystemInfo {
-  platform: string
-  arch: string
-  hostname: string
-  release: string
-  nodeVersion: string
-  electronVersion: string
-  chromeVersion: string
+interface ElectronBatchItem {
+  id: string
+  fileName: string
+  filePath: string
+  status: 'queued' | 'processing' | 'done'
+  note: string
 }
 
 interface ElectronAPI {
-  getSystemInfo: () => Promise<ElectronSystemInfo>
+  selectFiles: () => Promise<ElectronBatchItem[]>
+  readBatchItems: () => Promise<ElectronBatchItem[]>
+  saveBatchItems: (items: ElectronBatchItem[]) => Promise<ElectronBatchItem[]>
 }
 
 interface Window {

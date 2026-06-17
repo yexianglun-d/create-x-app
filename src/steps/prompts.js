@@ -3,15 +3,29 @@ import {
   confirm,
   isCancel,
   multiselect,
+  note,
   select,
   text,
 } from '@clack/prompts'
+import fs from 'fs-extra'
 import { resolve } from 'node:path'
 import { loadAllManifests } from '../manifest/loader.js'
+import {
+  buildGenerationPlanLines,
+  buildGenerationPlanMessage as buildUiGenerationPlanMessage,
+  buildTemplateOverviewLines,
+  printLines,
+  resolveDisplayPath,
+} from '../ui/create-ui.js'
 
 const DEFAULT_PROJECT_NAME = 'my-app'
 const PROJECT_NAME_PATTERN = /^[a-z0-9-_]+$/
 const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn']
+const MODULE_PRESETS = {
+  recommended: 'recommended',
+  minimal: 'minimal',
+  custom: 'custom',
+}
 
 async function ensurePromptNotCancelled(value, options = {}) {
   if (isCancel(value)) {
@@ -26,7 +40,7 @@ async function ensurePromptNotCancelled(value, options = {}) {
   return value
 }
 
-function validateProjectName(projectName) {
+export function validateProjectName(projectName) {
   if (!projectName) {
     return '项目名称不能为空'
   }
@@ -48,11 +62,33 @@ function getFeatureDefinition(manifest, featureKey) {
   return featureDefinition
 }
 
-function buildTemplateChoices(manifests) {
+function buildPackageManagerHint(manifest) {
+  if (manifest.requiredPm) {
+    return `仅 ${manifest.requiredPm}`
+  }
+
+  const choices = buildPackageManagerChoices(manifest).map((choice) => choice.value)
+  return choices.join('/')
+}
+
+function buildTemplateHint(manifest) {
+  const parts = [
+    manifest.description,
+    `包管理器：${buildPackageManagerHint(manifest)}`,
+  ]
+
+  if (manifest.devPort) {
+    parts.push(`dev 端口：${manifest.devPort}`)
+  }
+
+  return parts.filter(Boolean).join(' · ')
+}
+
+export function buildTemplateChoices(manifests) {
   return manifests.map((manifest) => ({
     value: manifest.key,
     label: manifest.name,
-    hint: manifest.description,
+    hint: buildTemplateHint(manifest),
   }))
 }
 
@@ -75,14 +111,14 @@ function buildExtraChoices(manifest) {
   }))
 }
 
-function buildInitialModuleValues(manifest) {
+export function buildInitialModuleValues(manifest) {
   return [
     ...manifest.defaultFeatures,
     ...manifest.extras.filter((extra) => extra.default).map((extra) => extra.key),
   ]
 }
 
-function splitSelectedModules(manifest, selectedModules) {
+export function splitSelectedModules(manifest, selectedModules) {
   const extraValues = new Set(manifest.extras.map((extra) => extra.key))
   const features = []
   const extras = []
@@ -119,19 +155,65 @@ function getFeatureLabel(manifest, featureKey) {
   return getFeatureDefinition(manifest, featureKey).label
 }
 
-function getExtraLabel(manifest, extraKey) {
-  const extra = manifest.extras.find((candidate) => candidate.key === extraKey)
-
-  if (!extra) {
-    return extraKey
-  }
-
-  return extra.label
-}
-
 function buildFileBasedExtras(manifest, extras) {
   return extras.filter((extraKey) => manifest.extras
     .find((extra) => extra.key === extraKey)?.source === 'file')
+}
+
+function buildMinimalModuleValues(manifest) {
+  const alwaysUsefulFeatures = ['agents', 'coding-rules']
+
+  return alwaysUsefulFeatures.filter((featureKey) => manifest.supportedFeatures.includes(featureKey))
+}
+
+export function resolveModulePreset(manifest, preset) {
+  if (preset === MODULE_PRESETS.minimal) {
+    return splitSelectedModules(manifest, buildMinimalModuleValues(manifest))
+  }
+
+  return splitSelectedModules(manifest, buildInitialModuleValues(manifest))
+}
+
+function buildModulePresetChoices(manifest) {
+  const recommendedCount = buildInitialModuleValues(manifest).length
+  const minimalCount = buildMinimalModuleValues(manifest).length
+
+  return [
+    {
+      value: MODULE_PRESETS.recommended,
+      label: '推荐配置',
+      hint: `启用默认质量工具和模板推荐扩展（${recommendedCount} 项）`,
+    },
+    {
+      value: MODULE_PRESETS.minimal,
+      label: '极简配置',
+      hint: minimalCount > 0 ? `只保留基础协作文档（${minimalCount} 项）` : '不启用额外功能模块',
+    },
+    {
+      value: MODULE_PRESETS.custom,
+      label: '自定义配置',
+      hint: '手动选择通用功能和模板扩展',
+    },
+  ]
+}
+
+export function buildTemplateOverview(manifest) {
+  const requiredTools = Object.entries(manifest.requiredEnv ?? manifest.requirements ?? {})
+    .filter(([toolKey]) => toolKey !== 'packageManagers')
+    .map(([toolKey, requirement]) => `${toolKey} ${requirement}`)
+  const defaultFeatureLabels = (manifest.defaultFeatures ?? [])
+    .map((featureKey) => getFeatureLabel(manifest, featureKey))
+  const defaultExtraLabels = (manifest.extras ?? [])
+    .filter((extra) => extra.default)
+    .map((extra) => extra.label)
+
+  return buildTemplateOverviewLines({
+    description: manifest.description,
+    requirements: requiredTools,
+    defaultFeatures: defaultFeatureLabels,
+    defaultExtras: defaultExtraLabels,
+    devCommand: manifest.devScript ? `run ${manifest.devScript}` : '按模板 README',
+  }).join('\n')
 }
 
 function parseListOption(value, fallback) {
@@ -151,6 +233,11 @@ function parseListOption(value, fallback) {
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
+}
+
+function createUnknownTemplateError(template, manifests) {
+  const availableTemplates = manifests.map((manifest) => manifest.key).join(', ')
+  return new Error(`未找到模板定义：${template}。可用模板：${availableTemplates}`)
 }
 
 function shouldBuildConfigFromOptions(options) {
@@ -173,7 +260,7 @@ export function buildConfigFromOptions(projectNameArg, options = {}) {
   const selectedManifest = manifests.find((manifest) => manifest.key === template)
 
   if (!selectedManifest) {
-    throw new Error(`未找到模板定义：${template}`)
+    throw createUnknownTemplateError(template, manifests)
   }
 
   const projectName = projectNameArg ?? DEFAULT_PROJECT_NAME
@@ -207,28 +294,30 @@ export function buildConfigFromOptions(projectNameArg, options = {}) {
   return config
 }
 
-function buildConfirmationMessage({
+export function buildGenerationPlanMessage({
   projectName,
+  config,
   manifest,
+  templateSource,
   packageManager,
   features,
   extras,
+  dependencyStrategy = 'baseline',
+  options = {},
 }) {
-  const featureText = features.length > 0
-    ? features.map((featureKey) => getFeatureLabel(manifest, featureKey)).join(', ')
-    : '无'
-  const extraText = extras.length > 0
-    ? extras.map((extraKey) => getExtraLabel(manifest, extraKey)).join(', ')
-    : '无'
-
-  return [
-    `项目名称：${projectName}`,
-    `模板：${manifest.name}`,
-    `通用功能：${featureText}`,
-    `模板扩展：${extraText}`,
-    `包管理器：${packageManager}`,
-    '确认开始生成项目？',
-  ].join('\n')
+  return buildUiGenerationPlanMessage({
+    config: {
+      ...config,
+      projectName: projectName ?? config.projectName,
+      packageManager: packageManager ?? config.packageManager,
+      features: features ?? config.features,
+      extras: extras ?? config.extras,
+    },
+    manifest,
+    templateSource,
+    dependencyStrategy,
+    options,
+  })
 }
 
 async function runSubPrompt(subPrompt, options = {}) {
@@ -254,42 +343,135 @@ async function runSubPrompt(subPrompt, options = {}) {
   }
 }
 
-export async function runPrompts(projectNameArg, options = {}) {
-  try {
-    if (shouldBuildConfigFromOptions(options)) {
-      return buildConfigFromOptions(projectNameArg, options)
-    }
+async function isDirectoryEmpty(targetDir) {
+  const targetExists = await fs.pathExists(targetDir)
 
-    const manifests = loadAllManifests()
-    let projectName = projectNameArg
+  if (!targetExists) {
+    return true
+  }
 
-    if (projectName) {
-      const projectNameValidationResult = validateProjectName(projectName)
+  const entries = await fs.readdir(targetDir)
+  return entries.length === 0
+}
 
-      if (projectNameValidationResult) {
-        throw new Error(`无效的项目名称：${projectNameValidationResult}`)
-      }
-    } else {
-      projectName = await ensurePromptNotCancelled(await text({
-        message: '请输入项目名称',
-        initialValue: DEFAULT_PROJECT_NAME,
-        validate(value) {
-          return validateProjectName(value)
-        },
-      }), options)
-    }
+async function resolveInteractiveTargetDir(config, options = {}) {
+  if (options.force || await isDirectoryEmpty(config.targetDir)) {
+    return config.targetDir
+  }
 
-    const template = await ensurePromptNotCancelled(await select({
-      message: '请选择项目模板',
-      options: buildTemplateChoices(manifests),
-      initialValue: manifests[0]?.key,
+  note(
+    '为避免覆盖现有文件，请输入新的目标目录；如确需覆盖，请退出后显式添加 --force。',
+    `目标目录已存在且非空：${resolveDisplayPath(config.targetDir)}`,
+  )
+
+  while (true) {
+    const nextTarget = await ensurePromptNotCancelled(await text({
+      message: '请输入新的目标目录',
+      initialValue: `${config.projectName}-new`,
+      validate(value) {
+        return value ? undefined : '目标目录不能为空'
+      },
     }), options)
-    const selectedManifest = manifests.find((manifest) => manifest.key === template)
+    const resolvedTarget = resolve(process.cwd(), nextTarget)
 
-    if (!selectedManifest) {
-      throw new Error(`未找到模板定义：${template}`)
+    if (await isDirectoryEmpty(resolvedTarget)) {
+      return resolvedTarget
     }
 
+    note(
+      '请选择一个不存在或为空的目录。',
+      `目标目录仍然非空：${resolveDisplayPath(resolvedTarget)}`,
+    )
+  }
+}
+
+export async function confirmGenerationPlan({
+  config,
+  manifest,
+  templateSource,
+  dependencyStrategy,
+  options = {},
+}) {
+  if (shouldBuildConfigFromOptions(options)) {
+    printLines(buildGenerationPlanLines({
+      config,
+      manifest,
+      templateSource,
+      dependencyStrategy,
+      options,
+    }))
+    return true
+  }
+
+  const confirmed = await ensurePromptNotCancelled(await confirm({
+    message: buildGenerationPlanMessage({
+      projectName: config.projectName,
+      config,
+      manifest,
+      templateSource,
+      packageManager: config.packageManager,
+      features: config.features,
+      extras: config.extras,
+      dependencyStrategy,
+      options,
+    }),
+    initialValue: true,
+  }), options)
+
+  if (!confirmed) {
+    cancel('操作已取消')
+    process.exit(0)
+  }
+
+  return true
+}
+
+export async function runPrompts(projectNameArg, options = {}) {
+  if (shouldBuildConfigFromOptions(options)) {
+    return buildConfigFromOptions(projectNameArg, options)
+  }
+
+  const manifests = loadAllManifests()
+  let projectName = projectNameArg
+
+  if (projectName) {
+    const projectNameValidationResult = validateProjectName(projectName)
+
+    if (projectNameValidationResult) {
+      throw new Error(`无效的项目名称：${projectNameValidationResult}`)
+    }
+  } else {
+    projectName = await ensurePromptNotCancelled(await text({
+      message: '请输入项目名称',
+      initialValue: DEFAULT_PROJECT_NAME,
+      validate(value) {
+        return validateProjectName(value)
+      },
+    }), options)
+  }
+
+  const template = await ensurePromptNotCancelled(await select({
+    message: '请选择项目模板',
+    options: buildTemplateChoices(manifests),
+    initialValue: manifests[0]?.key,
+  }), options)
+  const selectedManifest = manifests.find((manifest) => manifest.key === template)
+
+  if (!selectedManifest) {
+    throw createUnknownTemplateError(template, manifests)
+  }
+
+  note(buildTemplateOverview(selectedManifest), selectedManifest.name)
+
+  const modulePreset = await ensurePromptNotCancelled(await select({
+    message: '请选择功能组合',
+    options: buildModulePresetChoices(selectedManifest),
+    initialValue: MODULE_PRESETS.recommended,
+  }), options)
+  let features
+  let extras
+
+  if (modulePreset === MODULE_PRESETS.custom) {
     const selectedModules = await ensurePromptNotCancelled(await multiselect({
       message: '请选择需要的功能模块',
       options: [
@@ -299,52 +481,44 @@ export async function runPrompts(projectNameArg, options = {}) {
       initialValues: buildInitialModuleValues(selectedManifest),
       required: false,
     }), options)
+    const selectedConfig = splitSelectedModules(selectedManifest, selectedModules)
 
-    const { features, extras } = splitSelectedModules(selectedManifest, selectedModules)
-    const config = {
-      projectName,
-      template,
-      features,
-      extras,
-      fileBasedExtras: buildFileBasedExtras(selectedManifest, extras),
-      targetDir: resolve(process.cwd(), projectName),
-    }
+    features = selectedConfig.features
+    extras = selectedConfig.extras
+  } else {
+    const selectedConfig = resolveModulePreset(selectedManifest, modulePreset)
 
-    for (const subPrompt of selectedManifest.subPrompts ?? []) {
-      config[subPrompt.key] = await runSubPrompt(subPrompt, options)
-    }
-
-    if (selectedManifest.requiredPm) {
-      config.packageManager = selectedManifest.requiredPm
-    } else {
-      const packageManagerChoices = buildPackageManagerChoices(selectedManifest)
-
-      config.packageManager = await ensurePromptNotCancelled(await select({
-        message: '请选择包管理器',
-        options: packageManagerChoices,
-        initialValue: packageManagerChoices[0]?.value,
-      }), options)
-    }
-
-    const confirmed = await ensurePromptNotCancelled(await confirm({
-      message: buildConfirmationMessage({
-        projectName: config.projectName,
-        manifest: selectedManifest,
-        packageManager: config.packageManager,
-        features: config.features,
-        extras: config.extras,
-      }),
-      initialValue: true,
-    }), options)
-
-    if (!confirmed) {
-      cancel('操作已取消')
-      process.exit(0)
-    }
-
-    return config
-  } catch (error) {
-    cancel(`交互问答失败：${error.message}`)
-    process.exit(1)
+    features = selectedConfig.features
+    extras = selectedConfig.extras
   }
+
+  const config = {
+    projectName,
+    template,
+    features,
+    extras,
+    fileBasedExtras: buildFileBasedExtras(selectedManifest, extras),
+    targetDir: resolve(process.cwd(), projectName),
+  }
+
+  for (const subPrompt of selectedManifest.subPrompts ?? []) {
+    config[subPrompt.key] = await runSubPrompt(subPrompt, options)
+  }
+
+  if (selectedManifest.requiredPm) {
+    config.packageManager = selectedManifest.requiredPm
+    note(`${selectedManifest.name} 必须使用 ${selectedManifest.requiredPm}`, '包管理器已锁定')
+  } else {
+    const packageManagerChoices = buildPackageManagerChoices(selectedManifest)
+
+    config.packageManager = await ensurePromptNotCancelled(await select({
+      message: '请选择包管理器',
+      options: packageManagerChoices,
+      initialValue: packageManagerChoices[0]?.value,
+    }), options)
+  }
+
+  config.targetDir = await resolveInteractiveTargetDir(config, options)
+
+  return config
 }

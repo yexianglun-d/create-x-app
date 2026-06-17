@@ -9,7 +9,6 @@ import {
   Grid,
   Layout,
   Menu,
-  Tag,
 } from 'antd'
 import { useEffect, useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
@@ -53,7 +52,7 @@ export default function MainLayout() {
         className="admin-sider"
       >
         <div className="admin-brand">
-          <div className="admin-brand-mark">CX</div>
+          <div className="admin-brand-mark">OP</div>
           {!collapsed ? (
             <div className="admin-brand-text">
               <p className="admin-brand-title">{copy('brand.name')}</p>
@@ -81,10 +80,6 @@ export default function MainLayout() {
         <Header className="admin-header">
           <div className="admin-header-card">
             <div className="admin-header-copy">
-              <span className="admin-header-kicker">
-                <Tag color="blue" bordered={false}>LIVE</Tag>
-                {copy('shell.kicker')}
-              </span>
               <h1 className="admin-header-title">{copy('shell.title')}</h1>
               <p className="admin-header-desc">{copy('shell.desc')}</p>
             </div>
@@ -99,8 +94,8 @@ export default function MainLayout() {
                 {user?.name.slice(0, 1) ?? 'A'}
               </Avatar>
               <div className="admin-user-meta">
-                <p className="admin-user-name">{user?.name ?? '系统管理员'}</p>
-                <p className="admin-user-role">{user?.role ?? '管理员'}</p>
+                <p className="admin-user-name">{user?.name ?? '运营负责人'}</p>
+                <p className="admin-user-role">{user?.role ?? '运营负责人'}</p>
               </div>
               <Button
                 icon={<LogoutOutlined />}

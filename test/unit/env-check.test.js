@@ -29,7 +29,7 @@ test('template env check includes Git unless git init is skipped', () => {
   assert.deepEqual(getToolKeys(tools), ['git'])
 })
 
-test('java fullstack template checks Java as template-specific optional tooling', () => {
+test('java fullstack template checks Java and Maven as required backend tooling', () => {
   const manifest = loadManifest('java-fullstack')
   const tools = buildTemplateToolDefinitions(manifest, {
     packageManager: 'npm',
@@ -37,10 +37,14 @@ test('java fullstack template checks Java as template-specific optional tooling'
     skipGit: true,
   })
   const java = tools.find((tool) => tool.key === 'java')
+  const maven = tools.find((tool) => tool.key === 'maven')
 
   assert.ok(java)
-  assert.equal(java.required, false)
+  assert.equal(java.required, true)
   assert.equal(java.minimum, '21.0.0')
+  assert.ok(maven)
+  assert.equal(maven.required, true)
+  assert.equal(maven.minimum, '3.9.0')
 })
 
 test('monorepo template checks pnpm for pnpm users', () => {

@@ -1,7 +1,8 @@
 import chalk from 'chalk'
 import ora from 'ora'
 import semver from 'semver'
-import { logger } from '../utils/logger.js'
+import { buildEnvSummaryLines, printLines } from '../ui/create-ui.js'
+import { getLoggerOptions, logger } from '../utils/logger.js'
 import { detectVersion, meetsMinimum } from '../utils/version.js'
 
 const TOOL_DEFINITIONS = {
@@ -39,6 +40,13 @@ const TOOL_DEFINITIONS = {
     command: 'java',
     args: ['-version'],
     missingMessage: 'Java 未找到，Java 全栈后端开发需要 Java 21+',
+  },
+  maven: {
+    name: 'Maven',
+    minimum: '3.9.0',
+    command: 'mvn',
+    args: ['--version'],
+    missingMessage: 'Maven 未找到，Java 全栈后端构建需要 Maven 3.9+',
   },
   docker: {
     name: 'Docker',
@@ -136,7 +144,7 @@ function shouldCheckTemplateTool(tool) {
  */
 function buildSummaryRow(result) {
   const row = {
-    status: chalk.yellow('⚠ 可选'),
+    status: chalk.yellow('WARN'),
     tool: result.name,
     version: result.detected ? `v${result.detected}` : '未找到',
     requirement: `>= ${result.minimum}`,
@@ -144,13 +152,13 @@ function buildSummaryRow(result) {
   }
 
   if (result.ok) {
-    row.status = chalk.green('✔ 通过')
+    row.status = chalk.green('OK')
     row.scope = result.scope ?? (result.required ? '必需' : '可选')
     return row
   }
 
   if (result.required) {
-    row.status = chalk.red('✖ 阻断')
+    row.status = chalk.red('BLOCKED')
     row.scope = result.scope ?? '必需'
     return row
   }
@@ -247,16 +255,20 @@ async function runToolChecks(tools, options = {}) {
     spinner.succeed(completedTitle)
     spinnerCompleted = true
     console.log()
-    logger.table(
-      [
-        { key: 'status', title: '状态' },
-        { key: 'tool', title: '工具' },
-        { key: 'version', title: '检测版本' },
-        { key: 'requirement', title: '最低要求' },
-        { key: 'scope', title: '影响范围' },
-      ],
-      results.map((result) => buildSummaryRow(result)),
-    )
+    if (options.verbose ?? getLoggerOptions().verbose) {
+      logger.table(
+        [
+          { key: 'status', title: '状态' },
+          { key: 'tool', title: '工具' },
+          { key: 'version', title: '检测版本' },
+          { key: 'requirement', title: '最低要求' },
+          { key: 'scope', title: '影响范围' },
+        ],
+        results.map((result) => buildSummaryRow(result)),
+      )
+    } else {
+      printLines(buildEnvSummaryLines(results))
+    }
 
     const blockingError = results.find((result) => result.required && !result.ok)
 

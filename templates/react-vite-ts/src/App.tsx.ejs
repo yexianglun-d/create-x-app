@@ -1,48 +1,221 @@
-<% if (extras.includes('react-router')) { %>import { BrowserRouter, Route, Routes } from 'react-router-dom'
+<% if (extras.includes('react-router')) { %>import { BrowserRouter, NavLink, Route, Routes } from 'react-router-dom'
+<% } %>import { FormEvent, useState } from 'react'
 
-function HomePage() {
+interface ClientRecord {
+  id: string
+  name: string
+  owner: string
+  stage: string
+  nextAction: string
+  dueAt: string
+}
+
+interface TaskRecord {
+  id: string
+  title: string
+  status: '待处理' | '进行中' | '已完成'
+  priority: '高' | '中' | '低'
+}
+
+const initialClients: ClientRecord[] = [
+  {
+    id: 'c-1001',
+    name: '华东渠道续约',
+    owner: '林夏',
+    stage: '合同确认',
+    nextAction: '补齐采购审批附件',
+    dueAt: '今天 17:00',
+  },
+  {
+    id: 'c-1002',
+    name: '新门店上线支持',
+    owner: '周南',
+    stage: '方案沟通',
+    nextAction: '发送开店物料清单',
+    dueAt: '明天 10:30',
+  },
+  {
+    id: 'c-1003',
+    name: '季度培训排期',
+    owner: '许岚',
+    stage: '待排期',
+    nextAction: '确认一线主管名单',
+    dueAt: '周五',
+  },
+]
+
+const taskRecords: TaskRecord[] = [
+  { id: 't-1', title: '核对本周高优客户跟进记录', status: '进行中', priority: '高' },
+  { id: 't-2', title: '整理活动报名名单并分配负责人', status: '待处理', priority: '中' },
+  { id: 't-3', title: '复盘上月工单响应时长', status: '已完成', priority: '低' },
+]
+
+function StageBadge({ stage }: { stage: string }) {
+  return <span className="stage-badge">{stage}</span>
+}
+
+function DashboardPage() {
+  const [clients, setClients] = useState(initialClients)
+  const [clientName, setClientName] = useState('')
+  const [feedback, setFeedback] = useState('')
+
+  function handleAddClient(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const normalizedName = clientName.trim()
+
+    if (!normalizedName) {
+      setFeedback('请先填写客户或事项名称。')
+      return
+    }
+
+    setClients((currentClients) => [
+      {
+        id: `c-${Date.now()}`,
+        name: normalizedName,
+        owner: '待分配',
+        stage: '新建',
+        nextAction: '安排首次跟进',
+        dueAt: '待定',
+      },
+      ...currentClients,
+    ])
+    setClientName('')
+    setFeedback('已加入今日跟进清单。')
+  }
+
   return (
     <main className="app-shell">
-      <section className="app-panel">
-        <span className="app-badge">create-x-app</span>
-        <h1>欢迎使用 <%= projectName %></h1>
-        <p>编辑 <code>src/App.tsx</code> 开始开发。</p>
+      <section className="workspace-header">
+        <div>
+          <p className="workspace-label"><%= projectName %></p>
+          <h1>今日业务工作台</h1>
+          <p>把客户跟进、待办事项和下一步动作放在同一个轻量界面里，适合多数业务项目继续扩展。</p>
+        </div>
+        <form className="quick-form" onSubmit={handleAddClient}>
+          <label htmlFor="clientName">新增跟进事项</label>
+          <div className="quick-form-row">
+            <input
+              id="clientName"
+              value={clientName}
+              onChange={(event) => setClientName(event.target.value)}
+              placeholder="例如：华南客户回访"
+            />
+            <button type="submit">加入</button>
+          </div>
+          <p className="form-feedback">{feedback || '新增事项会即时出现在客户列表顶部。'}</p>
+        </form>
+      </section>
+
+      <section className="summary-grid" aria-label="今日概览">
+        <article>
+          <span>待跟进客户</span>
+          <strong>{clients.length}</strong>
+          <small>含 {clients.filter((client) => client.stage !== '新建').length} 个进行中事项</small>
+        </article>
+        <article>
+          <span>高优先级任务</span>
+          <strong>{taskRecords.filter((task) => task.priority === '高').length}</strong>
+          <small>建议今天收口</small>
+        </article>
+        <article>
+          <span>已完成动作</span>
+          <strong>{taskRecords.filter((task) => task.status === '已完成').length}</strong>
+          <small>持续更新节奏</small>
+        </article>
+      </section>
+
+      <section className="content-grid">
+        <div className="panel">
+          <div className="panel-heading">
+            <h2>客户跟进</h2>
+            <span>{clients.length} 条</span>
+          </div>
+          <div className="client-list">
+            {clients.map((client) => (
+              <article className="client-row" key={client.id}>
+                <div>
+                  <h3>{client.name}</h3>
+                  <p>{client.nextAction}</p>
+                </div>
+                <div className="client-meta">
+                  <StageBadge stage={client.stage} />
+                  <span>{client.owner}</span>
+                  <span>{client.dueAt}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <aside className="panel task-panel">
+          <div className="panel-heading">
+            <h2>待办事项</h2>
+            <span>本周</span>
+          </div>
+          <ul className="task-list">
+            {taskRecords.map((task) => (
+              <li key={task.id}>
+                <span className={`priority priority-${task.priority}`}>{task.priority}</span>
+                <div>
+                  <strong>{task.title}</strong>
+                  <small>{task.status}</small>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </aside>
       </section>
     </main>
   )
 }
 
-function AboutPage() {
+<% if (extras.includes('react-router')) { %>function WorkOrdersPage() {
   return (
     <main className="app-shell">
-      <section className="app-panel">
-        <span className="app-badge">About</span>
-        <h1>路由已就绪</h1>
-        <p>你已经可以继续拆分页面和业务模块。</p>
+      <section className="panel work-order-panel">
+        <div className="panel-heading">
+          <div>
+            <p className="workspace-label">服务响应</p>
+            <h1>工单队列</h1>
+          </div>
+          <span>3 个待处理</span>
+        </div>
+        {[
+          ['设备巡检反馈', '等待现场照片', '高'],
+          ['合同开票咨询', '财务确认中', '中'],
+          ['门店物料补发', '已分配仓储', '低'],
+        ].map(([title, status, priority]) => (
+          <article className="client-row" key={title}>
+            <div>
+              <h3>{title}</h3>
+              <p>{status}</p>
+            </div>
+            <span className={`priority priority-${priority}`}>{priority}</span>
+          </article>
+        ))}
       </section>
     </main>
   )
 }
 
-export default function App() {
+function App() {
   return (
     <BrowserRouter>
+      <nav className="top-nav" aria-label="主导航">
+        <NavLink to="/">工作台</NavLink>
+        <NavLink to="/work-orders">工单</NavLink>
+      </nav>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/work-orders" element={<WorkOrdersPage />} />
       </Routes>
     </BrowserRouter>
   )
 }
-<% } else { %>export default function App() {
-  return (
-    <main className="app-shell">
-      <section className="app-panel">
-        <span className="app-badge">create-x-app</span>
-        <h1>欢迎使用 <%= projectName %></h1>
-        <p>编辑 <code>src/App.tsx</code> 开始开发。</p>
-      </section>
-    </main>
-  )
+<% } else { %>function App() {
+  return <DashboardPage />
 }
 <% } %>
+
+export default App

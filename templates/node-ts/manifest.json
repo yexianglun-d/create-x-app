@@ -99,7 +99,7 @@
     {
       "key": "express",
       "label": "Express.js",
-      "default": false,
+      "default": true,
       "source": "inline",
       "detectDependencies": [
         "express"
@@ -108,7 +108,7 @@
     {
       "key": "dotenv",
       "label": "Dotenv + 环境变量校验",
-      "default": false,
+      "default": true,
       "source": "inline",
       "detectDependencies": [
         "dotenv"

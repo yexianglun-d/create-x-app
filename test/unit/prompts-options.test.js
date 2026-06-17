@@ -3,8 +3,14 @@ import test from 'node:test'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import fs from 'fs-extra'
-import { buildConfigFromOptions } from '../../src/steps/prompts.js'
+import {
+  buildConfigFromOptions,
+  buildGenerationPlanMessage,
+  buildTemplateChoices,
+  resolveModulePreset,
+} from '../../src/steps/prompts.js'
 import { resolvePresetOptions } from '../../src/presets/loader.js'
+import { loadManifest } from '../../src/manifest/loader.js'
 import { getConfigValidationErrors } from '../../src/validator/index.js'
 import { createTempDir, removeTempDir } from '../helpers/project.js'
 
@@ -47,6 +53,55 @@ test('validator rejects unknown non-interactive features and extras', () => {
 
   assert.match(errors.join('\n'), /unknown-feature/)
   assert.match(errors.join('\n'), /tailwind/)
+})
+
+test('template choices include first-time decision hints', () => {
+  const manifest = loadManifest('react-vite-ts')
+  const [choice] = buildTemplateChoices([manifest])
+
+  assert.equal(choice.value, 'react-vite-ts')
+  assert.equal(choice.label, 'React + Vite + TypeScript')
+  assert.match(choice.hint, /适合中小型前端应用/)
+  assert.match(choice.hint, /包管理器：npm\/pnpm\/yarn/)
+  assert.match(choice.hint, /dev 端口：5173/)
+})
+
+test('module presets split recommended and minimal module selections', () => {
+  const manifest = loadManifest('node-ts')
+  const recommended = resolveModulePreset(manifest, 'recommended')
+  const minimal = resolveModulePreset(manifest, 'minimal')
+
+  assert.deepEqual(recommended.features, ['eslint', 'prettier', 'husky', 'agents', 'coding-rules'])
+  assert.deepEqual(recommended.extras, ['express', 'dotenv'])
+  assert.deepEqual(minimal.features, ['agents', 'coding-rules'])
+  assert.deepEqual(minimal.extras, [])
+})
+
+test('generation plan summarizes source and post actions before confirmation', () => {
+  const manifest = loadManifest('react-vite-ts')
+  const config = buildConfigFromOptions('demo-app', {
+    template: 'react-vite-ts',
+    features: 'eslint,husky,agents',
+    extras: 'tailwind',
+  })
+  const message = buildGenerationPlanMessage({
+    projectName: config.projectName,
+    config,
+    manifest,
+    templateSource: { type: 'builtin' },
+    packageManager: config.packageManager,
+    features: config.features,
+    extras: config.extras,
+    dependencyStrategy: 'baseline',
+    options: { skipInstall: true, skipGit: true },
+  })
+
+  assert.match(message, /Project/)
+  assert.match(message, /source\s+内置模板/)
+  assert.match(message, /target\s+/)
+  assert.match(message, /install\s+跳过/)
+  assert.match(message, /git\s+跳过/)
+  assert.match(message, /husky\s+安装依赖后手动初始化/)
 })
 
 test('built-in preset resolves create options', async () => {

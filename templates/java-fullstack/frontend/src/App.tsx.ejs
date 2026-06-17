@@ -1,10 +1,154 @@
+import { FormEvent, useEffect, useState } from 'react'
+import './App.css'
+
+type Priority = 'HIGH' | 'MEDIUM' | 'LOW'
+type CustomerStage = 'NEW' | 'CONTACTED' | 'PROPOSAL' | 'CONTRACT'
+
+interface CustomerAction {
+  id: string
+  customerName: string
+  owner: string
+  stage: CustomerStage
+  priority: Priority
+  nextAction: string
+  dueAt: string
+}
+
+interface ApiResponse<T> {
+  code: number
+  data: T
+  message: string
+}
+
+const stageLabels: Record<CustomerStage, string> = {
+  NEW: '新建',
+  CONTACTED: '已沟通',
+  PROPOSAL: '方案中',
+  CONTRACT: '合同确认',
+}
+
+const priorityLabels: Record<Priority, string> = {
+  HIGH: '高',
+  MEDIUM: '中',
+  LOW: '低',
+}
+
 export default function App() {
+  const [actions, setActions] = useState<CustomerAction[]>([])
+  const [message, setMessage] = useState('正在连接后端服务...')
+  const [customerName, setCustomerName] = useState('')
+  const [nextAction, setNextAction] = useState('')
+
+  async function loadActions() {
+    try {
+      const response = await fetch('/api/customer-actions')
+      const payload = await response.json() as ApiResponse<CustomerAction[]>
+
+      setActions(payload.data)
+      setMessage('数据已同步')
+    } catch {
+      setMessage('后端服务未启动，运行 backend 目录下的 mvn spring-boot:run 后会自动联调。')
+    }
+  }
+
+  async function handleCreateAction(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!customerName.trim() || !nextAction.trim()) {
+      setMessage('请填写客户事项和下一步动作。')
+      return
+    }
+
+    const response = await fetch('/api/customer-actions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customerName,
+        nextAction,
+        priority: 'medium',
+      }),
+    })
+    const payload = await response.json() as ApiResponse<CustomerAction>
+
+    setActions((currentActions) => [payload.data, ...currentActions])
+    setCustomerName('')
+    setNextAction('')
+    setMessage('已创建客户行动。')
+  }
+
+  useEffect(() => {
+    void loadActions()
+  }, [])
+
   return (
     <main className="app-shell">
-      <section className="app-panel">
-        <span className="app-badge">Java Fullstack</span>
-        <h1><%= projectName %> 前端已就绪</h1>
-        <p>后端请参考根目录 <code>BACKEND.md</code> 继续搭建 Spring Boot 项目。</p>
+      <section className="workspace-header">
+        <div>
+          <p className="workspace-name"><%= projectName %></p>
+          <h1>全栈业务工作台</h1>
+          <p>React 前端与 Spring Boot 后端共用客户行动流程，适合作为 Java 全栈项目的第一版业务骨架。</p>
+        </div>
+        <form className="action-form" onSubmit={handleCreateAction}>
+          <label htmlFor="customerName">客户事项</label>
+          <input
+            id="customerName"
+            value={customerName}
+            onChange={(event) => setCustomerName(event.target.value)}
+            placeholder="例如：华南渠道续约"
+          />
+          <label htmlFor="nextAction">下一步动作</label>
+          <input
+            id="nextAction"
+            value={nextAction}
+            onChange={(event) => setNextAction(event.target.value)}
+            placeholder="例如：确认合同附件"
+          />
+          <button type="submit">创建行动</button>
+        </form>
+      </section>
+
+      <section className="summary-grid">
+        <article>
+          <span>客户行动</span>
+          <strong>{actions.length}</strong>
+        </article>
+        <article>
+          <span>高优先级</span>
+          <strong>{actions.filter((action) => action.priority === 'HIGH').length}</strong>
+        </article>
+        <article>
+          <span>接口状态</span>
+          <strong>{message === '数据已同步' ? '正常' : '待连接'}</strong>
+        </article>
+      </section>
+
+      <section className="panel">
+        <div className="panel-head">
+          <h2>客户行动列表</h2>
+          <span>{message}</span>
+        </div>
+        {actions.length === 0 ? (
+          <p className="empty-state">暂无客户行动。后端启动后会加载初始数据，也可以通过右上表单创建。</p>
+        ) : (
+          <div className="action-list">
+            {actions.map((action) => (
+              <article className="action-row" key={action.id}>
+                <div>
+                  <h3>{action.customerName}</h3>
+                  <p>{action.nextAction}</p>
+                </div>
+                <div className="action-meta">
+                  <span className="stage">{stageLabels[action.stage]}</span>
+                  <span>{action.owner}</span>
+                  <span>{priorityLabels[action.priority]}优先级</span>
+                  <span>{action.dueAt}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   )

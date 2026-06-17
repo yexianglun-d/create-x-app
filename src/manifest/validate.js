@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import semver from 'semver'
 
 const PACKAGE_MANAGERS = new Set(['npm', 'pnpm', 'yarn'])
-const REQUIREMENT_TOOL_NAMES = new Set(['node', 'git', 'pnpm', 'yarn', 'java', 'docker'])
+const REQUIREMENT_TOOL_NAMES = new Set(['node', 'git', 'pnpm', 'yarn', 'java', 'maven', 'docker'])
 const REQUIRED_STRING_FIELDS = ['schemaVersion', 'key', 'name', 'description', 'version', 'framework']
 const REQUIRED_ARRAY_FIELDS = ['supportedFeatures', 'defaultFeatures', 'extras', 'subPrompts']
 const REQUIRED_OBJECT_FIELDS = ['requiredEnv', 'optionalEnv', 'features']

@@ -1,127 +1,159 @@
 import { useEffect, useState } from 'react'
-import { useElectron, type SystemInfo } from './composables/useElectron'
+import type { CSSProperties } from 'react'
+import { useElectron, type BatchItem } from './composables/useElectron'
 
-const shellStyle: Record<string, string | number> = {
-  minHeight: '100vh',
-  padding: 48,
-  boxSizing: 'border-box',
-  color: '#e2e8f0',
-  fontFamily: '"SF Pro Display", "PingFang SC", "Segoe UI", sans-serif',
-  background: 'radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 32%), linear-gradient(180deg, #0f172a 0%, #111827 100%)',
+const statusLabels: Record<BatchItem['status'], string> = {
+  queued: '待处理',
+  processing: '处理中',
+  done: '已完成',
 }
 
-const panelStyle: Record<string, string | number> = {
-  border: '1px solid rgba(148, 163, 184, 0.16)',
-  borderRadius: 28,
-  padding: 28,
-  background: 'rgba(15, 23, 42, 0.78)',
-  boxShadow: '0 22px 60px rgba(2, 6, 23, 0.26)',
-}
-
-const gridStyle: Record<string, string | number> = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-  gap: 16,
-}
-
-const cardStyle: Record<string, string | number> = {
-  borderRadius: 22,
-  padding: 18,
-  background: 'rgba(30, 41, 59, 0.72)',
-}
+const statusOptions: BatchItem['status'][] = ['queued', 'processing', 'done']
 
 export default function App() {
-  const { getSystemInfo } = useElectron()
-  const [systemInfo, setSystemInfo] = useState<SystemInfo | null>(null)
-  const [errorMessage, setErrorMessage] = useState('')
+  const { readBatchItems, saveBatchItems, selectFiles } = useElectron()
+  const [items, setItems] = useState<BatchItem[]>([])
+  const [message, setMessage] = useState('正在读取本地工作区...')
 
   useEffect(() => {
-    void getSystemInfo()
-      .then((response) => {
-        setSystemInfo(response)
+    void readBatchItems()
+      .then((savedItems) => {
+        setItems(savedItems)
+        setMessage(savedItems.length > 0 ? '已载入上次保存的处理清单。' : '请选择需要处理的文件。')
       })
       .catch((error) => {
-        setErrorMessage(error instanceof Error ? error.message : '读取系统信息失败')
+        setMessage(error instanceof Error ? error.message : '读取工作区失败')
       })
-  }, [getSystemInfo])
+  }, [readBatchItems])
+
+  async function handleSelectFiles() {
+    const selectedItems = await selectFiles()
+
+    if (selectedItems.length === 0) {
+      setMessage('没有选择文件。')
+      return
+    }
+
+    setItems((currentItems) => [...selectedItems, ...currentItems])
+    setMessage(`已加入 ${selectedItems.length} 个文件。`)
+  }
+
+  function updateStatus(itemId: string, status: BatchItem['status']) {
+    setItems((currentItems) => currentItems.map((item) => item.id === itemId
+      ? { ...item, status, note: statusLabels[status] }
+      : item))
+  }
+
+  async function handleSave() {
+    const savedItems = await saveBatchItems(items)
+
+    setItems(savedItems)
+    setMessage(`已保存 ${savedItems.length} 个处理项。`)
+  }
 
   return (
-    <main style={shellStyle}>
-      <section style={{ maxWidth: 760, marginBottom: 28 }}>
-        <span
-          style={{
-            display: 'inline-flex',
-            padding: '6px 12px',
-            borderRadius: 999,
-            background: 'rgba(59, 130, 246, 0.14)',
-            color: '#93c5fd',
-            fontSize: 12,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-          }}
-        >
-          create-x-app / electron-app
-        </span>
-        <h1 style={{ margin: '18px 0 12px', color: '#f8fafc', fontSize: 44 }}><%= projectName %></h1>
-        <p style={{ margin: 0, color: 'rgba(226, 232, 240, 0.78)', lineHeight: 1.8 }}>
-          这是一个 Electron + React 桌面模板，已接好主进程、preload 和 IPC 示例，
-          你可以直接在此基础上扩展菜单、窗口、系统能力与业务模块。
+    <main style={{
+      minHeight: '100vh',
+      padding: 40,
+      boxSizing: 'border-box',
+      color: '#172033',
+      fontFamily: '"SF Pro Display", "PingFang SC", "Segoe UI", sans-serif',
+      background: '#f5f7fb',
+    }}>
+      <section style={{ maxWidth: 980, marginBottom: 22 }}>
+        <p style={{ margin: '0 0 10px', color: '#667085', fontWeight: 700 }}><%= projectName %></p>
+        <h1 style={{ margin: '0 0 12px', color: '#101828', fontSize: 44 }}>本地批处理工作台</h1>
+        <p style={{ margin: 0, color: '#5d6678', lineHeight: 1.8 }}>
+          选择本机文件，维护处理状态，并把工作清单保存到桌面应用本地目录。
         </p>
       </section>
 
-      <section style={panelStyle}>
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16,
-            marginBottom: 22,
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: 24 }}>系统信息</h2>
-          <span
-            style={{
-              padding: '6px 10px',
-              borderRadius: 999,
-              background: 'rgba(45, 212, 191, 0.12)',
-              color: '#5eead4',
-              fontSize: 12,
-            }}
-          >
-            IPC Ready
-          </span>
+      <section style={{
+        border: '1px solid #dde5ef',
+        borderRadius: 8,
+        padding: 20,
+        background: '#ffffff',
+        boxShadow: '0 12px 30px rgba(20, 32, 54, 0.06)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16 }}>
+          <div>
+            <h2 style={{ margin: 0 }}>处理清单</h2>
+            <p style={{ margin: '6px 0 0', color: '#667085' }}>{message}</p>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button type="button" style={secondaryButtonStyle} onClick={handleSave}>保存</button>
+            <button type="button" style={primaryButtonStyle} onClick={handleSelectFiles}>选择文件</button>
+          </div>
         </div>
 
-        {errorMessage ? (
-          <p style={{ margin: 0, color: '#fda4af' }}>{errorMessage}</p>
-        ) : systemInfo ? (
-          <div style={gridStyle}>
-            {[
-              { label: '平台', value: systemInfo.platform },
-              { label: '架构', value: systemInfo.arch },
-              { label: '主机名', value: systemInfo.hostname },
-              { label: '系统版本', value: systemInfo.release },
-              { label: 'Node', value: systemInfo.nodeVersion },
-              { label: 'Electron', value: systemInfo.electronVersion },
-              { label: 'Chrome', value: systemInfo.chromeVersion },
-            ].map((item) => (
-              <article key={item.label} style={cardStyle}>
-                <p style={{ margin: '0 0 10px', color: 'rgba(148, 163, 184, 0.9)', fontSize: 13 }}>
-                  {item.label}
-                </p>
-                <p style={{ margin: 0, color: '#f8fafc', fontSize: 22, fontWeight: 600 }}>
-                  {item.value}
-                </p>
+        {items.length === 0 ? (
+          <p style={emptyStyle}>暂无文件。选择合同、表格或图片后即可开始维护处理状态。</p>
+        ) : (
+          <div style={{ display: 'grid', gap: 10 }}>
+            {items.map((item) => (
+              <article key={item.id} style={rowStyle}>
+                <div style={{ minWidth: 0 }}>
+                  <h3 style={{ margin: '0 0 5px', fontSize: 16 }}>{item.fileName}</h3>
+                  <p style={{ margin: 0, color: '#667085', overflowWrap: 'anywhere' }}>{item.filePath}</p>
+                </div>
+                <select
+                  value={item.status}
+                  onChange={(event) => updateStatus(item.id, event.target.value as BatchItem['status'])}
+                  style={selectStyle}
+                >
+                  {statusOptions.map((status) => (
+                    <option key={status} value={status}>{statusLabels[status]}</option>
+                  ))}
+                </select>
               </article>
             ))}
           </div>
-        ) : (
-          <p style={{ margin: 0, color: 'rgba(226, 232, 240, 0.78)' }}>
-            正在通过 preload 调用主进程获取系统信息...
-          </p>
         )}
       </section>
     </main>
   )
+}
+
+const primaryButtonStyle: CSSProperties = {
+  border: 0,
+  borderRadius: 8,
+  padding: '10px 14px',
+  background: '#2563eb',
+  color: '#ffffff',
+  fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const secondaryButtonStyle: CSSProperties = {
+  ...primaryButtonStyle,
+  border: '1px solid #cbd5e1',
+  background: '#ffffff',
+  color: '#172033',
+}
+
+const rowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 14,
+  border: '1px solid #e6ebf2',
+  borderRadius: 8,
+  padding: 14,
+  background: '#fbfcfe',
+}
+
+const selectStyle: CSSProperties = {
+  border: '1px solid #cbd5e1',
+  borderRadius: 8,
+  padding: '9px 10px',
+  background: '#ffffff',
+}
+
+const emptyStyle: CSSProperties = {
+  margin: 0,
+  border: '1px dashed #cbd5e1',
+  borderRadius: 8,
+  padding: 22,
+  color: '#667085',
+  textAlign: 'center',
 }

@@ -3,7 +3,7 @@ import test from 'node:test'
 import fs from 'fs-extra'
 import { join } from 'node:path'
 import { createTempDir, removeTempDir } from '../helpers/project.js'
-import { runPostActions } from '../../src/steps/post-actions.js'
+import { buildNextStepLines, runPostActions } from '../../src/steps/post-actions.js'
 
 function createConfig(overrides = {}) {
   return {
@@ -133,6 +133,41 @@ test('next steps only print documents that exist in the generated project', asyn
     assert.match(output, /npm run dev/)
     assert.match(output, /AGENTS\.md/)
     assert.doesNotMatch(output, /coding-rules\.md/)
+  } finally {
+    await removeTempDir(targetDir)
+  }
+})
+
+test('next step lines include build command, metadata and git recovery hint', async () => {
+  const targetDir = await createTempDir('cxa-next-lines-')
+
+  try {
+    await fs.writeFile(join(targetDir, 'AGENTS.md'), '# AGENTS.md\n')
+
+    const lines = await buildNextStepLines(
+      createConfig({ targetDir }),
+      {
+        applicationWorkspace: targetDir,
+        gitWorkspace: targetDir,
+        huskyWorkspace: targetDir,
+        installTargets: [targetDir],
+      },
+      {
+        devScript: 'dev',
+        buildScript: 'build',
+      },
+      fs.pathExists,
+      {
+        failedGitActions: ['git commit'],
+      },
+    )
+    const output = lines.join('\n')
+
+    assert.match(output, /npm run dev/)
+    assert.match(output, /npm run build/)
+    assert.match(output, /\.create-x-app\/template-lock\.json/)
+    assert.match(output, /AGENTS\.md/)
+    assert.match(output, /git commit 未成功/)
   } finally {
     await removeTempDir(targetDir)
   }

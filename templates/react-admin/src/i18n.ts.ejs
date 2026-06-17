@@ -1,63 +1,51 @@
 <% if (extras.includes('i18n')) { %>import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
-const resources = {
-  'zh-CN': {
-    translation: {
-      'brand.name': '<%= projectName %>',
-      'brand.desc': '管理后台控制台',
-      'shell.kicker': '运营驾驶舱',
-      'shell.title': '欢迎回来，今天也要稳稳推进业务',
-      'shell.desc': '这里已经内置权限路由、请求封装与状态管理，可直接扩展菜单、权限点与业务模块。',
-      'dashboard.heroTitle': '业务总览',
-      'dashboard.heroDesc': '用一个真实可扩展的后台骨架，把监控、审批、运营和分析统一收口到同一套体验语言里。',
-      'dashboard.requestTitle': '接口请求示例',
-      'dashboard.requestDesc': '点击按钮会调用示例 user API，用于验证 Axios 实例、拦截器和错误提示链路。',
-      'dashboard.requestAction': '尝试请求当前用户',
-      'dashboard.requestEmpty': '接口返回后会在这里展示结果。',
-      'login.kicker': 'create-x-app / react-admin',
-      'login.title': '让后台系统一开始就像后台系统',
-      'login.desc': '默认提供清晰的导航骨架、登录入口、权限守卫和 API 分层，你可以把精力放在业务本身。',
-      'login.cardTitle': '登录到控制台',
-      'login.submit': '进入后台',
-      'notFound.title': '页面不存在',
-      'notFound.desc': '当前访问的地址没有对应页面，请返回仪表盘继续操作。',
-      'notFound.action': '返回仪表盘'
-    }
-  },
-  en: {
-    translation: {
-      'brand.name': '<%= projectName %>',
-      'brand.desc': 'Admin Console',
-      'shell.kicker': 'Operations cockpit',
-      'shell.title': 'Welcome back. Keep the delivery pace clean and steady.',
-      'shell.desc': 'Routing guards, API client, and state management are ready. Extend menus, permissions, and business modules from here.',
-      'dashboard.heroTitle': 'Business overview',
-      'dashboard.heroDesc': 'A real admin shell that can host monitoring, approvals, operations, and analytics in one coherent interface.',
-      'dashboard.requestTitle': 'Request example',
-      'dashboard.requestDesc': 'Click the action to hit the sample user API and verify the Axios interceptor flow.',
-      'dashboard.requestAction': 'Request current user',
-      'dashboard.requestEmpty': 'The response payload will be rendered here.',
-      'login.kicker': 'create-x-app / react-admin',
-      'login.title': 'Start with an admin system that already feels like one',
-      'login.desc': 'The template ships with navigation, sign-in, route guards, and API layering so you can focus on domain logic.',
-      'login.cardTitle': 'Sign in to continue',
-      'login.submit': 'Enter console',
-      'notFound.title': 'Page not found',
-      'notFound.desc': 'There is no page mapped to this URL. Return to the dashboard to continue.',
-      'notFound.action': 'Back to dashboard'
-    }
-  }
-}
-
-i18n
+void i18n
   .use(initReactI18next)
   .init({
-    resources,
-    lng: 'zh-CN',
-    fallbackLng: 'zh-CN',
+    resources: {
+      zh: {
+        translation: {
+          'brand.name': '<%= projectName %>',
+          'brand.desc': '运营管理台',
+          'shell.title': '运营工作台',
+          'shell.desc': '集中处理客户跟进、服务工单和审批任务。',
+          'dashboard.title': '今日运营概览',
+          'dashboard.desc': '按负责人和优先级快速定位需要推进的客户事项。',
+          'login.title': '登录运营管理台',
+          'login.desc': '进入后可处理客户跟进、服务工单和审批任务。',
+          'login.cardTitle': '账号登录',
+          'login.submit': '登录',
+          'notFound.title': '页面不存在',
+          'notFound.desc': '当前访问的地址没有对应页面，请返回工作台继续操作。',
+          'notFound.action': '返回工作台',
+        },
+      },
+      en: {
+        translation: {
+          'brand.name': '<%= projectName %>',
+          'brand.desc': 'Operations console',
+          'shell.title': 'Operations workspace',
+          'shell.desc': 'Manage customer follow-ups, service tickets, and approvals in one place.',
+          'dashboard.title': 'Today overview',
+          'dashboard.desc': 'Filter customer actions by owner and priority.',
+          'login.title': 'Sign in to operations',
+          'login.desc': 'Handle customer follow-ups, service tickets, and approvals.',
+          'login.cardTitle': 'Account sign in',
+          'login.submit': 'Sign in',
+          'notFound.title': 'Page not found',
+          'notFound.desc': 'Return to the workspace to continue.',
+          'notFound.action': 'Back to workspace',
+        },
+      },
+    },
+    lng: 'zh',
+    fallbackLng: 'zh',
     interpolation: {
       escapeValue: false,
     },
   })
+
+export default i18n
 <% } %>

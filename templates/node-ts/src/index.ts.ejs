@@ -1,15 +1,56 @@
 <% if (extras.includes('dotenv')) { %>import 'dotenv/config'
 <% } %><% if (extras.includes('express')) { %>import express from 'express'
 
-const DEFAULT_PORT = 3000
+type Priority = 'high' | 'medium' | 'low'
+type Stage = 'new' | 'contacted' | 'proposal' | 'contract'
 
-/**
- * 解析服务端口，确保运行时配置可预期。
- *
- * 说明：
- * 1. 未提供 `PORT` 时使用默认端口，便于本地直接启动
- * 2. 提供了 `PORT` 时必须校验为合法正整数，避免服务启动后绑定异常端口
- */
+interface CustomerAction {
+  id: string
+  customerName: string
+  owner: string
+  stage: Stage
+  priority: Priority
+  nextAction: string
+  dueAt: string
+}
+
+interface ApiResponse<T> {
+  code: number
+  data: T
+  message: string
+}
+
+const DEFAULT_PORT = 3000
+const app = express()
+const customerActions: CustomerAction[] = [
+  {
+    id: 'ca-1001',
+    customerName: '华东渠道续约',
+    owner: '林夏',
+    stage: 'contract',
+    priority: 'high',
+    nextAction: '补齐采购审批附件',
+    dueAt: '今天 17:00',
+  },
+  {
+    id: 'ca-1002',
+    customerName: '新门店上线支持',
+    owner: '周南',
+    stage: 'proposal',
+    priority: 'medium',
+    nextAction: '发送开店物料清单',
+    dueAt: '明天 10:30',
+  },
+]
+
+function buildResponse<T>(data: T, message: string): ApiResponse<T> {
+  return {
+    code: 0,
+    data,
+    message,
+  }
+}
+
 function resolvePort() {
   const portValue = process.env.PORT
 
@@ -26,21 +67,78 @@ function resolvePort() {
   return parsedPort
 }
 
-const app = express()
-const port = resolvePort()
+function normalizeText(value: unknown) {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function normalizePriority(value: unknown): Priority {
+  return value === 'high' || value === 'medium' || value === 'low' ? value : 'medium'
+}
+
+function createCustomerAction(payload: Record<string, unknown>): CustomerAction {
+  const customerName = normalizeText(payload.customerName)
+  const nextAction = normalizeText(payload.nextAction)
+
+  if (!customerName || !nextAction) {
+    throw new Error('customerName 和 nextAction 为必填项')
+  }
+
+  return {
+    id: `ca-${Date.now()}`,
+    customerName,
+    owner: normalizeText(payload.owner) || '待分配',
+    stage: 'new',
+    priority: normalizePriority(payload.priority),
+    nextAction,
+    dueAt: normalizeText(payload.dueAt) || '待定',
+  }
+}
 
 app.use(express.json())
 
-app.get('/', (_req, res) => {
-  res.json({
-    message: '你好，来自 <%= projectName %>',
-  })
+app.get('/api/health', (_request, response) => {
+  response.json(buildResponse({
+    service: process.env.SERVICE_NAME ?? '<%= projectName %>',
+    status: 'ok',
+  }, 'ready'))
 })
+
+app.get('/api/customer-actions', (_request, response) => {
+  response.json(buildResponse(customerActions, 'loaded'))
+})
+
+app.post('/api/customer-actions', (request, response) => {
+  try {
+    const action = createCustomerAction(request.body as Record<string, unknown>)
+    customerActions.unshift(action)
+    response.status(201).json(buildResponse(action, 'created'))
+  } catch (error) {
+    response.status(400).json({
+      code: 400,
+      data: null,
+      message: error instanceof Error ? error.message : '请求参数错误',
+    })
+  }
+})
+
+const port = resolvePort()
 
 app.listen(port, () => {
-  console.log(`服务已启动：http://localhost:${port}`)
+  console.log(`API ready at http://localhost:${port}`)
 })
-<% } else { %>const appName = '<%= projectName %>'
+<% } else { %>interface CustomerAction {
+  customerName: string
+  nextAction: string
+}
 
-console.log(`你好，来自 ${appName}`)
+const pendingActions: CustomerAction[] = [
+  {
+    customerName: '华东渠道续约',
+    nextAction: '补齐采购审批附件',
+  },
+]
+
+for (const action of pendingActions) {
+  console.log(`${action.customerName}: ${action.nextAction}`)
+}
 <% } %>

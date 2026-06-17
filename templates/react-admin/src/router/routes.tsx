@@ -1,6 +1,6 @@
 import {
+  CheckSquareOutlined,
   DashboardOutlined,
-  NotificationOutlined,
   TeamOutlined,
 } from '@ant-design/icons'
 import { lazy } from 'react'
@@ -12,24 +12,24 @@ export const privateRouteDefinitions = [
   {
     key: 'dashboard',
     path: '/',
-    title: '仪表盘',
-    description: '总览运营关键指标、接口状态和待办提醒。',
+    title: '工作台',
+    description: '总览客户跟进、服务工单和审批任务。',
     icon: <DashboardOutlined />,
     component: DashboardPage,
   },
   {
-    key: 'operations',
-    path: '/operations',
-    title: '运营看板',
-    description: '示例菜单，用于扩展订单、内容和活动模块。',
-    icon: <NotificationOutlined />,
+    key: 'tasks',
+    path: '/tasks',
+    title: '任务队列',
+    description: '按优先级处理待办和审批。',
+    icon: <CheckSquareOutlined />,
     component: DashboardPage,
   },
   {
-    key: 'team',
-    path: '/team',
-    title: '团队权限',
-    description: '示例菜单，用于扩展角色、组织和权限矩阵。',
+    key: 'customers',
+    path: '/customers',
+    title: '客户跟进',
+    description: '维护客户阶段、负责人和下一步动作。',
     icon: <TeamOutlined />,
     component: DashboardPage,
   },

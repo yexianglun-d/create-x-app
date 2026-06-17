@@ -21,6 +21,7 @@ import {
   telemetryStatusCommand,
 } from '../src/commands/telemetry.js'
 import { upgradeCommand } from '../src/commands/upgrade.js'
+import { buildHelpExamples, buildHelpHeader } from '../src/ui/create-ui.js'
 import { logger, setLoggerOptions } from '../src/utils/logger.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -76,7 +77,17 @@ function mergeTemplateCommandOptions(commandOptions) {
   }
 }
 
-program
+function applyBrandedHelp(command, kind) {
+  return command
+    .configureHelp({
+      helpWidth: 96,
+      sortSubcommands: true,
+    })
+    .addHelpText('before', buildHelpHeader(kind))
+    .addHelpText('after', buildHelpExamples(kind))
+}
+
+applyBrandedHelp(program, 'main')
   .name('create-x-app')
   .description('几秒内生成生产级项目脚手架')
   .version(packageJson.version)
@@ -105,7 +116,7 @@ program
   .option('--debug', '显示调试日志和错误堆栈')
   .action(handleCliAction)
 
-program
+applyBrandedHelp(program
   .command('upgrade')
   .description('升级当前项目的脚手架配置文件')
   .option('--check', '只检查可升级文件，不修改项目')
@@ -114,7 +125,7 @@ program
   .option('--backup', '升级前创建 .create-x-app/backups 备份')
   .option('--from <version>', '记录迁移起始版本')
   .option('--to <version>', '记录迁移目标版本')
-  .action(handleUpgradeAction)
+  .action(handleUpgradeAction), 'upgrade')
 
 program
   .command('search')
@@ -152,9 +163,9 @@ program
     return removeCommand(packageName)
   })
 
-const pluginCommand = program
+const pluginCommand = applyBrandedHelp(program
   .command('plugin')
-  .description('管理和诊断社区插件模板')
+  .description('管理和诊断社区插件模板'), 'plugin')
 
 pluginCommand
   .command('init')
@@ -174,9 +185,9 @@ pluginCommand
     return pluginDoctorCommand(options)
   })
 
-const templateCommand = program
+const templateCommand = applyBrandedHelp(program
   .command('template')
-  .description('模板作者工具链')
+  .description('模板作者工具链'), 'template')
 
 templateCommand
   .command('lint')

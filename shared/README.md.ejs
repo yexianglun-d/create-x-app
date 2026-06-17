@@ -1,32 +1,43 @@
 # <%= projectName %>
 
-由 [create-x-app](https://npmjs.com/package/create-x-app-cli) 脚手架生成。
+业务项目启动包。工程由 [create-x-app](https://npmjs.com/package/create-x-app-cli) 生成，后续开发请以本仓库的实际业务代码为准。
 
 ## 技术栈
 
-<% if (template === 'react-vite-ts') { %>
-- React 18 + Vite 5 + TypeScript 5
-<% } else if (template === 'node-ts') { %>
-- Node.js + TypeScript 5 + tsx
-<% } else { %>
-- Java 21 + Spring Boot 3 / React + Vite + TypeScript
+<% if (template === 'react-vite-ts') { %>- React 18 + Vite 5 + TypeScript
+<% } else if (template === 'react-admin') { %>- React 18 + Vite 5 + Ant Design + Zustand
+<% } else if (template === 'node-ts') { %>- Node.js + TypeScript + Express
+<% } else if (template === 'java-fullstack') { %>- Java 21 + Spring Boot 3 + React + Vite
+<% } else if (template === 'mobile-h5') { %>- Vue 3 + Vite + Vant
+<% } else if (template === 'electron-app') { %>- Electron + Vite + TypeScript
+<% } else if (template === 'chrome-ext') { %>- Chrome Extension Manifest V3 + React
+<% } else if (template === 'monorepo') { %>- pnpm workspace + Turborepo + React + Express
+<% } else { %>- TypeScript
+<% } %><% if (hasEslint || hasPrettier) { %>-<% if (hasEslint) { %> ESLint<% } %><% if (hasEslint && hasPrettier) { %> +<% } %><% if (hasPrettier) { %> Prettier<% } %>
+<% } %><% if (hasHusky) { %>- Husky + commitlint
 <% } %>
-<% if (hasEslint || hasPrettier) { %>-<% if (hasEslint) { %> ESLint<% } %><% if (hasEslint && hasPrettier) { %> +<% } %><% if (hasPrettier) { %> Prettier<% } %>
-<% } %>
-<% if (hasHusky) { %>- Husky + commitlint<% } %>
 
 ## 快速开始
 
 ```bash
-<% if (template === 'java-fullstack') { %>cd frontend
+<% if (template === 'java-fullstack') { %># 终端 1：启动后端
+cd backend
+mvn spring-boot:run
+
+# 终端 2：启动前端
+cd frontend
 <%= packageManager %> install
+<%= packageManager %> run dev
+<% } else if (template === 'monorepo') { %><%= packageManager %> install
 <%= packageManager %> run dev
 <% } else { %><%= packageManager %> install
 <%= packageManager %> run dev
 <% } %>
 ```
 
-## 延伸阅读
+## 项目文档
 
-- [AGENTS.md](./AGENTS.md) — AI 助手协作约定
-- [coding-rules.md](./coding-rules.md) — 团队代码规范
+<% if (features.includes('agents')) { %>- [AGENTS.md](./AGENTS.md) — 仓库协作约定
+<% } %><% if (features.includes('coding-rules')) { %>- [coding-rules.md](./coding-rules.md) — 团队代码规范
+<% } %><% if (template === 'java-fullstack') { %>- [BACKEND.md](./BACKEND.md) — Spring Boot 后端说明
+<% } %>

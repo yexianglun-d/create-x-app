@@ -506,3 +506,99 @@
 
 - 若无额外说明，默认按本文件的任务顺序推进
 - 每完成一项任务，立即回填状态、验收命令和结论
+
+## Phase 4 — 模板实用化重构
+
+目标：
+保留当前 8 套内置模板，但把生成项目从“技术演示页 / 脚手架说明页”重构为各行业都能直接二次开发的业务启动包。去 AI 化边界限定为生成 UI/UX 和业务文案去模板感，不删除仓库协作规则，也不强制移除可选 `ai-native` 功能。
+
+统一验收口径：
+
+- 生成页面不出现 `create-x-app` badge、欢迎模板、示例接口、编辑某文件开始开发等模板自述内容
+- 每套模板至少包含真实业务场景、真实命名、列表 / 表单 / 状态流，以及 loading / error / empty / success 中的必要状态
+- Web / H5 / Admin / Monorepo / Java 前端首屏无明显重叠、移动端可用
+- 8 套模板都通过生成、安装、构建和 lint；`java-fullstack` 额外通过 Maven 编译或测试
+- 保留 manifest、remote、upgrade provenance、插件发现和模板作者工具链的兼容性
+
+### [x] TASK-401 模板实用化规则与内容去模板感
+
+输出：
+- 更新模板 UI / 文案基线，移除应用页面中的模板自述
+- 更新共享 README 生成内容，保留来源说明但不把脚手架卖点写进应用体验
+- 增加生成内容扫描口径
+
+验收：
+- `rg "create-x-app|欢迎使用|示例接口|编辑 src|模板" <generated-project>` 仅允许 README、`.create-x-app` 元数据和开发协作文档中的合理来源说明
+- 已完成：共享 README 已降噪，集成测试新增应用内容扫描，应用源码 / 页面文案禁止模板自述命中
+
+### [x] TASK-402 React / Admin / H5 前端模板业务化
+
+输出：
+- `react-vite-ts` 改为轻量业务工作台
+- `react-admin` 改为通用运营后台，包含客户 / 工单 / 审批等真实业务面
+- `mobile-h5` 改为报名 / 预约 / 活动转化页
+
+验收：
+- 生成默认项目并执行 install / build / lint
+- 浏览器检查桌面和移动首屏，无模板自述、无明显布局重叠
+- 已完成：`react-vite-ts`、`react-admin`、`mobile-h5` 已改为真实业务场景；集成测试默认矩阵通过
+- 已完成：额外验证 `react-vite-ts` 的 `react-router + tailwind` 组合与 `react-admin` 的 `tailwind + i18n` 组合均 install / build / lint 通过
+- 已完成：浏览器打开默认 React 模板首屏，DOM 检查 `forbiddenHits=[]`
+
+### [x] TASK-403 Node / Monorepo API 模板业务化
+
+输出：
+- `node-ts` 默认转为实用 API starter，Express / Dotenv 默认开启
+- `monorepo` 的 `web/api/shared` 围绕同一套客户 / 任务类型联动
+
+验收：
+- 生成默认项目并执行 install / build / lint
+- API 返回结构、前端请求和共享类型一致
+- 已完成：`node-ts` 默认开启 Express / Dotenv，提供健康检查与客户事项 API；`monorepo` 的 web / api / shared 围绕同一业务类型联动
+- 已完成：`npm run test:integration` 覆盖默认生成、安装、构建和 lint
+
+### [x] TASK-404 Java 全栈模板升级为真实 Spring Boot 后端
+
+输出：
+- `java-fullstack` 生成 Spring Boot 3 + Java 21 + Maven 后端
+- 提供 Controller / Service / Repository / Entity / DTO / 统一响应结构
+- 前端通过 `/api` 代理联调后端
+
+验收：
+- 生成项目后 `frontend` install / build / lint 通过
+- 后端 `mvn test` 或等价 Maven 编译测试通过
+- 已完成：`java-fullstack` 已生成 Spring Boot 3 + Java 21 + Maven 后端，包含 Controller / Service / Repository / Entity / DTO / 统一响应结构
+- 已完成：集成测试新增 Maven workspace 验证，`npm run test:integration` 中 `backend` 执行 `mvn test` 通过
+
+### [x] TASK-405 Electron / Chrome Extension 模板业务化
+
+输出：
+- `electron-app` 改为本地工作台工具，提供文件选择、批处理清单和本地状态保存
+- `chrome-ext` 改为网页采集 / 笔记插件，捕获标题、URL、选中文本并保存到 `chrome.storage.local`
+
+验收：
+- 生成默认项目并执行 install / build / lint
+- Electron Vue / React 分支都能构建
+- Chrome MV3 manifest、content、background、popup 构建产物完整
+- 已完成：`electron-app` 已改为本地批处理工作台，支持文件选择、清单状态和本地保存；Vue / React 渲染分支均可构建
+- 已完成：`chrome-ext` 已改为网页采集 / 笔记插件，使用 `activeTab`、content script 和 `chrome.storage.local`
+- 已完成：额外验证 Electron React 分支 install / build / lint 通过
+
+### [x] TASK-406 全量回归与发布前检查
+
+输出：
+- 更新集成测试快照
+- 完成全量 lint / unit / smoke / integration 验证
+- 完成至少一轮生成项目内容扫描
+
+验收：
+- `npm run lint`
+- `npm run test:unit`
+- `npm run test:smoke`
+- `npm run test:integration`
+- 生成内容扫描通过
+- 已完成：`npm run lint` 通过
+- 已完成：`npm run test:unit` 通过
+- 已完成：`npm run test:smoke` 通过
+- 已完成：`npm run test:integration` 通过，8 套模板默认矩阵均生成、安装、构建、lint；`java-fullstack` 额外 `mvn test` 通过
+- 已完成：`CXA_SKIP_TEMPLATE_INSTALL=1 npm run test:snapshot-update` 已更新集成测试快照

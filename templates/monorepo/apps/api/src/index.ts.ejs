@@ -1,18 +1,39 @@
 import express from 'express'
-import type { ApiResponse, User } from '@<%= projectName %>/shared'
+import type { ApiResponse, CustomerAction, WorkspaceSummary } from '@<%= projectName %>/shared'
 
 const app = express()
 const port = Number(process.env.PORT ?? 3000)
 
-const currentUser: User = {
-  id: 'u_admin',
-  name: '<%= projectName %> 管理员',
-  email: 'admin@example.com',
-}
+const customerActions: CustomerAction[] = [
+  {
+    id: 'ca-1001',
+    customerName: '华东渠道续约',
+    owner: '林夏',
+    stage: 'contract',
+    priority: 'high',
+    nextAction: '补齐采购审批附件',
+    dueAt: '今天 17:00',
+  },
+  {
+    id: 'ca-1002',
+    customerName: '新门店上线支持',
+    owner: '周南',
+    stage: 'proposal',
+    priority: 'medium',
+    nextAction: '发送开店物料清单',
+    dueAt: '明天 10:30',
+  },
+  {
+    id: 'ca-1003',
+    customerName: '季度培训排期',
+    owner: '许岚',
+    stage: 'contacted',
+    priority: 'low',
+    nextAction: '确认一线主管名单',
+    dueAt: '周五',
+  },
+]
 
-/**
- * 示例 API 直接复用 shared 包里的类型定义，确保跨端协议只有一份源头。
- */
 function buildResponse<T>(data: T, message: string): ApiResponse<T> {
   return {
     code: 0,
@@ -21,12 +42,25 @@ function buildResponse<T>(data: T, message: string): ApiResponse<T> {
   }
 }
 
+function buildSummary(): WorkspaceSummary {
+  return {
+    openActions: customerActions.length,
+    highPriorityActions: customerActions.filter((action) => action.priority === 'high').length,
+    serviceTickets: 3,
+  }
+}
+
+app.use(express.json())
+
 app.get('/api/health', (_request, response) => {
-  response.json(buildResponse({ status: 'ok' }, 'api ready'))
+  response.json(buildResponse({ status: 'ok' }, 'ready'))
 })
 
-app.get('/api/users/me', (_request, response) => {
-  response.json(buildResponse(currentUser, '来自 apps/api 的共享类型响应'))
+app.get('/api/workspace', (_request, response) => {
+  response.json(buildResponse({
+    summary: buildSummary(),
+    actions: customerActions,
+  }, 'workspace loaded'))
 })
 
 app.listen(port, () => {

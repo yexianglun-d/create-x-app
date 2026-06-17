@@ -66,6 +66,9 @@
         "java": {
           "type": ["string", "null"]
         },
+        "maven": {
+          "type": ["string", "null"]
+        },
         "docker": {
           "type": ["string", "null"]
         },

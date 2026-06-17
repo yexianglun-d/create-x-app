@@ -1,24 +1,84 @@
-import { ipcMain } from 'electron'
-import os from 'node:os'
+import { app, dialog, ipcMain } from 'electron'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { basename, join } from 'node:path'
 
-const GET_SYSTEM_INFO_CHANNEL = 'get-system-info'
+const SELECT_FILES_CHANNEL = 'workspace:select-files'
+const READ_ITEMS_CHANNEL = 'workspace:read-items'
+const SAVE_ITEMS_CHANNEL = 'workspace:save-items'
+
+export interface BatchItem {
+  id: string
+  fileName: string
+  filePath: string
+  status: 'queued' | 'processing' | 'done'
+  note: string
+}
+
+function getStorePath() {
+  return join(app.getPath('userData'), 'batch-workspace.json')
+}
+
+function isBatchItem(value: unknown): value is BatchItem {
+  if (typeof value !== 'object' || value === null) {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return typeof candidate.id === 'string'
+    && typeof candidate.fileName === 'string'
+    && typeof candidate.filePath === 'string'
+    && ['queued', 'processing', 'done'].includes(String(candidate.status))
+    && typeof candidate.note === 'string'
+}
+
+async function readSavedItems() {
+  try {
+    const rawContent = await readFile(getStorePath(), 'utf8')
+    const parsedContent = JSON.parse(rawContent) as unknown
+
+    return Array.isArray(parsedContent) ? parsedContent.filter(isBatchItem) : []
+  } catch {
+    return []
+  }
+}
+
+async function saveItems(items: BatchItem[]) {
+  await mkdir(app.getPath('userData'), { recursive: true })
+  await writeFile(getStorePath(), `${JSON.stringify(items, null, 2)}\n`, 'utf8')
+  return items
+}
 
 /**
- * 统一注册主进程对外暴露的 IPC 能力。
- *
- * 说明：
- * 1. 在一个入口集中注册，避免窗口创建逻辑和通道定义相互耦合
- * 2. 先 removeHandler 再 handle，确保开发期重复初始化时不会抛出重复注册错误
+ * 渲染进程只拿到经过 preload 暴露的工作台能力，主进程集中处理文件选择和本地持久化。
  */
 export function registerIpcHandlers() {
-  ipcMain.removeHandler(GET_SYSTEM_INFO_CHANNEL)
-  ipcMain.handle(GET_SYSTEM_INFO_CHANNEL, async () => ({
-    platform: process.platform,
-    arch: process.arch,
-    hostname: os.hostname(),
-    release: os.release(),
-    nodeVersion: process.versions.node,
-    electronVersion: process.versions.electron,
-    chromeVersion: process.versions.chrome,
-  }))
+  ipcMain.removeHandler(SELECT_FILES_CHANNEL)
+  ipcMain.removeHandler(READ_ITEMS_CHANNEL)
+  ipcMain.removeHandler(SAVE_ITEMS_CHANNEL)
+
+  ipcMain.handle(SELECT_FILES_CHANNEL, async () => {
+    const result = await dialog.showOpenDialog({
+      title: '选择待处理文件',
+      properties: ['openFile', 'multiSelections'],
+    })
+
+    if (result.canceled) {
+      return []
+    }
+
+    return result.filePaths.map((filePath): BatchItem => ({
+      id: `${Date.now()}-${filePath}`,
+      fileName: basename(filePath),
+      filePath,
+      status: 'queued',
+      note: '等待处理',
+    }))
+  })
+
+  ipcMain.handle(READ_ITEMS_CHANNEL, async () => readSavedItems())
+
+  ipcMain.handle(SAVE_ITEMS_CHANNEL, async (_event, items: BatchItem[]) => {
+    return saveItems(items.filter(isBatchItem))
+  })
 }

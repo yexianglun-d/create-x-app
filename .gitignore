@@ -11,3 +11,4 @@ my-test-project-full-v2/
 my-test-project-skip/
 my-test-project-skip-no-husky/
 verbose-check/
+.playwright-cli/
