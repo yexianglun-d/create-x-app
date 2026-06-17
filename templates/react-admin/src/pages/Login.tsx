@@ -3,16 +3,16 @@ import {
   SafetyCertificateOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Button, Form, Input, Typography } from 'antd'
+import { Button, Card, Form, Input, Typography } from 'antd'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useAppCopy } from '../hooks/useAppCopy'
 import { useAuthStore } from '../stores/auth'
 import type { LoginFormValues, UserProfile } from '../types'
 
 const loginBenefits = [
-  '客户跟进按阶段沉淀',
-  '服务工单按优先级处理',
-  '审批任务集中收口',
+  '完整的认证与路由守卫架构',
+  'Antd 主题与布局系统',
+  '请求封装与错误处理',
 ]
 
 export default function Login() {
@@ -27,13 +27,13 @@ export default function Login() {
 
   async function handleFinish(values: LoginFormValues) {
     const user: UserProfile = {
-      id: 'u-ops-lead',
-      name: values.username || '运营负责人',
-      email: 'ops@example.com',
-      role: '运营负责人',
+      id: 'u-admin',
+      name: values.username || '管理员',
+      email: 'admin@example.com',
+      role: '管理员',
     }
 
-    setSession('local-ops-session', user)
+    setSession('local-demo-session', user)
     navigate('/', { replace: true })
   }
 
@@ -50,45 +50,35 @@ export default function Login() {
         </ul>
       </section>
 
-      <section className="login-panel">
-        <div className="login-panel-head">
-          <Typography.Title level={3}>{copy('login.cardTitle')}</Typography.Title>
-          <Typography.Paragraph type="secondary">
-            本地开发可使用任意账号密码登录，后续接入真实认证服务即可替换。
-          </Typography.Paragraph>
-        </div>
+      <Card className="login-card" bordered={false}>
+        <Typography.Title level={3} className="login-card-title">
+          {copy('login.cardTitle')}
+        </Typography.Title>
 
-        <Form<LoginFormValues>
-          layout="vertical"
-          onFinish={handleFinish}
-          initialValues={{
-            username: 'ops',
-            password: '123456',
-          }}
-        >
+        <Form layout="vertical" onFinish={handleFinish}>
           <Form.Item
-            label="账号"
             name="username"
-            rules={[{ required: true, message: '请输入账号' }]}
+            label="用户名"
+            rules={[{ required: true, message: '请输入用户名' }]}
           >
-            <Input prefix={<UserOutlined />} placeholder="请输入账号" />
+            <Input prefix={<UserOutlined />} placeholder="admin" size="large" />
           </Form.Item>
 
           <Form.Item
-            label="密码"
             name="password"
+            label="密码"
             rules={[{ required: true, message: '请输入密码' }]}
           >
-            <Input.Password prefix={<LockOutlined />} placeholder="请输入密码" />
+            <Input.Password prefix={<LockOutlined />} placeholder="任意密码即可登录" size="large" />
           </Form.Item>
 
-          <Form.Item style={{ marginBottom: 0 }}>
+          <Form.Item>
             <Button type="primary" htmlType="submit" block size="large">
               {copy('login.submit')}
             </Button>
           </Form.Item>
         </Form>
-      </section>
+      </Card>
     </div>
   )
 }

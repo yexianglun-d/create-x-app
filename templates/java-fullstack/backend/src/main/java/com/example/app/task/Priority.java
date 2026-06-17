@@ -1,4 +1,4 @@
-package com.example.app.customer;
+package com.example.app.task;
 
 public enum Priority {
     HIGH,

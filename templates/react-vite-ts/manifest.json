@@ -1,7 +1,17 @@
 {
   "key": "react-vite-ts",
   "name": "React + Vite + TypeScript",
-  "description": "适合中小型前端应用，React 工程开箱即用",
+  "description": "最轻的 React 起步方案，只有 Vite + TypeScript + React，从你自己写的第一个组件开始",
+  "tags": ["react", "vite", "typescript", "spa"],
+  "useCases": [
+    "个人项目、工具页、落地页等轻量前端",
+    "想在 Vite 上从零搭建，不需要预设路由/状态管理",
+    "学习 React + TypeScript 基础工程配置"
+  ],
+  "notFor": [
+    "需要后台管理系统模板（有登录/路由/布局）→ react-admin",
+    "需要移动端 H5 模板 → mobile-h5"
+  ],
   "version": "1.0.0",
   "schemaVersion": "1.0",
   "framework": "react",

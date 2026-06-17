@@ -2,15 +2,15 @@ import { FormEvent, useEffect, useState } from 'react'
 import './App.css'
 
 type Priority = 'HIGH' | 'MEDIUM' | 'LOW'
-type CustomerStage = 'NEW' | 'CONTACTED' | 'PROPOSAL' | 'CONTRACT'
+type TaskStage = 'TODO' | 'IN_PROGRESS' | 'REVIEW' | 'DONE'
 
-interface CustomerAction {
+interface TaskItem {
   id: string
-  customerName: string
-  owner: string
-  stage: CustomerStage
+  title: string
+  assignee: string
+  stage: TaskStage
   priority: Priority
-  nextAction: string
+  nextStep: string
   dueAt: string
 }
 
@@ -20,11 +20,11 @@ interface ApiResponse<T> {
   message: string
 }
 
-const stageLabels: Record<CustomerStage, string> = {
-  NEW: '新建',
-  CONTACTED: '已沟通',
-  PROPOSAL: '方案中',
-  CONTRACT: '合同确认',
+const stageLabels: Record<TaskStage, string> = {
+  TODO: '待办',
+  IN_PROGRESS: '进行中',
+  REVIEW: '评审中',
+  DONE: '已完成',
 }
 
 const priorityLabels: Record<Priority, string> = {
@@ -34,52 +34,52 @@ const priorityLabels: Record<Priority, string> = {
 }
 
 export default function App() {
-  const [actions, setActions] = useState<CustomerAction[]>([])
+  const [tasks, setTasks] = useState<TaskItem[]>([])
   const [message, setMessage] = useState('正在连接后端服务...')
-  const [customerName, setCustomerName] = useState('')
-  const [nextAction, setNextAction] = useState('')
+  const [title, setTitle] = useState('')
+  const [nextStep, setNextStep] = useState('')
 
-  async function loadActions() {
+  async function loadTasks() {
     try {
-      const response = await fetch('/api/customer-actions')
-      const payload = await response.json() as ApiResponse<CustomerAction[]>
+      const response = await fetch('/api/tasks')
+      const payload = await response.json() as ApiResponse<TaskItem[]>
 
-      setActions(payload.data)
+      setTasks(payload.data)
       setMessage('数据已同步')
     } catch {
       setMessage('后端服务未启动，运行 backend 目录下的 mvn spring-boot:run 后会自动联调。')
     }
   }
 
-  async function handleCreateAction(event: FormEvent<HTMLFormElement>) {
+  async function handleCreateTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!customerName.trim() || !nextAction.trim()) {
-      setMessage('请填写客户事项和下一步动作。')
+    if (!title.trim() || !nextStep.trim()) {
+      setMessage('请填写任务名称和下一步动作。')
       return
     }
 
-    const response = await fetch('/api/customer-actions', {
+    const response = await fetch('/api/tasks', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        customerName,
-        nextAction,
+        title,
+        nextStep,
         priority: 'medium',
       }),
     })
-    const payload = await response.json() as ApiResponse<CustomerAction>
+    const payload = await response.json() as ApiResponse<TaskItem>
 
-    setActions((currentActions) => [payload.data, ...currentActions])
-    setCustomerName('')
-    setNextAction('')
-    setMessage('已创建客户行动。')
+    setTasks((currentTasks) => [payload.data, ...currentTasks])
+    setTitle('')
+    setNextStep('')
+    setMessage('已创建任务。')
   }
 
   useEffect(() => {
-    void loadActions()
+    void loadTasks()
   }, [])
 
   return (
@@ -87,36 +87,36 @@ export default function App() {
       <section className="workspace-header">
         <div>
           <p className="workspace-name"><%= projectName %></p>
-          <h1>全栈业务工作台</h1>
-          <p>React 前端与 Spring Boot 后端共用客户行动流程，适合作为 Java 全栈项目的第一版业务骨架。</p>
+          <h1>全栈任务工作台</h1>
+          <p>React 前端与 Spring Boot 后端共用任务管理流程，适合作为 Java 全栈项目的第一版业务骨架。</p>
         </div>
-        <form className="action-form" onSubmit={handleCreateAction}>
-          <label htmlFor="customerName">客户事项</label>
+        <form className="action-form" onSubmit={handleCreateTask}>
+          <label htmlFor="title">任务名称</label>
           <input
-            id="customerName"
-            value={customerName}
-            onChange={(event) => setCustomerName(event.target.value)}
-            placeholder="例如：华南渠道续约"
+            id="title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="例如：完成项目方案"
           />
-          <label htmlFor="nextAction">下一步动作</label>
+          <label htmlFor="nextStep">下一步动作</label>
           <input
-            id="nextAction"
-            value={nextAction}
-            onChange={(event) => setNextAction(event.target.value)}
-            placeholder="例如：确认合同附件"
+            id="nextStep"
+            value={nextStep}
+            onChange={(event) => setNextStep(event.target.value)}
+            placeholder="例如：确认需求文档"
           />
-          <button type="submit">创建行动</button>
+          <button type="submit">创建任务</button>
         </form>
       </section>
 
       <section className="summary-grid">
         <article>
-          <span>客户行动</span>
-          <strong>{actions.length}</strong>
+          <span>任务总数</span>
+          <strong>{tasks.length}</strong>
         </article>
         <article>
           <span>高优先级</span>
-          <strong>{actions.filter((action) => action.priority === 'HIGH').length}</strong>
+          <strong>{tasks.filter((task) => task.priority === 'HIGH').length}</strong>
         </article>
         <article>
           <span>接口状态</span>
@@ -126,24 +126,24 @@ export default function App() {
 
       <section className="panel">
         <div className="panel-head">
-          <h2>客户行动列表</h2>
+          <h2>任务列表</h2>
           <span>{message}</span>
         </div>
-        {actions.length === 0 ? (
-          <p className="empty-state">暂无客户行动。后端启动后会加载初始数据，也可以通过右上表单创建。</p>
+        {tasks.length === 0 ? (
+          <p className="empty-state">暂无任务。后端启动后会加载初始数据，也可以通过右上表单创建。</p>
         ) : (
           <div className="action-list">
-            {actions.map((action) => (
-              <article className="action-row" key={action.id}>
+            {tasks.map((task) => (
+              <article className="action-row" key={task.id}>
                 <div>
-                  <h3>{action.customerName}</h3>
-                  <p>{action.nextAction}</p>
+                  <h3>{task.title}</h3>
+                  <p>{task.nextStep}</p>
                 </div>
                 <div className="action-meta">
-                  <span className="stage">{stageLabels[action.stage]}</span>
-                  <span>{action.owner}</span>
-                  <span>{priorityLabels[action.priority]}优先级</span>
-                  <span>{action.dueAt}</span>
+                  <span className="stage">{stageLabels[task.stage]}</span>
+                  <span>{task.assignee}</span>
+                  <span>{priorityLabels[task.priority]}优先级</span>
+                  <span>{task.dueAt}</span>
                 </div>
               </article>
             ))}

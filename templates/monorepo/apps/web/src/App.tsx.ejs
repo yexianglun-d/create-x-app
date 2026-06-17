@@ -1,39 +1,39 @@
 import { useEffect, useState } from 'react'
-import type { ApiResponse, CustomerAction, WorkspaceSummary } from '@<%= projectName %>/shared'
+import type { ApiResponse, TaskItem, DashboardSummary } from '@<%= projectName %>/shared'
 
-interface WorkspacePayload {
-  summary: WorkspaceSummary
-  actions: CustomerAction[]
+interface DashboardPayload {
+  summary: DashboardSummary
+  tasks: TaskItem[]
 }
 
-const stageLabels: Record<CustomerAction['stage'], string> = {
-  new: '新建',
-  contacted: '已沟通',
-  proposal: '方案中',
-  contract: '合同确认',
+const statusLabels: Record<TaskItem['status'], string> = {
+  todo: '待办',
+  in_progress: '进行中',
+  review: '评审中',
+  done: '已完成',
 }
 
-const priorityLabels: Record<CustomerAction['priority'], string> = {
+const priorityLabels: Record<TaskItem['priority'], string> = {
   high: '高',
   medium: '中',
   low: '低',
 }
 
-const priorityColors: Record<CustomerAction['priority'], string> = {
+const priorityColors: Record<TaskItem['priority'], string> = {
   high: '#b42318',
   medium: '#92400e',
   low: '#137a45',
 }
 
 export default function App() {
-  const [workspace, setWorkspace] = useState<WorkspacePayload | null>(null)
-  const [statusMessage, setStatusMessage] = useState('正在加载今日业务数据...')
+  const [dashboard, setDashboard] = useState<DashboardPayload | null>(null)
+  const [statusMessage, setStatusMessage] = useState('正在加载任务数据...')
 
   useEffect(() => {
-    void fetch('/api/workspace')
-      .then(async (response) => response.json() as Promise<ApiResponse<WorkspacePayload>>)
+    void fetch('/api/dashboard')
+      .then(async (response) => response.json() as Promise<ApiResponse<DashboardPayload>>)
       .then((payload) => {
-        setWorkspace(payload.data)
+        setDashboard(payload.data)
         setStatusMessage('数据已同步')
       })
       .catch(() => {
@@ -41,109 +41,126 @@ export default function App() {
       })
   }, [])
 
-  const summary = workspace?.summary ?? {
-    openActions: 0,
-    highPriorityActions: 0,
-    serviceTickets: 0,
+  const summary = dashboard?.summary ?? {
+    totalTasks: 0,
+    inProgress: 0,
+    highPriority: 0,
   }
-  const actions = workspace?.actions ?? []
+  const tasks = dashboard?.tasks ?? []
 
   return (
     <main
       style={{
         minHeight: '100vh',
-        padding: 36,
-        boxSizing: 'border-box',
-        color: '#172033',
-        fontFamily: '"SF Pro Display", "PingFang SC", "Segoe UI", sans-serif',
-        background: '#f5f7fb',
+        background: '#f8fafc',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        color: '#1e293b',
       }}
     >
-      <section style={{ maxWidth: 860, marginBottom: 24 }}>
-        <p style={{ margin: '0 0 10px', color: '#667085', fontWeight: 700 }}><%= projectName %></p>
-        <h1 style={{ margin: '0 0 12px', color: '#101828', fontSize: 44, lineHeight: 1.08 }}>
-          业务协作工作区
-        </h1>
-        <p style={{ margin: 0, color: '#5d6678', lineHeight: 1.8 }}>
-          前端、API 和共享类型围绕同一套客户行动协议协作，适合作为全栈业务项目的起点。
+      <section style={{ maxWidth: 960, margin: '0 auto', padding: '40px 24px' }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#64748b', marginBottom: 8 }}>
+          @<%= projectName %>/web
         </p>
+        <h1 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.2 }}>任务管理仪表盘</h1>
+        <p style={{ marginTop: 12, maxWidth: 640, color: '#475569', lineHeight: 1.7 }}>
+          此界面演示 monorepo 中前后端共享类型的典型用法。你可以继续扩展任务过滤、拖拽排序、多看板视图等功能。
+        </p>
+        <p style={{ marginTop: 12, fontSize: 13, color: '#94a3b8' }}>{statusMessage}</p>
       </section>
 
       <section
         style={{
           display: 'grid',
-          gap: 14,
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          marginBottom: 18,
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 16,
+          maxWidth: 960,
+          margin: '0 auto 32px',
+          padding: '0 24px',
         }}
       >
         {[
-          ['待跟进客户', summary.openActions],
-          ['高优先级事项', summary.highPriorityActions],
-          ['服务工单', summary.serviceTickets],
-        ].map(([label, value]) => (
+          { label: '总任务数', value: summary.totalTasks, hint: '持续更新' },
+          { label: '进行中', value: summary.inProgress, hint: '当前活跃任务' },
+          { label: '高优先级', value: summary.highPriority, hint: '需要优先处理' },
+        ].map((card) => (
           <article
-            key={label}
+            key={card.label}
             style={{
-              border: '1px solid #dde5ef',
-              borderRadius: 8,
-              padding: 18,
-              background: '#ffffff',
-              boxShadow: '0 12px 30px rgba(20, 32, 54, 0.06)',
+              background: '#fff',
+              borderRadius: 12,
+              border: '1px solid #e2e8f0',
+              padding: 20,
+              boxShadow: '0 1px 3px rgba(15,23,42,.04)',
             }}
           >
-            <span style={{ color: '#667085', fontSize: 13 }}>{label}</span>
-            <strong style={{ display: 'block', marginTop: 8, fontSize: 32 }}>{value}</strong>
+            <span style={{ fontSize: 13, color: '#64748b' }}>{card.label}</span>
+            <strong style={{ display: 'block', fontSize: 32, marginTop: 4 }}>{card.value}</strong>
+            <small style={{ color: '#94a3b8' }}>{card.hint}</small>
           </article>
         ))}
       </section>
 
-      <section
-        style={{
-          border: '1px solid #dde5ef',
-          borderRadius: 8,
-          padding: 20,
-          background: '#ffffff',
-          boxShadow: '0 12px 30px rgba(20, 32, 54, 0.06)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 16 }}>
-          <h2 style={{ margin: 0 }}>客户行动列表</h2>
-          <span style={{ color: '#667085' }}>{statusMessage}</span>
-        </div>
-
-        {actions.length === 0 ? (
-          <p style={{ margin: 0, color: '#667085' }}>暂无数据，API 启动后会显示客户行动。</p>
-        ) : (
-          <div style={{ display: 'grid', gap: 10 }}>
-            {actions.map((action) => (
-              <article
-                key={action.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: 16,
-                  border: '1px solid #e6ebf2',
-                  borderRadius: 8,
-                  padding: 14,
-                  background: '#fbfcfe',
-                }}
-              >
-                <div>
-                  <h3 style={{ margin: '0 0 5px', fontSize: 16 }}>{action.customerName}</h3>
-                  <p style={{ margin: 0, color: '#5d6678' }}>{action.nextAction}</p>
-                </div>
-                <div style={{ display: 'grid', justifyItems: 'end', gap: 5, minWidth: 120 }}>
-                  <span style={{ color: '#2563eb', fontWeight: 700 }}>{stageLabels[action.stage]}</span>
-                  <span style={{ color: priorityColors[action.priority], fontWeight: 700 }}>
-                    {priorityLabels[action.priority]}优先级
-                  </span>
-                  <span style={{ color: '#667085' }}>{action.dueAt}</span>
-                </div>
-              </article>
-            ))}
+      <section style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px 48px' }}>
+        <div
+          style={{
+            background: '#fff',
+            borderRadius: 12,
+            border: '1px solid #e2e8f0',
+            padding: 24,
+            boxShadow: '0 1px 3px rgba(15,23,42,.04)',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600 }}>任务列表</h2>
+            <span style={{ fontSize: 13, color: '#64748b' }}>{tasks.length} 条</span>
           </div>
-        )}
+
+          {tasks.length === 0 ? (
+            <p style={{ color: '#94a3b8' }}>暂无任务数据。启动后端 API 后会自动加载。</p>
+          ) : (
+            <div style={{ display: 'grid', gap: 12 }}>
+              {tasks.map((task) => (
+                <article
+                  key={task.id}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    border: '1px solid #f1f5f9',
+                    borderRadius: 10,
+                    padding: 16,
+                    background: '#f8fafc',
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: 15 }}>{task.title}</strong>
+                    <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>
+                      {task.description}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#64748b' }}>
+                    <span style={{ fontSize: 12, color: priorityColors[task.priority] }}>
+                      {priorityLabels[task.priority]}
+                    </span>
+                    <span>{task.assignee}</span>
+                    <span
+                      style={{
+                        padding: '2px 8px',
+                        borderRadius: 6,
+                        background: '#eff6ff',
+                        color: '#1d4ed8',
+                        fontSize: 12,
+                      }}
+                    >
+                      {statusLabels[task.status]}
+                    </span>
+                    <span>{task.dueAt}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </main>
   )

@@ -2,15 +2,15 @@
 <% } %><% if (extras.includes('express')) { %>import express from 'express'
 
 type Priority = 'high' | 'medium' | 'low'
-type Stage = 'new' | 'contacted' | 'proposal' | 'contract'
+type Stage = 'todo' | 'in_progress' | 'review' | 'done'
 
-interface CustomerAction {
+interface TaskItem {
   id: string
-  customerName: string
-  owner: string
+  title: string
+  assignee: string
   stage: Stage
   priority: Priority
-  nextAction: string
+  nextStep: string
   dueAt: string
 }
 
@@ -22,23 +22,23 @@ interface ApiResponse<T> {
 
 const DEFAULT_PORT = 3000
 const app = express()
-const customerActions: CustomerAction[] = [
+const taskItems: TaskItem[] = [
   {
-    id: 'ca-1001',
-    customerName: '华东渠道续约',
-    owner: '林夏',
-    stage: 'contract',
+    id: 't-1001',
+    title: '完善项目文档',
+    assignee: '张三',
+    stage: 'in_progress',
     priority: 'high',
-    nextAction: '补齐采购审批附件',
+    nextStep: '补充 API 接口说明',
     dueAt: '今天 17:00',
   },
   {
-    id: 'ca-1002',
-    customerName: '新门店上线支持',
-    owner: '周南',
-    stage: 'proposal',
+    id: 't-1002',
+    title: '单元测试覆盖',
+    assignee: '李四',
+    stage: 'review',
     priority: 'medium',
-    nextAction: '发送开店物料清单',
+    nextStep: '补充边界用例',
     dueAt: '明天 10:30',
   },
 ]
@@ -75,21 +75,21 @@ function normalizePriority(value: unknown): Priority {
   return value === 'high' || value === 'medium' || value === 'low' ? value : 'medium'
 }
 
-function createCustomerAction(payload: Record<string, unknown>): CustomerAction {
-  const customerName = normalizeText(payload.customerName)
-  const nextAction = normalizeText(payload.nextAction)
+function createTask(payload: Record<string, unknown>): TaskItem {
+  const title = normalizeText(payload.title)
+  const nextStep = normalizeText(payload.nextStep)
 
-  if (!customerName || !nextAction) {
-    throw new Error('customerName 和 nextAction 为必填项')
+  if (!title || !nextStep) {
+    throw new Error('title 和 nextStep 为必填项')
   }
 
   return {
-    id: `ca-${Date.now()}`,
-    customerName,
-    owner: normalizeText(payload.owner) || '待分配',
-    stage: 'new',
+    id: `t-${Date.now()}`,
+    title,
+    assignee: normalizeText(payload.assignee) || '待分配',
+    stage: 'todo',
     priority: normalizePriority(payload.priority),
-    nextAction,
+    nextStep,
     dueAt: normalizeText(payload.dueAt) || '待定',
   }
 }
@@ -103,15 +103,15 @@ app.get('/api/health', (_request, response) => {
   }, 'ready'))
 })
 
-app.get('/api/customer-actions', (_request, response) => {
-  response.json(buildResponse(customerActions, 'loaded'))
+app.get('/api/tasks', (_request, response) => {
+  response.json(buildResponse(taskItems, 'loaded'))
 })
 
-app.post('/api/customer-actions', (request, response) => {
+app.post('/api/tasks', (request, response) => {
   try {
-    const action = createCustomerAction(request.body as Record<string, unknown>)
-    customerActions.unshift(action)
-    response.status(201).json(buildResponse(action, 'created'))
+    const task = createTask(request.body as Record<string, unknown>)
+    taskItems.unshift(task)
+    response.status(201).json(buildResponse(task, 'created'))
   } catch (error) {
     response.status(400).json({
       code: 400,
@@ -126,19 +126,19 @@ const port = resolvePort()
 app.listen(port, () => {
   console.log(`API ready at http://localhost:${port}`)
 })
-<% } else { %>interface CustomerAction {
-  customerName: string
-  nextAction: string
+<% } else { %>interface Task {
+  title: string
+  nextStep: string
 }
 
-const pendingActions: CustomerAction[] = [
+const pendingTasks: Task[] = [
   {
-    customerName: '华东渠道续约',
-    nextAction: '补齐采购审批附件',
+    title: '完善项目文档',
+    nextStep: '补充 API 接口说明',
   },
 ]
 
-for (const action of pendingActions) {
-  console.log(`${action.customerName}: ${action.nextAction}`)
+for (const task of pendingTasks) {
+  console.log(`${task.title}: ${task.nextStep}`)
 }
 <% } %>

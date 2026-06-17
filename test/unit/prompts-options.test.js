@@ -61,7 +61,7 @@ test('template choices include first-time decision hints', () => {
 
   assert.equal(choice.value, 'react-vite-ts')
   assert.equal(choice.label, 'React + Vite + TypeScript')
-  assert.match(choice.hint, /适合中小型前端应用/)
+  assert.match(choice.hint, /最轻的 React 起步方案/)
   assert.match(choice.hint, /包管理器：npm\/pnpm\/yarn/)
   assert.match(choice.hint, /dev 端口：5173/)
 })

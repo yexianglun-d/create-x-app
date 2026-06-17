@@ -19,8 +19,8 @@ mvn spring-boot:run
 ## 已包含能力
 
 - `GET /api/health`：健康检查
-- `GET /api/customer-actions`：查询客户行动列表
-- `POST /api/customer-actions`：创建客户行动
+- `GET /api/tasks`：查询任务列表
+- `POST /api/tasks`：创建任务
 - H2 内存数据库：本地启动即用
 - JPA 分层：Controller / Service / Repository / Entity
 - Bean Validation：创建接口入参校验
@@ -30,6 +30,6 @@ mvn spring-boot:run
 
 1. 将 H2 切换为 PostgreSQL 或 MySQL。
 2. 增加登录认证和操作人信息。
-3. 为客户行动增加分页、搜索和状态流转。
+3. 为任务增加分页、搜索和状态流转。
 4. 将错误响应统一到全局异常处理器。
 5. 补充 Controller 层接口测试和 Service 层业务测试。

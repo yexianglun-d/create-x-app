@@ -8,13 +8,13 @@ void i18n
       zh: {
         translation: {
           'brand.name': '<%= projectName %>',
-          'brand.desc': '运营管理台',
-          'shell.title': '运营工作台',
-          'shell.desc': '集中处理客户跟进、服务工单和审批任务。',
-          'dashboard.title': '今日运营概览',
-          'dashboard.desc': '按负责人和优先级快速定位需要推进的客户事项。',
-          'login.title': '登录运营管理台',
-          'login.desc': '进入后可处理客户跟进、服务工单和审批任务。',
+          'brand.desc': '管理后台',
+          'shell.title': '管理后台',
+          'shell.desc': '集中管理项目、任务和团队协作。',
+          'dashboard.title': '工作台',
+          'dashboard.desc': '总览项目进展、待办任务和关键指标。',
+          'login.title': '登录管理后台',
+          'login.desc': '登录后即可管理项目、任务和团队协作。',
           'login.cardTitle': '账号登录',
           'login.submit': '登录',
           'notFound.title': '页面不存在',
@@ -25,27 +25,23 @@ void i18n
       en: {
         translation: {
           'brand.name': '<%= projectName %>',
-          'brand.desc': 'Operations console',
-          'shell.title': 'Operations workspace',
-          'shell.desc': 'Manage customer follow-ups, service tickets, and approvals in one place.',
-          'dashboard.title': 'Today overview',
-          'dashboard.desc': 'Filter customer actions by owner and priority.',
-          'login.title': 'Sign in to operations',
-          'login.desc': 'Handle customer follow-ups, service tickets, and approvals.',
+          'brand.desc': 'Admin console',
+          'shell.title': 'Admin console',
+          'shell.desc': 'Manage projects, tasks, and team collaboration.',
+          'dashboard.title': 'Workspace',
+          'dashboard.desc': 'Overview of projects, tasks, and key metrics.',
+          'login.title': 'Sign in',
+          'login.desc': 'Sign in to manage projects, tasks, and team collaboration.',
           'login.cardTitle': 'Account sign in',
           'login.submit': 'Sign in',
           'notFound.title': 'Page not found',
-          'notFound.desc': 'Return to the workspace to continue.',
+          'notFound.desc': 'The page you are looking for does not exist.',
           'notFound.action': 'Back to workspace',
         },
       },
     },
     lng: 'zh',
     fallbackLng: 'zh',
-    interpolation: {
-      escapeValue: false,
-    },
+    interpolation: { escapeValue: false },
   })
-
-export default i18n
 <% } %>

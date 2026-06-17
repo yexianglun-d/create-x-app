@@ -1,35 +1,35 @@
 import express from 'express'
-import type { ApiResponse, CustomerAction, WorkspaceSummary } from '@<%= projectName %>/shared'
+import type { ApiResponse, TaskItem, DashboardSummary } from '@<%= projectName %>/shared'
 
 const app = express()
 const port = Number(process.env.PORT ?? 3000)
 
-const customerActions: CustomerAction[] = [
+const tasks: TaskItem[] = [
   {
-    id: 'ca-1001',
-    customerName: '华东渠道续约',
-    owner: '林夏',
-    stage: 'contract',
+    id: 'task-001',
+    title: '完成需求分析文档',
+    assignee: '张三',
+    status: 'in_progress',
     priority: 'high',
-    nextAction: '补齐采购审批附件',
+    description: '整理需求清单并撰写分析报告',
     dueAt: '今天 17:00',
   },
   {
-    id: 'ca-1002',
-    customerName: '新门店上线支持',
-    owner: '周南',
-    stage: 'proposal',
+    id: 'task-002',
+    title: '设计系统架构方案',
+    assignee: '李四',
+    status: 'review',
     priority: 'medium',
-    nextAction: '发送开店物料清单',
+    description: '完成技术选型和架构设计',
     dueAt: '明天 10:30',
   },
   {
-    id: 'ca-1003',
-    customerName: '季度培训排期',
-    owner: '许岚',
-    stage: 'contacted',
+    id: 'task-003',
+    title: '编写单元测试',
+    assignee: '王五',
+    status: 'todo',
     priority: 'low',
-    nextAction: '确认一线主管名单',
+    description: '覆盖核心业务逻辑的测试用例',
     dueAt: '周五',
   },
 ]
@@ -42,11 +42,11 @@ function buildResponse<T>(data: T, message: string): ApiResponse<T> {
   }
 }
 
-function buildSummary(): WorkspaceSummary {
+function buildSummary(): DashboardSummary {
   return {
-    openActions: customerActions.length,
-    highPriorityActions: customerActions.filter((action) => action.priority === 'high').length,
-    serviceTickets: 3,
+    totalTasks: tasks.length,
+    inProgress: tasks.filter((task) => task.status === 'in_progress').length,
+    highPriority: tasks.filter((task) => task.priority === 'high').length,
   }
 }
 
@@ -56,13 +56,13 @@ app.get('/api/health', (_request, response) => {
   response.json(buildResponse({ status: 'ok' }, 'ready'))
 })
 
-app.get('/api/workspace', (_request, response) => {
+app.get('/api/dashboard', (_request, response) => {
   response.json(buildResponse({
     summary: buildSummary(),
-    actions: customerActions,
-  }, 'workspace loaded'))
+    tasks,
+  }, 'ok'))
 })
 
 app.listen(port, () => {
-  console.log(`API ready at http://localhost:${port}`)
+  console.log(`@<%= projectName %>/api listening on http://localhost:${port}`)
 })

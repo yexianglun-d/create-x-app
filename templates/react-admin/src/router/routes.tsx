@@ -1,7 +1,7 @@
 import {
   CheckSquareOutlined,
   DashboardOutlined,
-  TeamOutlined,
+  ProjectOutlined,
 } from '@ant-design/icons'
 import { lazy } from 'react'
 import type { AppRouteDefinition } from '../types'
@@ -13,7 +13,7 @@ export const privateRouteDefinitions = [
     key: 'dashboard',
     path: '/',
     title: '工作台',
-    description: '总览客户跟进、服务工单和审批任务。',
+    description: '总览项目进展、待办任务和关键指标。',
     icon: <DashboardOutlined />,
     component: DashboardPage,
   },
@@ -21,16 +21,16 @@ export const privateRouteDefinitions = [
     key: 'tasks',
     path: '/tasks',
     title: '任务队列',
-    description: '按优先级处理待办和审批。',
+    description: '按优先级查看和处理待办事项。',
     icon: <CheckSquareOutlined />,
     component: DashboardPage,
   },
   {
-    key: 'customers',
-    path: '/customers',
-    title: '客户跟进',
-    description: '维护客户阶段、负责人和下一步动作。',
-    icon: <TeamOutlined />,
+    key: 'projects',
+    path: '/projects',
+    title: '项目管理',
+    description: '查看项目阶段、负责人和截止时间。',
+    icon: <ProjectOutlined />,
     component: DashboardPage,
   },
 ] satisfies AppRouteDefinition[]

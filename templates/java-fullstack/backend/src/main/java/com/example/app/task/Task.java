@@ -1,4 +1,4 @@
-package com.example.app.customer;
+package com.example.app.task;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,37 +8,37 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-public class CustomerAction {
+public class Task {
 
     @Id
     private String id;
 
-    private String customerName;
+    private String title;
 
-    private String owner;
+    private String assignee;
 
     @Enumerated(EnumType.STRING)
-    private CustomerStage stage;
+    private TaskStatus status;
 
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
-    private String nextAction;
+    private String description;
 
     private String dueAt;
 
     private OffsetDateTime createdAt;
 
-    protected CustomerAction() {
+    protected Task() {
     }
 
-    public CustomerAction(String customerName, String owner, CustomerStage stage, Priority priority, String nextAction, String dueAt) {
+    public Task(String title, String assignee, TaskStatus status, Priority priority, String description, String dueAt) {
         this.id = UUID.randomUUID().toString();
-        this.customerName = customerName;
-        this.owner = owner;
-        this.stage = stage;
+        this.title = title;
+        this.assignee = assignee;
+        this.status = status;
         this.priority = priority;
-        this.nextAction = nextAction;
+        this.description = description;
         this.dueAt = dueAt;
         this.createdAt = OffsetDateTime.now();
     }
@@ -47,24 +47,24 @@ public class CustomerAction {
         return id;
     }
 
-    public String getCustomerName() {
-        return customerName;
+    public String getTitle() {
+        return title;
     }
 
-    public String getOwner() {
-        return owner;
+    public String getAssignee() {
+        return assignee;
     }
 
-    public CustomerStage getStage() {
-        return stage;
+    public TaskStatus getStatus() {
+        return status;
     }
 
     public Priority getPriority() {
         return priority;
     }
 
-    public String getNextAction() {
-        return nextAction;
+    public String getDescription() {
+        return description;
     }
 
     public String getDueAt() {

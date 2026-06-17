@@ -1,17 +1,17 @@
-export interface CustomerAction {
+export interface TaskItem {
   id: string
-  customerName: string
-  owner: string
-  stage: 'new' | 'contacted' | 'proposal' | 'contract'
+  title: string
+  assignee: string
+  status: 'todo' | 'in_progress' | 'review' | 'done'
   priority: 'high' | 'medium' | 'low'
-  nextAction: string
+  description: string
   dueAt: string
 }
 
-export interface WorkspaceSummary {
-  openActions: number
-  highPriorityActions: number
-  serviceTickets: number
+export interface DashboardSummary {
+  totalTasks: number
+  inProgress: number
+  highPriority: number
 }
 
 export interface ApiResponse<T> {

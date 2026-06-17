@@ -1,7 +1,17 @@
 {
   "key": "react-admin",
   "name": "React 后台管理系统",
-  "description": "React + Antd + Zustand，含权限路由、请求封装和后台布局",
+  "description": "开箱即用的后台管理脚手架：登录认证、路由守卫、Antd 布局、请求封装、状态管理，拿来就能填业务页面",
+  "tags": ["react", "antd", "zustand", "admin", "dashboard"],
+  "useCases": [
+    "企业后台管理系统（运营/客服/ERP/CRM）",
+    "需要登录 + 路由守卫 + Antd 布局的中后台项目",
+    "想直接获得可运行的后台骨架，在 Dashboard 填入自己的页面"
+  ],
+  "notFor": [
+    "只需最简 Vite + React 脚手架 → react-vite-ts",
+    "需要 Next.js SSR 方案 → nextjs-ts"
+  ],
   "version": "1.0.0",
   "schemaVersion": "1.0",
   "framework": "react",
