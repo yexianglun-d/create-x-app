@@ -35,6 +35,14 @@
 - `--latest` 降级为兼容别名，等价于 `--deps latest`；默认依赖策略保持模板 baseline。
 - 匿名统计失败事件只记录阶段和错误类别，不上传错误堆栈、完整错误信息或本地路径。
 - `upgrade` 不再把所有差异视为可覆盖项，会区分 `template_changed`、`user_modified`、`conflict` 和 `untracked`。
+- **模板重构**：所有内置模板从演示 Demo 重构为干净脚手架，移除业务耦合内容：
+  - `react-vite-ts`：移除 TodoMVC 演示，改为纯净 React + Vite 脚手架
+  - `react-admin`：移除订单/商品业务数据，改为管理后台通用模板
+  - `node-ts`：清理业务演示，保留基础 Express API 结构
+  - `chrome-ext`：清理演示内容，保留 Chrome 扩展基础结构
+  - `extras/tailwind`：清理演示内容，保留 Tailwind CSS 样式示例
+  - `java-fullstack`：将"客户行动"API 重构为通用 Task API
+  - `monorepo`：使用通用 Task 类型替换业务数据
 
 ### Fixed
 
