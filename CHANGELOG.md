@@ -50,6 +50,30 @@
 - 修复生成后 next steps 固定展示不存在文档的问题，改为按实际生成文件输出。
 - Husky hook 权限设置改为 Node `chmod`，Windows 环境不再执行无效 chmod。
 
+## [1.0.3] - 2026-06-17
+
+### Fixed
+
+- 重新发布 1.0.2，修复 npm publish 认证问题。
+
+## [1.0.2] - 2026-06-17
+
+### Changed
+
+- **模板重构**：所有内置模板从演示 Demo 重构为干净脚手架，移除业务耦合内容：
+  - `react-vite-ts`：移除 TodoMVC 演示，改为纯净 React + Vite 脚手架
+  - `react-admin`：移除订单/商品业务数据，改为管理后台通用模板
+  - `node-ts`：清理业务演示，保留基础 Express API 结构
+  - `chrome-ext`：清理演示内容，保留 Chrome 扩展基础结构
+  - `extras/tailwind`：清理演示内容，保留 Tailwind CSS 样式示例
+  - `java-fullstack`：将"客户行动"API 重构为通用 Task API
+  - `monorepo`：使用通用 Task 类型替换业务数据
+
+### Fixed
+
+- 修复模板测试中文件路径和内容匹配问题。
+- 更新单元测试适配重构后的模板结构。
+
 ## [1.0.1] - 2026-05-18
 
 ### Fixed
