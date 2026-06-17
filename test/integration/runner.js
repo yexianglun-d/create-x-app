@@ -141,9 +141,10 @@ async function runInstallAndBuild(manifest, config) {
   }
 
   for (const workspace of mavenWorkspaces) {
-    await execa('mvn', ['test'], {
+    await execa('mvn', ['--batch-mode', 'test'], {
       cwd: join(config.targetDir, workspace),
       stdio: 'pipe',
+      timeout: 300_000, // 5 min — CI needs time to download deps on first run
     })
   }
 }
