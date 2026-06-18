@@ -1,9 +1,10 @@
 import { execa } from 'execa'
-import ora from 'ora'
+import { createStatusSpinner } from '../ui/spinner.js'
 import { logger } from '../utils/logger.js'
 
 export async function runGlobalNpmCommand(title, args) {
-  const spinner = ora(title).start()
+  const s = createStatusSpinner()
+  s.start(title)
 
   try {
     logger.command('npm', args)
@@ -13,13 +14,13 @@ export async function runGlobalNpmCommand(title, args) {
     })
 
     if (result.exitCode === 0) {
-      spinner.succeed(title)
+      s.stop(title)
       return
     }
 
     throw new Error((result.stderr || result.stdout || 'npm 命令执行失败').trim())
   } catch (error) {
-    spinner.fail(title)
+    s.stop(title)
     throw error
   }
 }

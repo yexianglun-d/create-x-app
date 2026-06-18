@@ -1,9 +1,12 @@
+import { log } from '@clack/prompts'
 import chalk from 'chalk'
-import { relative } from 'node:path'
+import { resolveDisplayPath } from './path.js'
 
 // 该正则专用于剥离终端 ANSI 控制序列，保留控制字符匹配是预期行为。
 // eslint-disable-next-line no-control-regex
 const ANSI_PATTERN = /\u001B\[[0-9;]*m/g
+
+const BRAND_BLUE = chalk.hex('#0099F7')
 
 const loggerState = {
   verbose: false,
@@ -43,20 +46,6 @@ function normalizeLoggerOptions(options = {}) {
     verbose: Boolean(options.verbose) || debug,
     debug,
   }
-}
-
-function resolveDisplayPath(targetPath) {
-  const relativePath = relative(process.cwd(), targetPath)
-
-  if (!relativePath || relativePath.startsWith('..')) {
-    return targetPath
-  }
-
-  return relativePath
-}
-
-function printLine(writer, icon, message) {
-  writer.call(console, icon, message)
 }
 
 /**
@@ -108,36 +97,36 @@ export function formatTable(columns, rows) {
 
 export const logger = {
   info(message) {
-    printLine(console.log, chalk.cyan('ℹ'), message)
+    log.info(message)
   },
   success(message) {
-    printLine(console.log, chalk.green('✔'), message)
+    log.success(message)
   },
   warn(message) {
-    printLine(console.log, chalk.yellow('⚠'), message)
+    log.warn(message)
   },
   error(message) {
-    printLine(console.error, chalk.red('✖'), message)
+    console.error(chalk.red(message))
   },
   step(message) {
-    printLine(console.log, chalk.gray('→'), message)
+    log.step(message)
   },
   note(label, message) {
-    console.log(`${chalk.cyan(label)} ${message}`)
+    log.message(`${BRAND_BLUE(label)} ${message}`)
   },
   detail(message) {
     if (!loggerState.verbose) {
       return
     }
 
-    printLine(console.log, chalk.gray('·'), chalk.gray(message))
+    log.message(chalk.gray(message))
   },
   debug(message) {
     if (!loggerState.debug) {
       return
     }
 
-    printLine(console.log, chalk.magenta('◆'), chalk.magenta(message))
+    log.message(chalk.magenta(message))
   },
   command(command, args = [], cwd) {
     if (!loggerState.verbose) {

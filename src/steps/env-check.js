@@ -1,7 +1,7 @@
 import chalk from 'chalk'
-import ora from 'ora'
 import semver from 'semver'
 import { buildEnvSummaryLines, printLines } from '../ui/create-ui.js'
+import { createStatusSpinner } from '../ui/spinner.js'
 import { getLoggerOptions, logger } from '../utils/logger.js'
 import { detectVersion, meetsMinimum } from '../utils/version.js'
 
@@ -241,19 +241,18 @@ export function buildTemplateToolDefinitions(manifest, config = {}, options = {}
 async function runToolChecks(tools, options = {}) {
   const title = options.title ?? '正在检测开发环境...'
   const completedTitle = options.completedTitle ?? '环境检测完成'
-  const spinner = ora(title).start()
-  let spinnerCompleted = false
+  const s = createStatusSpinner()
+  s.start(title)
 
   try {
     const results = []
 
     for (const tool of tools) {
-      spinner.text = `正在检测 ${tool.name}...`
+      s.message(`正在检测 ${tool.name}...`)
       results.push(await checkTool(tool, options))
     }
 
-    spinner.succeed(completedTitle)
-    spinnerCompleted = true
+    s.stop(completedTitle)
     console.log()
     if (options.verbose ?? getLoggerOptions().verbose) {
       logger.table(
@@ -286,10 +285,7 @@ async function runToolChecks(tools, options = {}) {
 
     return results
   } catch (error) {
-    if (!spinnerCompleted) {
-      spinner.fail(`${completedTitle.replace('完成', '失败')}`)
-    }
-
+    s.stop(`${completedTitle.replace('完成', '失败')}`)
     throw error
   }
 }

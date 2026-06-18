@@ -1,17 +1,230 @@
 import chalk from 'chalk'
-import { join, relative, resolve } from 'node:path'
+import { join, resolve } from 'node:path'
+import { resolveDisplayPath } from '../utils/path.js'
+
+export { resolveDisplayPath }
 
 const SECTION_INDENT = '  '
 const EMPTY_TEXT = '无'
+const BRAND_BLUE = chalk.hex('#0099F7')
 
-export function resolveDisplayPath(targetPath) {
-  const relativePath = relative(process.cwd(), targetPath)
+// 该正则专用于剥离终端 ANSI 控制序列，保留控制字符匹配是预期行为。
+// eslint-disable-next-line no-control-regex
+const ANSI_PATTERN = /\u001B\[[0-9;]*m/g
 
-  if (!relativePath || relativePath.startsWith('..')) {
-    return targetPath
+function stripAnsi(value) {
+  return String(value).replaceAll(ANSI_PATTERN, '')
+}
+
+function isCombiningCodePoint(codePoint) {
+  return (codePoint >= 0x0300 && codePoint <= 0x036f)
+    || (codePoint >= 0x1ab0 && codePoint <= 0x1aff)
+    || (codePoint >= 0x1dc0 && codePoint <= 0x1dff)
+    || (codePoint >= 0x20d0 && codePoint <= 0x20ff)
+    || (codePoint >= 0xfe20 && codePoint <= 0xfe2f)
+}
+
+function isFullWidthCodePoint(codePoint) {
+  return (codePoint >= 0x1100 && codePoint <= 0x115f)
+    || codePoint === 0x2329
+    || codePoint === 0x232a
+    || (codePoint >= 0x2e80 && codePoint <= 0xa4cf && codePoint !== 0x303f)
+    || (codePoint >= 0xac00 && codePoint <= 0xd7a3)
+    || (codePoint >= 0xf900 && codePoint <= 0xfaff)
+    || (codePoint >= 0xfe10 && codePoint <= 0xfe19)
+    || (codePoint >= 0xfe30 && codePoint <= 0xfe6f)
+    || (codePoint >= 0xff00 && codePoint <= 0xff60)
+    || (codePoint >= 0xffe0 && codePoint <= 0xffe6)
+}
+
+export function getDisplayWidth(value) {
+  let width = 0
+
+  for (const character of stripAnsi(value)) {
+    const codePoint = character.codePointAt(0)
+
+    if (codePoint <= 0x1f || (codePoint >= 0x7f && codePoint <= 0x9f)) {
+      continue
+    }
+
+    if (isCombiningCodePoint(codePoint)) {
+      continue
+    }
+
+    width += isFullWidthCodePoint(codePoint) ? 2 : 1
   }
 
-  return relativePath
+  return width
+}
+
+function padVisible(value, targetWidth) {
+  const padding = Math.max(0, targetWidth - getDisplayWidth(value))
+  return `${value}${' '.repeat(padding)}`
+}
+
+function truncateVisible(value, maxWidth) {
+  const text = stripAnsi(value)
+
+  if (getDisplayWidth(text) <= maxWidth) {
+    return text
+  }
+
+  let output = ''
+  let width = 0
+  const suffix = '...'
+  const suffixWidth = getDisplayWidth(suffix)
+
+  for (const character of text) {
+    const characterWidth = getDisplayWidth(character)
+
+    if (width + characterWidth + suffixWidth > maxWidth) {
+      break
+    }
+
+    output += character
+    width += characterWidth
+  }
+
+  return `${output}${suffix}`
+}
+
+function splitLongToken(token, maxWidth) {
+  const chunks = []
+  let current = ''
+  let currentWidth = 0
+
+  for (const character of token) {
+    const characterWidth = getDisplayWidth(character)
+
+    if (current && currentWidth + characterWidth > maxWidth) {
+      chunks.push(current)
+      current = ''
+      currentWidth = 0
+    }
+
+    current += character
+    currentWidth += characterWidth
+  }
+
+  if (current) {
+    chunks.push(current)
+  }
+
+  return chunks
+}
+
+export function wrapText(value, maxWidth) {
+  const text = stripAnsi(value).trim()
+
+  if (!text) {
+    return ['']
+  }
+
+  const safeWidth = Math.max(1, maxWidth)
+  const lines = []
+  let currentLine = ''
+
+  for (const token of text.split(/\s+/u)) {
+    if (getDisplayWidth(token) > safeWidth) {
+      if (currentLine) {
+        lines.push(currentLine)
+        currentLine = ''
+      }
+
+      lines.push(...splitLongToken(token, safeWidth))
+      continue
+    }
+
+    if (!currentLine) {
+      currentLine = token
+      continue
+    }
+
+    const nextLine = `${currentLine} ${token}`
+
+    if (getDisplayWidth(nextLine) <= safeWidth) {
+      currentLine = nextLine
+    } else {
+      lines.push(currentLine)
+      currentLine = token
+    }
+  }
+
+  if (currentLine) {
+    lines.push(currentLine)
+  }
+
+  return lines
+}
+
+function boxLine(content, width) {
+  return `│  ${content}${' '.repeat(Math.max(0, width - getDisplayWidth(content) - 6))}  │`
+}
+
+function boxTop(width) {
+  return `┌${'─'.repeat(width - 2)}┐`
+}
+
+function boxBottom(width) {
+  return `└${'─'.repeat(width - 2)}┘`
+}
+
+function boxSeparator(width) {
+  return `├${'─'.repeat(width - 2)}┤`
+}
+
+function getBoxWidth() {
+  const terminalWidth = process.stdout.columns ?? 80
+  return Math.max(48, Math.min(76, terminalWidth - 2))
+}
+
+function formatBoxValue(value) {
+  return stripAnsi(Array.isArray(value) ? formatList(value) : (value ?? EMPTY_TEXT))
+}
+
+function getLabelWidth(rows) {
+  const maxLabelWidth = Math.max(
+    ...rows.map((row) => getDisplayWidth(row.label)),
+    0,
+  )
+
+  return Math.min(18, Math.max(12, maxLabelWidth + 2))
+}
+
+function buildBoxRowLines(row, width, labelWidth) {
+  const innerWidth = width - 6
+  const valueWidth = innerWidth - labelWidth
+  const label = truncateVisible(row.label, labelWidth - 1)
+  const valueLines = wrapText(formatBoxValue(row.value), valueWidth)
+  const lines = []
+
+  for (const [index, valueLine] of valueLines.entries()) {
+    const labelText = index === 0 ? label : ''
+    const renderedLabel = chalk.gray(padVisible(labelText, labelWidth))
+    lines.push(boxLine(`${renderedLabel}${valueLine}`, width))
+  }
+
+  return lines
+}
+
+function wrapInBox(title, rows = []) {
+  const width = getBoxWidth()
+  const labelWidth = getLabelWidth(rows)
+  const lines = [
+    boxTop(width),
+    boxLine(BRAND_BLUE.bold(title), width),
+  ]
+
+  if (rows.length > 0) {
+    lines.push(boxSeparator(width))
+
+    for (const row of rows) {
+      lines.push(...buildBoxRowLines(row, width, labelWidth))
+    }
+  }
+
+  lines.push(boxBottom(width))
+  return lines
 }
 
 export function getApplicationWorkspace(config) {
@@ -72,23 +285,20 @@ export function buildKeyValueLines(rows) {
 }
 
 export function buildBlockLines(title, rows) {
-  return [
-    chalk.cyan(title),
-    ...buildKeyValueLines(rows),
-  ]
+  return wrapInBox(title, rows)
 }
 
 export function printBrandIntro(options = {}) {
   const version = options.version ? chalk.gray(` v${options.version}`) : ''
 
   console.log()
-  console.log(`${chalk.cyan.bold('create-x-app')}${version}`)
+  console.log(`${BRAND_BLUE.bold('create-x-app')}${version}`)
   console.log(chalk.gray('Production-ready starters with a guided, scriptable create flow.'))
 }
 
-export function printStep(index, title, description) {
+export function printStep(index, _total, title, description) {
   console.log()
-  console.log(`${chalk.gray(String(index).padStart(2, '0'))} ${chalk.cyan.bold(title)}`)
+  console.log(`${chalk.gray(String(index).padStart(2, '0'))} ${BRAND_BLUE.bold(title)}`)
 
   if (description) {
     console.log(chalk.gray(`${SECTION_INDENT}${description}`))
@@ -131,8 +341,8 @@ export function buildGenerationPlanLines({
   return [
     ...buildBlockLines('Project', [
       { label: 'name', value: config.projectName },
-      { label: 'target', value: chalk.cyan(resolveDisplayPath(config.targetDir)) },
-      { label: 'workspace', value: chalk.cyan(resolveDisplayPath(appWorkspace)) },
+      { label: 'target', value: resolveDisplayPath(config.targetDir) },
+      { label: 'workspace', value: resolveDisplayPath(appWorkspace) },
     ]),
     '',
     ...buildBlockLines('Stack', [
@@ -210,7 +420,7 @@ export function buildDryRunSummaryLines({
       ]
 
   return [
-    chalk.cyan('Preview only'),
+    BRAND_BLUE('Preview only'),
     `${SECTION_INDENT}${chalk.gray('No files will be written, overwritten, installed, or committed.')}`,
     ...planLines,
     ...buildBlockLines('Files', [
@@ -229,7 +439,7 @@ export function buildDryRunCompletionLines(config) {
     '',
     ...buildBlockLines('Result', [
       { label: 'project', value: config.projectName },
-      { label: 'target', value: chalk.cyan(resolveDisplayPath(config.targetDir)) },
+      { label: 'target', value: resolveDisplayPath(config.targetDir) },
       { label: 'writes', value: 'none' },
       { label: 'installs', value: 'none' },
       { label: 'git', value: 'none' },
@@ -249,14 +459,14 @@ export function buildCompletionLines(config, workspaceLayout, manifest, document
   }
 
   const lines = [
-    chalk.green('Project ready'),
+    chalk.green.bold('Project ready'),
     `${SECTION_INDENT}${chalk.gray('Use the commands below from the generated workspace.')}`,
     '',
     ...buildBlockLines('Commands', commandRows),
     '',
     ...buildBlockLines('Workspace', [
-      { label: 'app', value: chalk.cyan(resolveDisplayPath(workspaceLayout.applicationWorkspace)) },
-      { label: 'git', value: chalk.cyan(resolveDisplayPath(workspaceLayout.gitWorkspace)) },
+      { label: 'app', value: resolveDisplayPath(workspaceLayout.applicationWorkspace) },
+      { label: 'git', value: resolveDisplayPath(workspaceLayout.gitWorkspace) },
       { label: 'metadata', value: join('.create-x-app', 'template-lock.json') },
     ]),
   ]
@@ -287,10 +497,10 @@ export function buildEnvSummaryLines(results) {
   const optionalIssues = results.filter((result) => !result.ok && !result.required).length
   const blockingIssues = results.filter((result) => !result.ok && result.required).length
   const status = blockingIssues > 0
-    ? chalk.red('blocked')
+    ? 'blocked'
     : optionalIssues > 0
-      ? chalk.yellow('ready with warnings')
-      : chalk.green('ready')
+      ? 'ready with warnings'
+      : 'ready'
 
   return [
     ...buildBlockLines('Runtime', [
@@ -307,14 +517,14 @@ export function buildEnvSummaryLines(results) {
 function buildHelpHeaderLines(title, description) {
   return [
     '',
-    chalk.cyan.bold(title),
+    BRAND_BLUE.bold(title),
     chalk.gray(description),
     '',
   ]
 }
 
 function buildHelpExamplesLines(sections) {
-  const lines = ['', chalk.cyan('Recommended paths')]
+  const lines = ['', BRAND_BLUE('Recommended paths')]
 
   for (const section of sections) {
     lines.push(`${SECTION_INDENT}${chalk.gray(section.label.padEnd(10))}${section.command}`)

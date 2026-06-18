@@ -6,6 +6,9 @@ import {
   buildDryRunSummaryLines,
   buildEnvSummaryLines,
   buildHelpExamples,
+  getDisplayWidth,
+  printBrandIntro,
+  wrapText,
 } from '../../src/ui/create-ui.js'
 import { loadManifest } from '../../src/manifest/loader.js'
 
@@ -30,6 +33,71 @@ test('branded block presenter renders aligned sections', () => {
   assert.match(output, /Project/)
   assert.match(output, /name\s+demo-app/)
   assert.match(output, /target\s+\/tmp\/demo-app/)
+})
+
+test('brand intro is lightweight and does not render ascii art', () => {
+  const originalLog = console.log
+  const output = []
+
+  console.log = (...args) => {
+    output.push(args.join(' '))
+  }
+
+  try {
+    printBrandIntro({ version: '1.2.3' })
+  } finally {
+    console.log = originalLog
+  }
+
+  const text = output.join('\n')
+
+  assert.match(text, /create-x-app/)
+  assert.match(text, /v1\.2\.3/)
+  assert.doesNotMatch(text, /___/)
+  assert.doesNotMatch(text, /\/ __/)
+})
+
+test('box presenter wraps long ascii and CJK values without breaking borders', () => {
+  const lines = buildBlockLines('Stack', [
+    {
+      label: 'features',
+      value: 'ESLint, Prettier, commitlint + Husky, AGENTS.md, coding-rules.md, 中文能力说明会自动换行',
+    },
+  ])
+  const boxWidth = getDisplayWidth(lines[0])
+
+  for (const line of lines) {
+    assert.ok(getDisplayWidth(line) <= boxWidth, line)
+  }
+
+  assert.ok(lines.length > 5)
+})
+
+test('box presenter preserves right border in narrow terminals', () => {
+  const originalColumns = process.stdout.columns
+
+  process.stdout.columns = 50
+
+  try {
+    const lines = buildBlockLines('Files', [
+      { label: 'lockfile', value: '.create-x-app/template-lock.json' },
+      { label: 'husky', value: '安装依赖后手动初始化' },
+    ])
+    const boxWidth = getDisplayWidth(lines[0])
+
+    for (const line of lines) {
+      assert.equal(getDisplayWidth(line), boxWidth, line)
+    }
+
+    assert.ok(lines.length > 5)
+  } finally {
+    process.stdout.columns = originalColumns
+  }
+})
+
+test('display width and wrapping account for CJK characters', () => {
+  assert.equal(getDisplayWidth('中文'), 4)
+  assert.deepEqual(wrapText('中文中文中文', 4), ['中文', '中文', '中文'])
 })
 
 test('dry-run presenter keeps machine-safe action detail and file preview', () => {
@@ -121,4 +189,3 @@ test('help examples use the branded recommended-path language', () => {
   assert.match(output, /create-x-app demo --template react-vite-ts --dry-run/)
   assert.match(output, /--print-config/)
 })
-

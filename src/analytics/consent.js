@@ -1,20 +1,12 @@
-import { confirm, cancel, isCancel } from '@clack/prompts'
+import { confirm } from '@clack/prompts'
 import { existsSync } from 'node:fs'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { logger } from '../utils/logger.js'
+import { ensurePromptNotCancelled } from '../utils/prompt-helpers.js'
 
 const CONFIG_PATH = join(homedir(), '.create-x-app/config.json')
-
-function ensurePromptNotCancelled(value) {
-  if (isCancel(value)) {
-    cancel('操作已取消')
-    process.exit(0)
-  }
-
-  return value
-}
 
 async function readConfig() {
   if (!existsSync(CONFIG_PATH)) {

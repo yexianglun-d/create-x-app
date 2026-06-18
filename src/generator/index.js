@@ -8,6 +8,7 @@ import {
   buildDryRunSummaryLines as buildUiDryRunSummaryLines,
   printLines,
 } from '../ui/create-ui.js'
+import { createStatusSpinner } from '../ui/spinner.js'
 import { logger } from '../utils/logger.js'
 import { getPackageVersionMetadata } from '../utils/pkg-version.js'
 import { writeProjectTrackingMetadata } from '../upgrade/metadata.js'
@@ -709,6 +710,8 @@ async function pruneSubPromptArtifacts(config, targetDir, manifest) {
 }
 
 export async function generateProject({ config, options = {}, templatePath, templateSource }) {
+  let statusSpinner = null
+
   try {
     const manifest = loadManifest(config.template)
 
@@ -729,15 +732,30 @@ export async function generateProject({ config, options = {}, templatePath, temp
       return { dryRun: true }
     }
 
+    statusSpinner = createStatusSpinner()
+    statusSpinner.start('正在生成项目文件...')
+
     await fs.ensureDir(config.targetDir)
 
+    statusSpinner.message('正在复制公共文件...')
     await copyDirectory(SHARED_DIR, config.targetDir, false)
+
+    statusSpinner.message('正在复制模板文件...')
     await copyDirectory(templatePath, config.targetDir, true)
+
+    statusSpinner.message('正在应用扩展模块...')
     await applyExtras(config.fileBasedExtras ?? config.extras, config.targetDir, manifest)
+
     await removeTemplateMetadata(config.targetDir)
+
+    statusSpinner.message('正在渲染模板文件...')
     await renderEjsFiles(config.targetDir, buildTemplateVariables(config))
+
     await writeProjectMetadata(config.targetDir, config, manifest)
+
+    statusSpinner.message('正在处理点文件...')
     await renameDotfiles(config.targetDir)
+
     await pruneSubPromptArtifacts(config, config.targetDir, manifest)
     await pruneExtraArtifacts(config, config.targetDir, manifest)
     await pruneFeatureArtifacts({
@@ -745,6 +763,7 @@ export async function generateProject({ config, options = {}, templatePath, temp
       manifestFeatures: manifest.features,
     }, config.targetDir)
 
+    statusSpinner.message('正在检查依赖版本...')
     await refreshPackageVersions(
       config.targetDir,
       options.dependencyStrategy ?? DEPENDENCY_STRATEGY_BASELINE,
@@ -759,7 +778,10 @@ export async function generateProject({ config, options = {}, templatePath, temp
       dependencyStrategy: options.dependencyStrategy,
       preset: options.preset,
     })
+
+    statusSpinner.stop('项目文件生成完成')
   } catch (error) {
+    statusSpinner?.stop('项目文件生成失败')
     throw new Error(`生成项目失败：${error.message}`)
   }
 }

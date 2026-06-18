@@ -1,6 +1,6 @@
 {
   "name": "create-x-app-cli",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "交互式 Node.js CLI，用于生成生产级多场景项目模板",
   "keywords": [
     "cli",
@@ -77,7 +77,6 @@
     "ejs": "^3.1.10",
     "execa": "^9.3.0",
     "fs-extra": "^11.2.0",
-    "ora": "^8.0.1",
     "semver": "^7.6.0"
   },
   "devDependencies": {

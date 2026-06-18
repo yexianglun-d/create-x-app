@@ -3,7 +3,13 @@ import { reportAnalyticsEvent, reportCreateEvent } from '../analytics/index.js'
 import { generateProject } from '../generator/index.js'
 import { runPostActions } from '../steps/post-actions.js'
 import { runBaseEnvCheck, runTemplateEnvCheck } from '../steps/env-check.js'
-import { buildConfigFromOptions, confirmGenerationPlan, runPrompts } from '../steps/prompts.js'
+import {
+  BACK_PROMPT_VALUE,
+  buildConfigFromOptions,
+  confirmGenerationPlan,
+  getPromptResumeStep,
+  runPrompts,
+} from '../steps/prompts.js'
 import { resolveTemplateSource } from '../steps/resolver.js'
 import { resolvePresetOptions } from '../presets/loader.js'
 import {
@@ -126,51 +132,83 @@ export async function createCommand(projectNameArg, options) {
     }) === true
     await reportStageEvent('create_start')
 
-    currentStage = 'prompts'
-    printStep('01', 'Project', 'Choose the project shape and generation defaults.')
-    config = await runPrompts(projectNameArg, {
-      ...resolvedOptions,
-      onCancel: async () => {
-        await reportStageEvent('prompt_cancelled', {
-          stage: 'prompts',
+    let templateSource = null
+    let promptStartStep = null
+    let projectStepPrinted = false
+    const checkedEnvKeys = new Set()
+
+    while (true) {
+      currentStage = 'prompts'
+
+      if (!projectStepPrinted) {
+        printStep(1, 4, 'Project', 'Choose the project shape and generation defaults.')
+        projectStepPrinted = true
+      }
+
+      config = await runPrompts(projectNameArg, {
+        ...resolvedOptions,
+        initialConfig: config ?? undefined,
+        startStep: promptStartStep ?? undefined,
+        onCancel: async () => {
+          await reportStageEvent('prompt_cancelled', {
+            stage: 'prompts',
+          })
+        },
+      })
+      promptStartStep = null
+
+      currentStage = 'validate_config'
+      validateConfig(config)
+
+      currentStage = 'resolve_template'
+      templateSource = await resolveTemplateSource(config.template, {
+        remote: resolvedOptions.remote,
+        noCache: resolvedOptions.cache === false,
+        ref: resolveDefaultRemoteRef(resolvedOptions),
+        strictRemote: resolvedOptions.strictRemote,
+      })
+
+      const envKey = [
+        config.template,
+        config.packageManager,
+        resolvedOptions.skipGit ? 'skip-git' : 'git',
+      ].join(':')
+
+      if (!checkedEnvKeys.has(envKey)) {
+        currentStage = 'env_check'
+        printStep(2, 4, 'Check', 'Validate the runtime needed for this template.')
+        await runBaseEnvCheck()
+
+        currentStage = 'template_env_check'
+        await runTemplateEnvCheck(templateSource.manifest, config, {
+          skipGit: resolvedOptions.skipGit,
         })
-      },
-    })
 
-    currentStage = 'validate_config'
-    validateConfig(config)
+        checkedEnvKeys.add(envKey)
+      }
 
-    currentStage = 'resolve_template'
-    const templateSource = await resolveTemplateSource(config.template, {
-      remote: resolvedOptions.remote,
-      noCache: resolvedOptions.cache === false,
-      ref: resolveDefaultRemoteRef(resolvedOptions),
-      strictRemote: resolvedOptions.strictRemote,
-    })
+      printStep(3, 4, 'Preview', 'Review the exact project plan before generation.')
+      const generationPlanAction = await confirmGenerationPlan({
+        config,
+        manifest: templateSource.manifest,
+        templateSource: templateSource.source,
+        dependencyStrategy,
+        options: resolvedOptions,
+      })
 
-    currentStage = 'env_check'
-    printStep('02', 'Check', 'Validate the runtime needed for this template.')
-    await runBaseEnvCheck()
+      if (generationPlanAction === BACK_PROMPT_VALUE) {
+        promptStartStep = getPromptResumeStep(templateSource.manifest)
+        continue
+      }
 
-    currentStage = 'template_env_check'
-    await runTemplateEnvCheck(templateSource.manifest, config, {
-      skipGit: resolvedOptions.skipGit,
-    })
-
-    printStep('03', 'Preview', 'Review the exact project plan before generation.')
-    await confirmGenerationPlan({
-      config,
-      manifest: templateSource.manifest,
-      templateSource: templateSource.source,
-      dependencyStrategy,
-      options: resolvedOptions,
-    })
+      break
+    }
 
     logger.detail(`目标目录：${config.targetDir}`)
     logger.detail(`模板目录：${templateSource.templatePath}`)
 
     currentStage = 'generate'
-    printStep('04', 'Generate', resolvedOptions.dryRun
+    printStep(4, 4, 'Generate', resolvedOptions.dryRun
       ? 'Preview only. No files will be written.'
       : 'Copy, render, and prepare the generated project.')
     await generateProject({

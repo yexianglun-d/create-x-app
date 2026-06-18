@@ -1,7 +1,5 @@
 import {
   cancel,
-  confirm,
-  isCancel,
   multiselect,
   note,
   select,
@@ -15,8 +13,10 @@ import {
   buildGenerationPlanMessage as buildUiGenerationPlanMessage,
   buildTemplateOverviewLines,
   printLines,
-  resolveDisplayPath,
 } from '../ui/create-ui.js'
+import { ensurePromptNotCancelled } from '../utils/prompt-helpers.js'
+import { resolveDisplayPath } from '../utils/path.js'
+import { getTemplateHelp } from '../ux/help-texts.js'
 
 const DEFAULT_PROJECT_NAME = 'my-app'
 const PROJECT_NAME_PATTERN = /^[a-z0-9-_]+$/
@@ -26,18 +26,23 @@ const MODULE_PRESETS = {
   minimal: 'minimal',
   custom: 'custom',
 }
+export const BACK_PROMPT_VALUE = '__cxa_back__'
 
-async function ensurePromptNotCancelled(value, options = {}) {
-  if (isCancel(value)) {
-    if (options.onCancel) {
-      await options.onCancel()
-    }
-
-    cancel('操作已取消')
-    process.exit(0)
-  }
-
-  return value
+const CANCEL_PROMPT_VALUE = '__cxa_cancel__'
+const GENERATE_PROMPT_VALUE = '__cxa_generate__'
+const BACK_CHOICE = {
+  value: BACK_PROMPT_VALUE,
+  label: '← 返回上一步',
+  hint: '回到上一项继续修改',
+}
+const PROMPT_STEPS = {
+  projectName: 'projectName',
+  template: 'template',
+  modulePreset: 'modulePreset',
+  customModules: 'customModules',
+  packageManager: 'packageManager',
+  subPrompt: 'subPrompt',
+  targetDir: 'targetDir',
 }
 
 export function validateProjectName(projectName) {
@@ -72,6 +77,7 @@ function buildPackageManagerHint(manifest) {
 }
 
 function buildTemplateHint(manifest) {
+  const help = getTemplateHelp(manifest.key)
   const parts = [
     manifest.description,
     `包管理器：${buildPackageManagerHint(manifest)}`,
@@ -79,6 +85,10 @@ function buildTemplateHint(manifest) {
 
   if (manifest.devPort) {
     parts.push(`dev 端口：${manifest.devPort}`)
+  }
+
+  if (help) {
+    parts.push(help.bestFor)
   }
 
   return parts.filter(Boolean).join(' · ')
@@ -151,6 +161,49 @@ function buildPackageManagerChoices(manifest) {
     }))
 }
 
+function getPromptAdapter(options = {}) {
+  const promptAdapter = options.promptAdapter ?? {}
+
+  return {
+    text: promptAdapter.text ?? text,
+    select: promptAdapter.select ?? select,
+    multiselect: promptAdapter.multiselect ?? multiselect,
+    note: promptAdapter.note ?? note,
+    printLines: promptAdapter.printLines ?? printLines,
+  }
+}
+
+function appendBackChoice(choices, canGoBack = true) {
+  return canGoBack ? [...choices, BACK_CHOICE] : choices
+}
+
+async function promptText(promptAdapter, promptOptions, options) {
+  return ensurePromptNotCancelled(await promptAdapter.text(promptOptions), options)
+}
+
+async function promptSelect(promptAdapter, promptOptions, options, behavior = {}) {
+  return ensurePromptNotCancelled(await promptAdapter.select({
+    ...promptOptions,
+    options: appendBackChoice(promptOptions.options, behavior.canGoBack),
+  }), options)
+}
+
+async function promptMultiselect(promptAdapter, promptOptions, options, behavior = {}) {
+  return ensurePromptNotCancelled(await promptAdapter.multiselect({
+    ...promptOptions,
+    options: appendBackChoice(promptOptions.options, behavior.canGoBack),
+  }), options)
+}
+
+function emitNote(promptAdapter, message, title) {
+  promptAdapter.note(message, title)
+}
+
+function isBackResult(value) {
+  return value === BACK_PROMPT_VALUE
+    || (Array.isArray(value) && value.includes(BACK_PROMPT_VALUE))
+}
+
 function getFeatureLabel(manifest, featureKey) {
   return getFeatureDefinition(manifest, featureKey).label
 }
@@ -198,6 +251,10 @@ function buildModulePresetChoices(manifest) {
 }
 
 export function buildTemplateOverview(manifest) {
+  return buildTemplateOverviewRows(manifest).join('\n')
+}
+
+function buildTemplateOverviewRows(manifest) {
   const requiredTools = Object.entries(manifest.requiredEnv ?? manifest.requirements ?? {})
     .filter(([toolKey]) => toolKey !== 'packageManagers')
     .map(([toolKey, requirement]) => `${toolKey} ${requirement}`)
@@ -213,7 +270,15 @@ export function buildTemplateOverview(manifest) {
     defaultFeatures: defaultFeatureLabels,
     defaultExtras: defaultExtraLabels,
     devCommand: manifest.devScript ? `run ${manifest.devScript}` : '按模板 README',
-  }).join('\n')
+  })
+}
+
+function printTemplateOverview(promptAdapter, manifest) {
+  promptAdapter.printLines([
+    '',
+    ...buildTemplateOverviewRows(manifest),
+    '',
+  ])
 }
 
 function parseListOption(value, fallback) {
@@ -320,24 +385,168 @@ export function buildGenerationPlanMessage({
   })
 }
 
-async function runSubPrompt(subPrompt, options = {}) {
+function buildDefaultSubPromptValues(manifest) {
+  return Object.fromEntries((manifest.subPrompts ?? [])
+    .map((subPrompt) => [subPrompt.key, subPrompt.default]))
+}
+
+function resetDraftForTemplate(draft, manifest) {
+  const selectedConfig = resolveModulePreset(manifest, MODULE_PRESETS.recommended)
+  const packageManagerChoices = buildPackageManagerChoices(manifest)
+
+  draft.modulePreset = MODULE_PRESETS.recommended
+  draft.features = selectedConfig.features
+  draft.extras = selectedConfig.extras
+  draft.selectedModules = buildInitialModuleValues(manifest)
+  draft.packageManager = manifest.requiredPm ?? packageManagerChoices[0]?.value
+  draft.subPromptValues = buildDefaultSubPromptValues(manifest)
+}
+
+function arraysEqual(left = [], right = []) {
+  return left.length === right.length && left.every((value, index) => value === right[index])
+}
+
+function inferModulePreset(manifest, config) {
+  const features = config.features ?? []
+  const extras = config.extras ?? []
+  const recommended = resolveModulePreset(manifest, MODULE_PRESETS.recommended)
+  const minimal = resolveModulePreset(manifest, MODULE_PRESETS.minimal)
+
+  if (arraysEqual(features, recommended.features) && arraysEqual(extras, recommended.extras)) {
+    return MODULE_PRESETS.recommended
+  }
+
+  if (arraysEqual(features, minimal.features) && arraysEqual(extras, minimal.extras)) {
+    return MODULE_PRESETS.minimal
+  }
+
+  return MODULE_PRESETS.custom
+}
+
+function createPromptDraft(projectNameArg, manifests, options = {}) {
+  const initialConfig = options.initialConfig
+  const initialManifest = manifests.find((manifest) => manifest.key === initialConfig?.template)
+    ?? manifests[0]
+  const draft = {
+    projectName: initialConfig?.projectName ?? projectNameArg,
+    template: initialConfig?.template ?? initialManifest?.key,
+    modulePreset: MODULE_PRESETS.recommended,
+    features: initialConfig?.features,
+    extras: initialConfig?.extras,
+    selectedModules: initialConfig
+      ? [...(initialConfig.features ?? []), ...(initialConfig.extras ?? [])]
+      : undefined,
+    packageManager: initialConfig?.packageManager,
+    subPromptValues: {},
+  }
+
+  if (initialManifest) {
+    resetDraftForTemplate(draft, initialManifest)
+  }
+
+  if (initialConfig && initialManifest) {
+    draft.modulePreset = inferModulePreset(initialManifest, initialConfig)
+    draft.features = [...(initialConfig.features ?? draft.features ?? [])]
+    draft.extras = [...(initialConfig.extras ?? draft.extras ?? [])]
+    draft.selectedModules = [...draft.features, ...draft.extras]
+    draft.packageManager = initialConfig.packageManager ?? draft.packageManager
+    draft.subPromptValues = buildDefaultSubPromptValues(initialManifest)
+
+    for (const subPrompt of initialManifest.subPrompts ?? []) {
+      if (initialConfig[subPrompt.key] !== undefined) {
+        draft.subPromptValues[subPrompt.key] = initialConfig[subPrompt.key]
+      }
+    }
+  }
+
+  return draft
+}
+
+function findSelectedManifest(template, manifests) {
+  const selectedManifest = manifests.find((manifest) => manifest.key === template)
+
+  if (!selectedManifest) {
+    throw createUnknownTemplateError(template, manifests)
+  }
+
+  return selectedManifest
+}
+
+function getPreviousModuleStep(draft) {
+  return draft.modulePreset === MODULE_PRESETS.custom
+    ? PROMPT_STEPS.customModules
+    : PROMPT_STEPS.modulePreset
+}
+
+function getStepAfterPackageManager(manifest) {
+  return manifest.subPrompts?.length > 0
+    ? PROMPT_STEPS.subPrompt
+    : PROMPT_STEPS.targetDir
+}
+
+export function getPromptResumeStep(manifest) {
+  if (manifest.subPrompts?.length > 0) {
+    return {
+      step: PROMPT_STEPS.subPrompt,
+      subPromptIndex: manifest.subPrompts.length - 1,
+    }
+  }
+
+  if (manifest.requiredPm) {
+    return {
+      step: getPreviousModuleStep({
+        modulePreset: MODULE_PRESETS.recommended,
+      }),
+      subPromptIndex: 0,
+    }
+  }
+
+  return {
+    step: PROMPT_STEPS.packageManager,
+    subPromptIndex: 0,
+  }
+}
+
+function buildInteractiveConfig(draft, manifest) {
+  const config = {
+    projectName: draft.projectName,
+    template: draft.template,
+    features: draft.features ?? [],
+    extras: draft.extras ?? [],
+    fileBasedExtras: buildFileBasedExtras(manifest, draft.extras ?? []),
+    targetDir: resolve(process.cwd(), draft.projectName),
+    packageManager: draft.packageManager,
+  }
+
+  for (const subPrompt of manifest.subPrompts ?? []) {
+    config[subPrompt.key] = draft.subPromptValues[subPrompt.key] ?? subPrompt.default
+  }
+
+  return config
+}
+
+async function runSubPrompt(subPrompt, promptAdapter, options = {}, value) {
   switch (subPrompt.type) {
     case 'select':
-      return ensurePromptNotCancelled(await select({
+      return promptSelect(promptAdapter, {
         message: subPrompt.label,
         options: subPrompt.options,
-        initialValue: subPrompt.default,
-      }), options)
+        initialValue: value ?? subPrompt.default,
+      }, options, { canGoBack: true })
     case 'text':
-      return ensurePromptNotCancelled(await text({
+      return promptText(promptAdapter, {
         message: subPrompt.label,
-        initialValue: subPrompt.default ?? '',
-      }), options)
+        initialValue: value ?? subPrompt.default ?? '',
+      }, options)
     case 'confirm':
-      return ensurePromptNotCancelled(await confirm({
+      return promptSelect(promptAdapter, {
         message: subPrompt.label,
-        initialValue: Boolean(subPrompt.default),
-      }), options)
+        options: [
+          { value: true, label: '是' },
+          { value: false, label: '否' },
+        ],
+        initialValue: Boolean(value ?? subPrompt.default),
+      }, options, { canGoBack: true })
     default:
       throw new Error(`不支持的子问答类型：${subPrompt.type}`)
   }
@@ -392,6 +601,8 @@ export async function confirmGenerationPlan({
   dependencyStrategy,
   options = {},
 }) {
+  const promptAdapter = getPromptAdapter(options)
+
   if (shouldBuildConfigFromOptions(options)) {
     printLines(buildGenerationPlanLines({
       config,
@@ -403,7 +614,7 @@ export async function confirmGenerationPlan({
     return true
   }
 
-  const confirmed = await ensurePromptNotCancelled(await confirm({
+  const action = await promptSelect(promptAdapter, {
     message: buildGenerationPlanMessage({
       projectName: config.projectName,
       config,
@@ -415,10 +626,31 @@ export async function confirmGenerationPlan({
       dependencyStrategy,
       options,
     }),
-    initialValue: true,
-  }), options)
+    options: [
+      {
+        value: GENERATE_PROMPT_VALUE,
+        label: '生成项目',
+        hint: '使用以上计划继续创建',
+      },
+      {
+        value: BACK_PROMPT_VALUE,
+        label: '← 返回上一步',
+        hint: '回到配置步骤继续修改',
+      },
+      {
+        value: CANCEL_PROMPT_VALUE,
+        label: '取消',
+        hint: '退出，不生成项目',
+      },
+    ],
+    initialValue: GENERATE_PROMPT_VALUE,
+  }, options)
 
-  if (!confirmed) {
+  if (action === BACK_PROMPT_VALUE) {
+    return BACK_PROMPT_VALUE
+  }
+
+  if (action === CANCEL_PROMPT_VALUE) {
     cancel('操作已取消')
     process.exit(0)
   }
@@ -431,94 +663,181 @@ export async function runPrompts(projectNameArg, options = {}) {
     return buildConfigFromOptions(projectNameArg, options)
   }
 
+  const promptAdapter = getPromptAdapter(options)
   const manifests = loadAllManifests()
-  let projectName = projectNameArg
+  const draft = createPromptDraft(projectNameArg, manifests, options)
+  const projectNameLocked = Boolean(projectNameArg)
+  let step = options.startStep?.step
+    ?? (projectNameLocked ? PROMPT_STEPS.template : PROMPT_STEPS.projectName)
+  let subPromptIndex = options.startStep?.subPromptIndex ?? 0
 
-  if (projectName) {
-    const projectNameValidationResult = validateProjectName(projectName)
+  if (projectNameLocked) {
+    const projectNameValidationResult = validateProjectName(draft.projectName)
 
     if (projectNameValidationResult) {
       throw new Error(`无效的项目名称：${projectNameValidationResult}`)
     }
-  } else {
-    projectName = await ensurePromptNotCancelled(await text({
-      message: '请输入项目名称',
-      initialValue: DEFAULT_PROJECT_NAME,
-      validate(value) {
-        return validateProjectName(value)
-      },
-    }), options)
   }
 
-  const template = await ensurePromptNotCancelled(await select({
-    message: '请选择项目模板',
-    options: buildTemplateChoices(manifests),
-    initialValue: manifests[0]?.key,
-  }), options)
-  const selectedManifest = manifests.find((manifest) => manifest.key === template)
+  while (true) {
+    const selectedManifest = findSelectedManifest(draft.template, manifests)
 
-  if (!selectedManifest) {
-    throw createUnknownTemplateError(template, manifests)
+    switch (step) {
+      case PROMPT_STEPS.projectName:
+        draft.projectName = await promptText(promptAdapter, {
+          message: '请输入项目名称',
+          initialValue: draft.projectName ?? DEFAULT_PROJECT_NAME,
+          validate(value) {
+            return validateProjectName(value)
+          },
+        }, options)
+        step = PROMPT_STEPS.template
+        break
+
+      case PROMPT_STEPS.template: {
+        const nextTemplate = await promptSelect(promptAdapter, {
+          message: '请选择项目模板',
+          options: buildTemplateChoices(manifests),
+          initialValue: draft.template ?? manifests[0]?.key,
+        }, options, { canGoBack: !projectNameLocked })
+
+        if (isBackResult(nextTemplate)) {
+          step = PROMPT_STEPS.projectName
+          break
+        }
+
+        if (nextTemplate !== draft.template) {
+          draft.template = nextTemplate
+          resetDraftForTemplate(draft, findSelectedManifest(draft.template, manifests))
+        } else {
+          draft.template = nextTemplate
+        }
+
+        printTemplateOverview(promptAdapter, findSelectedManifest(draft.template, manifests))
+        step = PROMPT_STEPS.modulePreset
+        break
+      }
+
+      case PROMPT_STEPS.modulePreset: {
+        const modulePreset = await promptSelect(promptAdapter, {
+          message: '请选择功能组合',
+          options: buildModulePresetChoices(selectedManifest),
+          initialValue: draft.modulePreset ?? MODULE_PRESETS.recommended,
+        }, options, { canGoBack: true })
+
+        if (isBackResult(modulePreset)) {
+          step = PROMPT_STEPS.template
+          break
+        }
+
+        draft.modulePreset = modulePreset
+
+        if (draft.modulePreset === MODULE_PRESETS.custom) {
+          step = PROMPT_STEPS.customModules
+          break
+        }
+
+        const selectedConfig = resolveModulePreset(selectedManifest, draft.modulePreset)
+        draft.features = selectedConfig.features
+        draft.extras = selectedConfig.extras
+        draft.selectedModules = [...draft.features, ...draft.extras]
+        step = PROMPT_STEPS.packageManager
+        break
+      }
+
+      case PROMPT_STEPS.customModules: {
+        const selectedModules = await promptMultiselect(promptAdapter, {
+          message: '请选择需要的功能模块',
+          options: [
+            ...buildFeatureChoices(selectedManifest),
+            ...buildExtraChoices(selectedManifest),
+          ],
+          initialValues: draft.selectedModules ?? buildInitialModuleValues(selectedManifest),
+          required: false,
+        }, options, { canGoBack: true })
+
+        if (isBackResult(selectedModules)) {
+          step = PROMPT_STEPS.modulePreset
+          break
+        }
+
+        const selectedConfig = splitSelectedModules(selectedManifest, selectedModules)
+        draft.features = selectedConfig.features
+        draft.extras = selectedConfig.extras
+        draft.selectedModules = selectedModules
+        step = PROMPT_STEPS.packageManager
+        break
+      }
+
+      case PROMPT_STEPS.packageManager:
+        if (selectedManifest.requiredPm) {
+          draft.packageManager = selectedManifest.requiredPm
+          emitNote(promptAdapter, `${selectedManifest.name} 必须使用 ${selectedManifest.requiredPm}`, '包管理器已锁定')
+          step = getStepAfterPackageManager(selectedManifest)
+          break
+        }
+
+        {
+          const packageManagerChoices = buildPackageManagerChoices(selectedManifest)
+          const packageManager = await promptSelect(promptAdapter, {
+            message: '请选择包管理器',
+            options: packageManagerChoices,
+            initialValue: draft.packageManager ?? packageManagerChoices[0]?.value,
+          }, options, { canGoBack: true })
+
+          if (isBackResult(packageManager)) {
+            step = getPreviousModuleStep(draft)
+            break
+          }
+
+          draft.packageManager = packageManager
+          step = getStepAfterPackageManager(selectedManifest)
+        }
+        break
+
+      case PROMPT_STEPS.subPrompt: {
+        const subPrompt = selectedManifest.subPrompts[subPromptIndex]
+
+        if (!subPrompt) {
+          step = PROMPT_STEPS.targetDir
+          break
+        }
+
+        const subPromptValue = await runSubPrompt(
+          subPrompt,
+          promptAdapter,
+          options,
+          draft.subPromptValues[subPrompt.key],
+        )
+
+        if (isBackResult(subPromptValue)) {
+          if (subPromptIndex > 0) {
+            subPromptIndex -= 1
+          } else {
+            step = selectedManifest.requiredPm
+              ? getPreviousModuleStep(draft)
+              : PROMPT_STEPS.packageManager
+          }
+          break
+        }
+
+        draft.subPromptValues[subPrompt.key] = subPromptValue
+        subPromptIndex += 1
+        step = subPromptIndex < selectedManifest.subPrompts.length
+          ? PROMPT_STEPS.subPrompt
+          : PROMPT_STEPS.targetDir
+        break
+      }
+
+      case PROMPT_STEPS.targetDir: {
+        const config = buildInteractiveConfig(draft, selectedManifest)
+
+        config.targetDir = await resolveInteractiveTargetDir(config, options)
+        return config
+      }
+
+      default:
+        throw new Error(`未知交互步骤：${step}`)
+    }
   }
-
-  note(buildTemplateOverview(selectedManifest), selectedManifest.name)
-
-  const modulePreset = await ensurePromptNotCancelled(await select({
-    message: '请选择功能组合',
-    options: buildModulePresetChoices(selectedManifest),
-    initialValue: MODULE_PRESETS.recommended,
-  }), options)
-  let features
-  let extras
-
-  if (modulePreset === MODULE_PRESETS.custom) {
-    const selectedModules = await ensurePromptNotCancelled(await multiselect({
-      message: '请选择需要的功能模块',
-      options: [
-        ...buildFeatureChoices(selectedManifest),
-        ...buildExtraChoices(selectedManifest),
-      ],
-      initialValues: buildInitialModuleValues(selectedManifest),
-      required: false,
-    }), options)
-    const selectedConfig = splitSelectedModules(selectedManifest, selectedModules)
-
-    features = selectedConfig.features
-    extras = selectedConfig.extras
-  } else {
-    const selectedConfig = resolveModulePreset(selectedManifest, modulePreset)
-
-    features = selectedConfig.features
-    extras = selectedConfig.extras
-  }
-
-  const config = {
-    projectName,
-    template,
-    features,
-    extras,
-    fileBasedExtras: buildFileBasedExtras(selectedManifest, extras),
-    targetDir: resolve(process.cwd(), projectName),
-  }
-
-  for (const subPrompt of selectedManifest.subPrompts ?? []) {
-    config[subPrompt.key] = await runSubPrompt(subPrompt, options)
-  }
-
-  if (selectedManifest.requiredPm) {
-    config.packageManager = selectedManifest.requiredPm
-    note(`${selectedManifest.name} 必须使用 ${selectedManifest.requiredPm}`, '包管理器已锁定')
-  } else {
-    const packageManagerChoices = buildPackageManagerChoices(selectedManifest)
-
-    config.packageManager = await ensurePromptNotCancelled(await select({
-      message: '请选择包管理器',
-      options: packageManagerChoices,
-      initialValue: packageManagerChoices[0]?.value,
-    }), options)
-  }
-
-  config.targetDir = await resolveInteractiveTargetDir(config, options)
-
-  return config
 }

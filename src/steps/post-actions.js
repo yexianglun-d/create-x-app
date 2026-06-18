@@ -1,16 +1,18 @@
+import { confirm } from '@clack/prompts'
 import { execa } from 'execa'
 import fs from 'fs-extra'
-import ora from 'ora'
 import { join } from 'node:path'
 import { loadManifest } from '../manifest/loader.js'
 import {
   buildBlockLines,
   buildCompletionLines,
   printLines,
-  resolveDisplayPath,
 } from '../ui/create-ui.js'
+import { createStatusSpinner } from '../ui/spinner.js'
+import { resolveDisplayPath } from '../utils/path.js'
 import { logger } from '../utils/logger.js'
 import { createPmAdapter } from '../utils/pm-adapter.js'
+import chalk from 'chalk'
 
 function resolveWorkspaceLayout(config) {
   if (config.template === 'java-fullstack') {
@@ -36,6 +38,15 @@ function formatCommand(command, args = []) {
   return [command, ...args].join(' ')
 }
 
+function shouldPromptRetryInstall(options = {}) {
+  return Boolean(
+    process.stdin.isTTY
+      && process.stdout.isTTY
+      && !process.env.CI
+      && options.yes !== true,
+  )
+}
+
 function loadTemplateManifest(templateKey) {
   try {
     return loadManifest(templateKey)
@@ -49,14 +60,15 @@ function loadTemplateManifest(templateKey) {
  * 执行命令并通过 spinner 展示结果。
  *
  * 说明：
- * 1. 安装依赖属于关键路径，失败后必须终止，避免生成“看似完成但不可运行”的项目
+ * 1. 安装依赖属于关键路径，失败后必须终止，避免生成"看似完成但不可运行"的项目
  * 2. Git 初始化、初始提交属于增强步骤，失败时只警告，不阻断项目生成结果
  *
  * @param {{title: string, command: string, args: string[], cwd: string, continueOnError: boolean}} options 命令执行参数
  * @returns {Promise<boolean>} 是否执行成功
  */
 async function runCommandWithSpinner(options) {
-  const spinner = ora(options.title).start()
+  const s = createStatusSpinner()
+  s.start(options.title)
 
   try {
     logger.command(options.command, options.args, options.cwd)
@@ -67,12 +79,12 @@ async function runCommandWithSpinner(options) {
     })
 
     if (result.exitCode === 0) {
-      spinner.succeed(options.title)
+      s.stop(options.title)
       return true
     }
 
     const output = (result.stderr || result.stdout || '命令执行失败').trim()
-    spinner.fail(options.title)
+    s.stop(options.title)
 
     if (options.continueOnError) {
       logger.warn(output)
@@ -81,9 +93,7 @@ async function runCommandWithSpinner(options) {
 
     throw new Error(output)
   } catch (error) {
-    if (spinner.isSpinning) {
-      spinner.fail(options.title)
-    }
+    s.stop(options.title)
 
     if (options.continueOnError) {
       logger.warn(error.message || '命令执行失败')
@@ -209,6 +219,29 @@ export async function runPostActions({
             continueOnError: false,
           })
         } catch (error) {
+          logger.warn('依赖安装失败，但项目文件已生成。')
+          logger.note('', chalk.gray('你可以进入目录后手动执行：'))
+          logger.note('', chalk.gray(`  cd ${config.projectName}`))
+          logger.note('', chalk.gray(`  ${config.packageManager} install`))
+
+          if (shouldPromptRetryInstall(options)) {
+            const retry = await confirm({
+              message: '是否重试安装？',
+              initialValue: true,
+            })
+
+            if (retry) {
+              await runner({
+                title: `正在重试安装依赖（${config.packageManager} install）...`,
+                command: installCommand.command,
+                args: installCommand.args,
+                cwd: installTarget,
+                continueOnError: false,
+              })
+              continue
+            }
+          }
+
           error.telemetryEvent = 'install_failed'
           throw error
         }

@@ -1,5 +1,4 @@
 import {
-  Button,
   Card,
   Col,
   Empty,
@@ -96,19 +95,6 @@ const projectColumns = [
   },
   { title: '下一步', dataIndex: 'nextAction', key: 'nextAction' },
   { title: '截止', dataIndex: 'dueAt', key: 'dueAt', width: 100 },
-]
-
-const taskColumns = [
-  { title: '任务', dataIndex: 'title', key: 'title' },
-  {
-    title: '状态',
-    dataIndex: 'status',
-    key: 'status',
-    width: 100,
-    render: (status: string) => (
-      <Tag color={statusColorMap[status] ?? 'default'}>{status}</Tag>
-    ),
-  },
 ]
 
 export default function Dashboard() {

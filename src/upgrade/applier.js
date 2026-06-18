@@ -1,15 +1,7 @@
-import { cancel, isCancel, select } from '@clack/prompts'
+import { select } from '@clack/prompts'
 import chalk from 'chalk'
 import fs from 'fs-extra'
-
-function ensurePromptNotCancelled(value) {
-  if (isCancel(value)) {
-    cancel('操作已取消')
-    process.exit(0)
-  }
-
-  return value
-}
+import { ensurePromptNotCancelled } from '../utils/prompt-helpers.js'
 
 function formatMigrationStatus(diff) {
   const labels = {

@@ -3,6 +3,7 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import chalk from 'chalk'
 import { program } from 'commander'
 import { createCommand } from '../src/commands/create.js'
 import { installCommand } from '../src/commands/install.js'
@@ -23,6 +24,10 @@ import {
 import { upgradeCommand } from '../src/commands/upgrade.js'
 import { buildHelpExamples, buildHelpHeader } from '../src/ui/create-ui.js'
 import { logger, setLoggerOptions } from '../src/utils/logger.js'
+
+if (process.env.NO_COLOR) {
+  chalk.level = 0
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const packageJsonPath = join(__dirname, '../package.json')

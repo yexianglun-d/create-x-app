@@ -12,14 +12,14 @@
     "backend/src/main/java/com/example/app/BusinessWorkspaceApplication.java",
     "backend/src/main/java/com/example/app/common/ApiResponse.java",
     "backend/src/main/java/com/example/app/config/WebCorsConfig.java",
-    "backend/src/main/java/com/example/app/customer/CreateCustomerActionRequest.java",
-    "backend/src/main/java/com/example/app/customer/CustomerAction.java",
-    "backend/src/main/java/com/example/app/customer/CustomerActionController.java",
-    "backend/src/main/java/com/example/app/customer/CustomerActionRepository.java",
-    "backend/src/main/java/com/example/app/customer/CustomerActionService.java",
-    "backend/src/main/java/com/example/app/customer/CustomerStage.java",
-    "backend/src/main/java/com/example/app/customer/Priority.java",
     "backend/src/main/java/com/example/app/health/HealthController.java",
+    "backend/src/main/java/com/example/app/task/CreateTaskRequest.java",
+    "backend/src/main/java/com/example/app/task/Priority.java",
+    "backend/src/main/java/com/example/app/task/Task.java",
+    "backend/src/main/java/com/example/app/task/TaskController.java",
+    "backend/src/main/java/com/example/app/task/TaskRepository.java",
+    "backend/src/main/java/com/example/app/task/TaskService.java",
+    "backend/src/main/java/com/example/app/task/TaskStatus.java",
     "backend/src/main/resources/application.yml",
     "backend/src/test/java/com/example/app/BusinessWorkspaceApplicationTests.java",
     "coding-rules.md",
@@ -46,4 +46,3 @@
     "cxa-version": "1.0.0"
   }
 }
-

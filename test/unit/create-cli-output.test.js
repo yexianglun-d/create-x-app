@@ -45,3 +45,32 @@ test('--print-config errors keep stdout empty and explain available templates', 
   assert.match(result.stderr, /未找到模板定义：missing-template/)
   assert.match(result.stderr, /可用模板：/)
 })
+
+test('dry-run output stays lightweight and free of terminal control codes', async () => {
+  const result = await execa('node', [
+    CLI_PATH,
+    'demo-app',
+    '--template',
+    'react-vite-ts',
+    '--yes',
+    '--dry-run',
+    '--skip-install',
+    '--skip-git',
+    '--no-telemetry',
+  ], {
+    env: {
+      CI: '1',
+      NO_COLOR: '1',
+    },
+  })
+  const output = `${result.stdout}\n${result.stderr}`
+
+  assert.match(result.stdout, /create-x-app/)
+  assert.match(result.stdout, /01 Project/)
+  assert.match(result.stdout, /04 Generate/)
+  assert.match(result.stdout, /Preview only/)
+  // 该正则专用于捕获终端光标显示/隐藏控制序列。
+  // eslint-disable-next-line no-control-regex
+  assert.doesNotMatch(output, /\u001B\[\?25[lh]/)
+  assert.doesNotMatch(output, /___/)
+})

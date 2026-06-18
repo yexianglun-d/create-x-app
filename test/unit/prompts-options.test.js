@@ -4,15 +4,71 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import fs from 'fs-extra'
 import {
+  BACK_PROMPT_VALUE,
   buildConfigFromOptions,
   buildGenerationPlanMessage,
   buildTemplateChoices,
+  confirmGenerationPlan,
+  getPromptResumeStep,
   resolveModulePreset,
+  runPrompts,
 } from '../../src/steps/prompts.js'
 import { resolvePresetOptions } from '../../src/presets/loader.js'
 import { loadManifest } from '../../src/manifest/loader.js'
 import { getConfigValidationErrors } from '../../src/validator/index.js'
 import { createTempDir, removeTempDir } from '../helpers/project.js'
+
+let promptProjectCounter = 0
+
+function createPromptAdapter(responses) {
+  const calls = []
+  let responseIndex = 0
+
+  async function nextResponse(type, options) {
+    calls.push({
+      type,
+      ...options,
+    })
+
+    if (responseIndex >= responses.length) {
+      throw new Error(`缺少 ${type} prompt 的测试响应：${options.message}`)
+    }
+
+    const response = responses[responseIndex]
+    responseIndex += 1
+
+    return typeof response === 'function' ? response(options, calls) : response
+  }
+
+  return {
+    calls,
+    text: (options) => nextResponse('text', options),
+    select: (options) => nextResponse('select', options),
+    multiselect: (options) => nextResponse('multiselect', options),
+    note(message, title) {
+      calls.push({
+        type: 'note',
+        message,
+        title,
+      })
+    },
+    printLines(lines) {
+      calls.push({
+        type: 'printLines',
+        lines,
+      })
+    },
+  }
+}
+
+function nextPromptProjectName(prefix = 'prompt-back') {
+  promptProjectCounter += 1
+  return `${prefix}-${process.pid}-${promptProjectCounter}`
+}
+
+function assertConfigHasNoBackSentinel(config) {
+  assert.equal(JSON.stringify(config).includes(BACK_PROMPT_VALUE), false)
+}
 
 test('buildConfigFromOptions creates a non-interactive config', () => {
   const cwd = join(tmpdir(), 'cxa-options')
@@ -102,6 +158,169 @@ test('generation plan summarizes source and post actions before confirmation', (
   assert.match(message, /install\s+跳过/)
   assert.match(message, /git\s+跳过/)
   assert.match(message, /husky\s+安装依赖后手动初始化/)
+})
+
+test('template Back returns to project name input', async () => {
+  const firstName = nextPromptProjectName('first-name')
+  const secondName = nextPromptProjectName('second-name')
+  const promptAdapter = createPromptAdapter([
+    firstName,
+    BACK_PROMPT_VALUE,
+    secondName,
+    'react-vite-ts',
+    'recommended',
+    'npm',
+  ])
+
+  const config = await runPrompts(undefined, { promptAdapter })
+  const textCalls = promptAdapter.calls.filter((call) => call.type === 'text')
+  const templateCalls = promptAdapter.calls
+    .filter((call) => call.type === 'select' && call.message === '请选择项目模板')
+
+  assert.equal(config.projectName, secondName)
+  assert.equal(config.template, 'react-vite-ts')
+  assert.equal(textCalls.length, 2)
+  assert.equal(templateCalls[0].options.some((option) => option.value === BACK_PROMPT_VALUE), true)
+  assertConfigHasNoBackSentinel(config)
+})
+
+test('module preset Back returns to template and preserves selected template as initial value', async () => {
+  const projectName = nextPromptProjectName('module-back')
+  const promptAdapter = createPromptAdapter([
+    'node-ts',
+    BACK_PROMPT_VALUE,
+    'react-vite-ts',
+    'minimal',
+    'yarn',
+  ])
+
+  const config = await runPrompts(projectName, { promptAdapter })
+  const templateCalls = promptAdapter.calls
+    .filter((call) => call.type === 'select' && call.message === '请选择项目模板')
+
+  assert.equal(config.template, 'react-vite-ts')
+  assert.equal(config.packageManager, 'yarn')
+  assert.deepEqual(config.features, ['agents', 'coding-rules'])
+  assert.equal(templateCalls.length, 2)
+  assert.equal(templateCalls[1].initialValue, 'node-ts')
+  assertConfigHasNoBackSentinel(config)
+})
+
+test('custom module Back returns to module preset and ignores mixed multiselect values', async () => {
+  const projectName = nextPromptProjectName('custom-back')
+  const promptAdapter = createPromptAdapter([
+    'react-vite-ts',
+    'custom',
+    [BACK_PROMPT_VALUE, 'tailwind'],
+    'minimal',
+    'npm',
+  ])
+
+  const config = await runPrompts(projectName, { promptAdapter })
+
+  assert.equal(config.template, 'react-vite-ts')
+  assert.deepEqual(config.features, ['agents', 'coding-rules'])
+  assert.deepEqual(config.extras, [])
+  assertConfigHasNoBackSentinel(config)
+})
+
+test('package manager Back returns to module preset and recomputes recommended modules', async () => {
+  const projectName = nextPromptProjectName('pm-back')
+  const promptAdapter = createPromptAdapter([
+    'node-ts',
+    'minimal',
+    BACK_PROMPT_VALUE,
+    'recommended',
+    'pnpm',
+  ])
+
+  const config = await runPrompts(projectName, { promptAdapter })
+
+  assert.equal(config.template, 'node-ts')
+  assert.equal(config.packageManager, 'pnpm')
+  assert.deepEqual(config.features, ['eslint', 'prettier', 'husky', 'agents', 'coding-rules'])
+  assert.deepEqual(config.extras, ['express', 'dotenv'])
+  assertConfigHasNoBackSentinel(config)
+})
+
+test('Electron subPrompt Back returns to package manager before collecting renderer again', async () => {
+  const projectName = nextPromptProjectName('electron-back')
+  const promptAdapter = createPromptAdapter([
+    'electron-app',
+    'recommended',
+    'npm',
+    BACK_PROMPT_VALUE,
+    'yarn',
+    'react',
+  ])
+
+  const config = await runPrompts(projectName, { promptAdapter })
+  const packageManagerCalls = promptAdapter.calls
+    .filter((call) => call.type === 'select' && call.message === '请选择包管理器')
+  const rendererCalls = promptAdapter.calls
+    .filter((call) => call.type === 'select' && call.message === '选择渲染进程框架')
+
+  assert.equal(config.template, 'electron-app')
+  assert.equal(config.packageManager, 'yarn')
+  assert.equal(config.renderer, 'react')
+  assert.equal(packageManagerCalls.length, 2)
+  assert.equal(rendererCalls.length, 2)
+  assertConfigHasNoBackSentinel(config)
+})
+
+test('generation plan Back returns a retry action and later confirmation can continue', async () => {
+  const manifest = loadManifest('react-vite-ts')
+  const config = buildConfigFromOptions(nextPromptProjectName('preview-back'), {
+    template: 'react-vite-ts',
+  })
+  const promptAdapter = createPromptAdapter([
+    BACK_PROMPT_VALUE,
+    (options) => options.options[0].value,
+  ])
+
+  const backAction = await confirmGenerationPlan({
+    config,
+    manifest,
+    templateSource: { type: 'builtin' },
+    dependencyStrategy: 'baseline',
+    options: { promptAdapter },
+  })
+  const confirmAction = await confirmGenerationPlan({
+    config,
+    manifest,
+    templateSource: { type: 'builtin' },
+    dependencyStrategy: 'baseline',
+    options: { promptAdapter },
+  })
+
+  assert.equal(backAction, BACK_PROMPT_VALUE)
+  assert.equal(confirmAction, true)
+})
+
+test('Preview Back resume keeps inferred module preset before stepping back again', async () => {
+  const manifest = loadManifest('react-vite-ts')
+  const initialConfig = buildConfigFromOptions(nextPromptProjectName('preview-resume'), {
+    template: 'react-vite-ts',
+    features: 'agents,coding-rules',
+    extras: '',
+  })
+  const promptAdapter = createPromptAdapter([
+    BACK_PROMPT_VALUE,
+    'recommended',
+    'npm',
+  ])
+
+  const config = await runPrompts(initialConfig.projectName, {
+    promptAdapter,
+    initialConfig,
+    startStep: getPromptResumeStep(manifest),
+  })
+  const modulePresetCalls = promptAdapter.calls
+    .filter((call) => call.type === 'select' && call.message === '请选择功能组合')
+
+  assert.equal(modulePresetCalls[0].initialValue, 'minimal')
+  assert.deepEqual(config.features, ['eslint', 'prettier', 'husky', 'agents', 'coding-rules'])
+  assert.deepEqual(config.extras, [])
 })
 
 test('built-in preset resolves create options', async () => {
